@@ -20,7 +20,7 @@ class PaymentController extends Controller
      * Charge wallet balance
      *
      * @OA\Post(
-     *     path="/v1/infinity-wallet/payments/charge",
+     *     path="/v1/payments/payments/charge",
      *     description="Charge wallet balance",
      *     tags={"Payments"},
      *
@@ -125,9 +125,25 @@ class PaymentController extends Controller
      * Invoices webhook
      *
      * @OA\Post(
-     *     path="/v1/infinity-wallet/webhooks/{gateway}/invoices",
+     *     path="/v1/payments/webhooks/{gateway}/invoices",
      *     description="Webhooks Notifications about invoices",
      *     tags={"Payments Webhooks"},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
      *
      *     @OA\Parameter(
      *         name="gateway",

@@ -4,7 +4,7 @@
  * @var Laravel\Lumen\Routing\Router $router
  */
 $router->group([
-    'prefix' => 'infinity-wallet',
+    'prefix' => 'payments',
     'namespace' => '\App\Api\V1\Controllers'
 ], function () use ($router) {
     /**

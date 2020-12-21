@@ -48,7 +48,7 @@ class PaymentOrder extends Model
     /**
      * @var string
      */
-    protected $table = 'payment_orders';
+    protected $table = 'orders';
 
     /**
      * Generate unique ID

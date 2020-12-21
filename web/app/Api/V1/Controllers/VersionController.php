@@ -15,7 +15,7 @@ class VersionController extends Controller
      * Show version of service
      *
      * @OA\Get(
-     *     path="/v1/infinity-wallet/version",
+     *     path="/v1/payments/version",
      *     summary="Show version of service",
      *     description="Show version of service",
      *

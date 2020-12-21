@@ -18,7 +18,7 @@ class PaymentSystemsController extends Controller
 {
     /**
      * @OA\Get(
-     *     path="/v1/infinity-wallet/payments/systems",
+     *     path="/v1/payments/payments/systems",
      *     description="List of payment systems",
      *     tags={"Payments"},
      *

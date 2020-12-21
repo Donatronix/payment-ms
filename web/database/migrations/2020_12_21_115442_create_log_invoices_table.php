@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class LogWebhooks extends Migration
+class CreateLogInvoicesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -16,19 +16,7 @@ class LogWebhooks extends Migration
         Schema::create('log_invoices', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->bigIncrements('id');
-
             $table->string('gateway',40);
-
-            $table->text('request');
-            $table->timestamps();
-        });
-
-        Schema::create('log_webhooks', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
-            $table->bigIncrements('id');
-
-            $table->string('gateway',40);
-
             $table->text('request');
             $table->timestamps();
         });
@@ -42,6 +30,5 @@ class LogWebhooks extends Migration
     public function down()
     {
         Schema::dropIfExists('log_invoices');
-        Schema::dropIfExists('log_webhooks');
     }
 }

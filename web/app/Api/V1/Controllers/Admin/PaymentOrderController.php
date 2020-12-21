@@ -19,7 +19,7 @@ class PaymentOrderController extends Controller
      * Display payment orders list
      *
      * @OA\Get(
-     *     path="/v1/infinity-wallet/admin/payment-orders",
+     *     path="/v1/payments/admin/payment-orders",
      *     description="Display list of all patment orders",
      *     tags={"Admin - Payment Orders"},
      *
@@ -86,7 +86,7 @@ class PaymentOrderController extends Controller
      * Method for proof of payment by payment order
      *
      * @OA\Post(
-     *     path="/v1/infinity-wallet/admin/payment-orders",
+     *     path="/v1/payments/admin/payment-orders",
      *     description="Method for proof of payment by payment order",
      *     tags={"Admin - Payment Orders"},
      *
@@ -136,21 +136,20 @@ class PaymentOrderController extends Controller
 
         try {
             // Create transaction for charge user balance
-            $charge = Transaction::create([
-                'name' => 'Activate card',
-                'sender_id' => env('SUMRA_USER'),
-                'receiver_id' => $order->user_id,
-                'amount' => $order->amount,
-                'currency_id' => $order->currency_id,
-                'status' => Transaction::STATUS_NOT_CONFIRMED
-            ]);
+//            $charge = Transaction::create([
+//                'name' => 'Activate card',
+//                'sender_id' => env('SUMRA_USER'),
+//                'receiver_id' => $order->user_id,
+//                'amount' => $order->amount,
+//                'currency_id' => $order->currency_id,
+//                'status' => Transaction::STATUS_NOT_CONFIRMED
+//            ]);
 
             return response()->jsonApi([
                 'type' => 'success',
                 'title' => 'Proof of payment',
                 'message' => "Charge transaction created successfully"
             ]);
-
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
                 'type' => 'error',

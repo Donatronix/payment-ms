@@ -82,7 +82,7 @@
                 first = '&';
             }
 
-            let url = '/v1/infinity-wallet/payments/charge';
+            let url = '/v1/payments/payments/charge';
 
             let curl = 'curl -X POST -H "user-id:'+user_id+'" -d "'+arr+'" {{$http}}://{{ $host }}'+url;
 
@@ -133,7 +133,7 @@
 
 </head>
 <body>
-<p><a href="/tests/infinity-wallet">Tests contents</a></p>
+<p><a href="/tests/payments">Tests contents</a></p>
 <h1>test for create invoice in bitpay</h1>
 
 <table>

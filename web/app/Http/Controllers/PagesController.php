@@ -30,9 +30,9 @@ class PagesController extends Controller
         $group="&nbsp;";
         $subgroup="&nbsp;";
 
-        $re2 = '/\/tests\/infinity-wallet\/([^\/]+)/u';
+        $re2 = '/\/tests\/payments\/([^\/]+)/u';
 
-        $re3 = '/\/tests\/infinity-wallet\/[^\/]+\/([^\/]+)(\/[^\/]+)?/u';
+        $re3 = '/\/tests\/payments\/[^\/]+\/([^\/]+)(\/[^\/]+)?/u';
 
         $new_urls = [];
 

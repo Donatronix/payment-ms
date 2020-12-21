@@ -42,7 +42,7 @@
 
                 let user_id = document.getElementById('user_id').value;
 
-                let url = '/v1/infinity-wallet/payments/systems' ;
+                let url = '/v1/payments/payments/systems' ;
 
                 let curl = 'curl -X GET -H "user-id:'+user_id+'" {{$http}}://{{ $host }}' + url;
 
@@ -78,7 +78,7 @@
         </script>
     </head>
     <body>
-        <p><a href="/tests/infinity-wallet">Tests contents</a></p>
+        <p><a href="/tests/payments">Tests contents</a></p>
         <h1>test of balance list of user</h1>
 
         <table>

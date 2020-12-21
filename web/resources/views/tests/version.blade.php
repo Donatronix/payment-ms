@@ -53,7 +53,7 @@
         function show_version()
         {
 
-            let url = '/v1/infinity-wallet/version';
+            let url = '/v1/payments/version';
 
             let curl = 'curl -X GET  {{$http}}://{{ $host }}'+url;
 
@@ -89,7 +89,7 @@
 </head>
 <body>
 
-<p><a href="/tests/infinity-wallet">Contents</a></p>
+<p><a href="/tests/payments">Contents</a></p>
 
 <h1>Test of version</h1>
 
