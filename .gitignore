@@ -1,8 +1,3 @@
-# These are some examples of commonly ignored file patterns.
-# You should customize this list as applicable to your project.
-# Learn more about .gitignore:
-#     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
-
 # Node artifact files
 node_modules/
 dist/
@@ -48,3 +43,62 @@ Thumbs.db
 *.mov
 *.wmv
 
+
+.sublime-workspace
+*.sublime-project
+/pubsub
+/web/conf/*
+/web/node_modules
+/web/public/hot
+/web/public/storage
+/web/storage/*.key
+/web/vendor
+/web/.idea
+/web/.vagrant
+/webHomestead.json
+/webHomestead.yaml
+/webnpm-debug.log
+/webyarn-error.log
+/web/.env
+/web/webscript
+/web/webgitpull
+/web/.env-production
+/web/.env.dusk.local
+/web/nbproject/private/
+#/web/app/Http/Kernel.php
+/web/.buildpath
+/web/.project
+/web/composer.lock
+/web/worker.log
+/web/package-lock.json
+/web/localhost.crt
+/web/localhost.key
+/web/rootCA.crt
+/web/rootCA.key
+/web/rootCA.pem
+/web/rootCA.srl
+/web/server.crt
+/web/server.csr
+/web/server.csr.cnf
+/web/server.key
+/web/v3.ext
+/web/.settings/org.eclipse.wst.common.project.facet.core.xml
+/web/.settings/org.eclipse.wst.sse.core.prefs
+/web/socket.sh
+/web/sumracrt.pem
+/web/sumra.pem
+redis-data
+Dockerfile-old
+conf/.env
+conf/.env_local
+conf/mime.types
+conf/nginx.conf
+conf/old_nginx.con
+conf/server_blocks.conf
+conf/sumra-pool.conf
+certs
+Soulroot/
+example-laravel-dingo-api
+xdebug.ini
+docker-compose.yaml
+storage/api-docs
