@@ -13,15 +13,6 @@ $router->group([
     $router->group([
         'middleware' => 'checkUser'
     ], function () use ($router) {
-        /**
-         * User balances
-         */
-        $router->group(['prefix' => 'balances'], function () use ($router) {
-            $router->get('/{user_id}', 'UserBalanceController@index');
-            $router->get('/{user_id}/{currency_id}', 'UserBalanceController@show');
-            $router->get('/{user_id}/{currency_id}/compare', 'UserBalanceController@compare');
-        });
-
         $router->group(['prefix' => 'payments'], function () use ($router) {
             $router->get('systems', 'PaymentSystemsController@index');
             $router->post('charge', 'PaymentController@charge');
