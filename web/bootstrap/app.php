@@ -94,16 +94,17 @@ $app->routeMiddleware([
 |
 */
 
-// $app->register(App\Providers\AppServiceProvider::class);
+$app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 
+/** Pubsub - RebbitMQ */
 $app->register(VladimirYuldashev\LaravelQueueRabbitMQ\LaravelQueueRabbitMQServiceProvider::class);
 class_alias(\Illuminate\Support\Facades\App::class, 'App');
-
-/** Sumra Services */
-$app->register(\Sumra\JsonApi\JsonApiServiceProvider::class);
 $app->register(\Sumra\PubSub\PubSubServiceProvider::class);
+
+/** Json API */
+$app->register(\Sumra\JsonApi\JsonApiServiceProvider::class);
 
 /** Swagger */
 $app->configure('swagger-lume');
