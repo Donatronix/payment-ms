@@ -45,7 +45,8 @@ class RechargeBalanceRequestListener
         $validation = Validator::make($inputData, [
             'gateway' => 'string|required',
             'amount' => 'integer|required',
-            'currency' => 'string|required',
+            'currency.id' => 'integer|required',
+            'currency.code' => 'string|required',
             'replay_to' => 'string|required',
             'order_id' => 'integer|required',
             'user_id' => 'integer|required',

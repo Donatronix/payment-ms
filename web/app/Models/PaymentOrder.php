@@ -28,14 +28,15 @@ class PaymentOrder extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id',
-        'document_id',
-        'amount',
-        'check_code',
         'type',
         'gateway',
+        'amount',
+        'currency_id',
+        'check_code',
+        'document_id',
+        'user_id',
         'status',
-        'response'
+        'payload'
     ];
 
     /**
@@ -44,11 +45,6 @@ class PaymentOrder extends Model
      * @var array
      */
     protected $hidden = [];
-
-    /**
-     * @var string
-     */
-    protected $table = 'orders';
 
     /**
      * Generate unique ID

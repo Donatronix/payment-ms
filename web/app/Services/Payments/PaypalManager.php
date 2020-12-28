@@ -4,7 +4,7 @@ namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
-use App\Models\PaymentOrderPaypal;
+use App\Models\PaymentOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -15,6 +15,34 @@ use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 
 class PaypalManager implements PaymentSystemContract
 {
+    /**
+     * Order / Invoice statuses
+     */
+    // The order was created with the specified context
+    const STATUS_ORDER_CREATED = 1;
+
+    // The order was saved and persisted. The order status continues to be in progress until
+    // a capture is made with final_capture = true for all purchase units within the order.
+    const STATUS_ORDER_SAVED = 2;
+
+    // The customer approved the payment through the PayPal wallet or another form of guest
+    // or unbranded payment. For example, a card, bank account, or so on.
+    const STATUS_ORDER_APPROVED = 3;
+
+    // All purchase units in the order are voided.
+    const STATUS_ORDER_VOIDED = 4;
+
+    // The payment was authorized or the authorized payment was captured for the order
+    const STATUS_ORDER_COMPLETED = 5;
+
+    // The order requires an action from the payer (e.g. 3DS authentication).
+    // Redirect the payer to the "rel":"payer-action" HATEOAS link returned as part
+    // of the response prior to authorizing or capturing the order.
+    const STATUS_ORDER_PAYER_ACTION_REQUIRED = 6;
+
+    /**
+     * @var \PayPalCheckoutSdk\Core\PayPalHttpClient
+     */
     private $gateway;
 
     /**
@@ -63,15 +91,17 @@ class PaypalManager implements PaymentSystemContract
     {
         try {
             // Create check code
-            $checkCode = PaymentOrderPaypal::getCheckCode();
+            $checkCode = PaymentOrder::getCheckCode();
+
+            $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
 
             // Create internal order
-            $paymentOrder = PaymentOrderPaypal::create([
+            $paymentOrder = PaymentOrder::create([
                 'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'amount' => $data['amount'],
-                'currency_id' => Currency::$currencies[mb_strtoupper($data['currency'])],
+                'currency_id' => $currency_id,
                 'check_code' => $checkCode,
-                'type' => PaymentOrderPaypal::TYPE_ORDER_INVOICE,
+                'type' => PaymentOrder::TYPE_ORDER_INVOICE,
                 'gateway' => self::type()
             ]);
 
@@ -88,7 +118,7 @@ class PaypalManager implements PaymentSystemContract
                         'invoice_id' => $paymentOrder->id,
                         'amount' => [
                             'value' => $data['amount'],
-                            'currency_code' => $data['currency'],
+                            'currency_code' => $data['currency']['code'],
                         ],
                         'payment_instruction' => [
                            'disbursement_mode' => 'INSTANT'
@@ -110,7 +140,7 @@ class PaypalManager implements PaymentSystemContract
 
             // Update order data
             $paymentOrder->document_id = $chargeObj->result->id;
-            $paymentOrder->status = PaymentOrderPaypal::STATUS_ORDER_CREATED;
+            $paymentOrder->status = self::STATUS_ORDER_CREATED;
             $paymentOrder->save();
 
             $invoiceUrl = '';
@@ -159,7 +189,7 @@ class PaypalManager implements PaymentSystemContract
         }
 
         // Find order
-        $order = PaymentOrderPaypal::where('type', PaymentOrderPaypal::TYPE_ORDER_INVOICE)
+        $order = PaymentOrder::where('type', PaymentOrder::TYPE_ORDER_INVOICE)
             ->where('document_id', $orderData->id)
             ->where('check_code', $orderData->purchase_units[0]->custom_id)
             ->where('gateway', self::type())
@@ -170,8 +200,8 @@ class PaypalManager implements PaymentSystemContract
         }
 
         $status = 'STATUS_ORDER_' . mb_strtoupper($orderData->status);
-        $order->status = PaymentOrderPaypal::$$status;
-        $order->response = $orderData;
+        $order->status = self::$$status;
+        $order->payload = $orderData;
         $order->save();
 
         // Send response code

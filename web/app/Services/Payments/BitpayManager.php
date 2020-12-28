@@ -4,7 +4,7 @@ namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
-use App\Models\PaymentOrderBitPay;
+use App\Models\PaymentOrder;
 use BitPaySDK\Client;
 use BitPaySDK\Exceptions\BitPayException;
 use BitPaySDK\Model\Invoice\Invoice;
@@ -14,6 +14,33 @@ use Illuminate\Support\Facades\Auth;
 
 class BitpayManager implements PaymentSystemContract
 {
+    /**
+     * Invoice statuses
+     */
+    // New
+    const STATUS_INVOICE_NEW = 1000;
+
+    // To notify merchant that an invoice has reached the status paid
+    const STATUS_INVOICE_PAID_IN_FULL = 1003;
+
+    // To notify a merchant that an invoice has expired without being paid
+    const STATUS_INVOICE_EXPIRED = 1004;
+
+    // To notify merchant that an invoice has reached the status confirmed
+    const STATUS_INVOICE_CONFIRMED = 1005;
+
+    // To notify merchant that an invoice has reached the status completed
+    const STATUS_INVOICE_COMPLETED = 1006;
+
+    // To notify merchant that an invoice has reached the status invalid
+    const STATUS_INVOICE_FAILED_TO_CONFIRM = 1013;
+
+    // To notify a merchant that a refund request has been successfully processed
+    const STATUS_INVOICE_REFUND_COMPLETE = 1016;
+
+    /**
+     * @var \BitPaySDK\Client
+     */
     private $gateway;
 
     /**
@@ -63,21 +90,23 @@ class BitpayManager implements PaymentSystemContract
     {
         try {
             // Create check code
-            $checkCode = PaymentOrderBitPay::getCheckCode();
+            $checkCode = PaymentOrder::getCheckCode();
+
+            $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
 
             // Create internal order
-            $transaction = PaymentOrderBitPay::create([
-                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
-                'amount' => $data['amount'],
-                'currency_id' => Currency::$currencies[mb_strtoupper($data['currency'])],
-                'check_code' => $checkCode,
-                'type' => PaymentOrderBitPay::TYPE_ORDER_INVOICE,
+            $transaction = PaymentOrder::create([
+                'type' => PaymentOrder::TYPE_ORDER_INVOICE,
                 'gateway' => self::type(),
-                'status' => PaymentOrderBitPay::STATUS_INVOICE_NEW
+                'amount' => $data['amount'],
+                'currency_id' => $currency_id,
+                'check_code' => $checkCode,
+                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
+                'status' => self::STATUS_INVOICE_NEW
             ]);
 
             // Set invoice detail
-            $invoice = new Invoice($data['amount'], $data['currency']);
+            $invoice = new Invoice($data['amount'], $data['currency']['code']);
             $invoice->setOrderId($transaction->id);
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
@@ -137,7 +166,7 @@ class BitpayManager implements PaymentSystemContract
         }
 
         // Find order
-        $order = PaymentOrderBitPay::where('type', PaymentOrderBitPay::TYPE_ORDER_INVOICE)
+        $order = PaymentOrder::where('type', PaymentOrder::TYPE_ORDER_INVOICE)
             ->where('document_id', $invoiceData['id'])
             ->where('check_code', $invoiceData['posData']['code'])
             ->where('gateway', self::type())
@@ -149,7 +178,7 @@ class BitpayManager implements PaymentSystemContract
         }
 
         $order->status = $request->event['code'];
-        $order->response = $invoiceData;
+        $order->payload = $invoiceData;
         $order->save();
     }
 
