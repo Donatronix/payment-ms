@@ -9,10 +9,8 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models
  */
-class LogInvoice extends Model
+class LogPaymentRequest extends Model
 {
-    protected $table = 'log_invoices';
-
     /**
      * The attributes that should be cast.
      *

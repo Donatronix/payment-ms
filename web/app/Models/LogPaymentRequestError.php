@@ -9,17 +9,15 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models
  */
-class LogWebhook extends Model
+class LogPaymentRequestError extends Model
 {
-    protected $table = 'log_webhooks';
-
     /**
      * The attributes that should be cast.
      *
      * @var array
      */
     protected $casts = [
-        'payload' => 'array',
+        'error' => 'array',
     ];
 
     /**
@@ -28,8 +26,7 @@ class LogWebhook extends Model
      * @var array
      */
     protected $fillable = [
-        'gateway',
-        'payload'
+        'error'
     ];
 
     /**

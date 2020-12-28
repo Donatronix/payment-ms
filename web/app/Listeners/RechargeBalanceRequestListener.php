@@ -2,8 +2,8 @@
 
 namespace App\Listeners;
 
-use App\Models\LogInvoice;
-use App\Models\LogInvoiceError;
+use App\Models\LogPaymentRequest;
+use App\Models\LogPaymentRequestError;
 use App\Services\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -63,7 +63,7 @@ class RechargeBalanceRequestListener
 
         // Write log
         try {
-            LogInvoice::create([
+            LogPaymentRequest::create([
                 'gateway' => $inputData['gateway'],
                 'service' => $inputData['replay_to'],
                 'payload' => $inputData
@@ -90,7 +90,7 @@ class RechargeBalanceRequestListener
 
         // Return response
         if ($result['status'] === 'error') {
-            LogInvoiceError::create([
+            LogPaymentRequestError::create([
                 'error' => $result
             ]);
         }

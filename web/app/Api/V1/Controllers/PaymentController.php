@@ -3,8 +3,8 @@
 namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\LogWebhook;
-use App\Models\LogWebhookError;
+use App\Models\LogPaymentWebhook;
+use App\Models\LogPaymentWebhookError;
 use App\Services\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -65,7 +65,7 @@ class PaymentController extends Controller
     public function handlerWebhookInvoice(Request $request, string $gateway)
     {
         try {
-            LogWebhook::create([
+            LogPaymentWebhook::create([
                 'gateway' => $gateway,
                 'payload' => $request->all(),
             ]);
@@ -87,7 +87,7 @@ class PaymentController extends Controller
 
         // Return response
         if ($result['status'] === 'error') {
-            LogWebhookError::create([
+            LogPaymentWebhookError::create([
                 'error' => $result
             ]);
         }
@@ -178,7 +178,7 @@ class PaymentController extends Controller
 //
 //        // Write log
 //        try {
-//            $log = new LogInvoice;
+//            $log = new LogPaymentRequest;
 //            $log->gateway = $inputData['gateway'];
 //            $log->payload = $inputData;
 //            $log->save();
@@ -203,7 +203,7 @@ class PaymentController extends Controller
 //        if ($result['type'] === 'error') {
 //            $code = 400;
 //
-//            $log = new LogInvoiceError;
+//            $log = new LogPaymentRequestError;
 //            $log->error = var_export($result, true);
 //            $log->save();
 //        }

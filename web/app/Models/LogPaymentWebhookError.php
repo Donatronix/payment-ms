@@ -9,10 +9,8 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models
  */
-class LogWebhookError extends Model
+class LogPaymentWebhookError extends Model
 {
-    protected $table = 'log_webhooks_errors';
-
     /**
      * The attributes that should be cast.
      *

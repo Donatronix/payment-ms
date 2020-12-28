@@ -17,8 +17,7 @@ class UsersSeeder extends Seeder
         // Sumra User
         $sumraUser = factory(User::class)->create([
             'first_name' => 'Sumra',
-            'last_name' => 'Net',
-            'email' => 'admin@sumra.net'
+            'last_name' => 'Net'
         ]);
 
         // Other users

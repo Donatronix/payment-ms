@@ -3,11 +3,7 @@
 namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use Symfony\Component\Debug\Exception\FatalThrowableError;
-
-use Symfony\Component\Debug\FatalErrorHandler\UndefinedMethodFatalErrorHandler;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Class PaymentController
@@ -44,46 +40,40 @@ class PaymentSystemsController extends Controller
      *     )
      * )
      *
-     * @param Request $request
-     * @throws \Illuminate\Validation\ValidationException
+     * @return JsonResponse
      */
-    public function index(){
-
+    public function index(): JsonResponse
+    {
         $systems = [];
 
         $dir = base_path('app/Services/Payments');
 
         if ($handle = opendir($dir)) {
-
             /* Именно такой способ чтения элементов каталога является правильным. */
             while (false !== ($entry = readdir($handle))) {
-
-                if( ($entry == '.') || ($entry == '..') )
+                if (($entry == '.') || ($entry == '..'))
                     continue;
 
-               $class = '\App\Services\Payments\\'.preg_replace('/\.php/','',$entry);
+                $class = '\App\Services\Payments\\' . preg_replace('/\.php/', '', $entry);
 
-               if( !class_exists($class))
-                   continue;
+                if (!class_exists($class))
+                    continue;
 
-               try{
-                   $type = $class::type();
-                   $name = $class::name();
-                   $description = $class::description();
-               }
-               catch(\Exception $e)
-               {
-                   $name = 'error';
-                   $description = $entry .' '.$e->getMessage();
-               }
+                try {
+                    $type = $class::type();
+                    $name = $class::name();
+                    $description = $class::description();
+                } catch (\Exception $e) {
+                    $name = 'error';
+                    $description = $entry . ' ' . $e->getMessage();
+                }
 
-               $systems[] = ['type'=>$type,'name'=>$name,'description'=>$description];
+                $systems[] = ['type' => $type, 'name' => $name, 'description' => $description];
             }
 
             closedir($handle);
         }
 
-        return response()->json(['success' => true, 'systems'=>$systems ],  200);
-
+        return response()->json(['success' => true, 'systems' => $systems], 200);
     }
 }
