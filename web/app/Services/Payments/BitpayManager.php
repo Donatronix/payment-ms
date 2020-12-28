@@ -2,7 +2,7 @@
 
 namespace App\Services\Payments;
 
-use App\Contracts\IPaymentSystemContract;
+use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
 use App\Models\PaymentOrderBitPay;
 use BitPaySDK\Client;
@@ -12,7 +12,7 @@ use BitPaySDK\Tokens;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class BitpayManager implements IPaymentSystemContract
+class BitpayManager implements PaymentSystemContract
 {
     private $gateway;
 
@@ -67,7 +67,7 @@ class BitpayManager implements IPaymentSystemContract
 
             // Create internal order
             $transaction = PaymentOrderBitPay::create([
-                'user_id' => Auth::user()->getAuthIdentifier(),
+                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'amount' => $data['amount'],
                 'currency_id' => Currency::$currencies[mb_strtoupper($data['currency'])],
                 'check_code' => $checkCode,
@@ -78,7 +78,6 @@ class BitpayManager implements IPaymentSystemContract
 
             // Set invoice detail
             $invoice = new Invoice($data['amount'], $data['currency']);
-
             $invoice->setOrderId($transaction->id);
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
@@ -99,14 +98,14 @@ class BitpayManager implements IPaymentSystemContract
             $transaction->save();
 
             return [
-                'type' => 'success',
+                'status' => 'success',
                 'title' => 'Create Invoice',
                 'message' => 'Invoice successfully created',
                 'invoice_url' => $chargeObj->getURL()
             ];
         } catch (\Exception $e) {
             return [
-                'type' => 'error',
+                'status' => 'error',
                 'title' => 'Create Invoice',
                 'message' => sprintf("Unable to create an invoice. Error: %s \n", $e->getMessage())
             ];
@@ -124,6 +123,10 @@ class BitpayManager implements IPaymentSystemContract
         if (!$request->isJson()) {
             http_response_code(400);
             //return response()->json('Input data incorrect', 400);
+        }
+
+        if(!$request->has('event')){
+            http_response_code(400);
         }
 
         // Get invoice data
@@ -150,9 +153,6 @@ class BitpayManager implements IPaymentSystemContract
         $order->save();
     }
 
-    /**
-     *
-     */
 //    public function getInvoices()
 //    {
 //        $invoices = null;

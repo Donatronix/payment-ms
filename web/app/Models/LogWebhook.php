@@ -11,7 +11,16 @@ use Illuminate\Database\Eloquent\Model;
  */
 class LogWebhook extends Model
 {
-    protected $table = 'log_invoices';
+    protected $table = 'log_webhooks';
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'payload' => 'array',
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -20,7 +29,7 @@ class LogWebhook extends Model
      */
     protected $fillable = [
         'gateway',
-        'request'
+        'payload'
     ];
 
     /**

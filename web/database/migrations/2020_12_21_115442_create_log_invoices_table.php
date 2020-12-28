@@ -16,8 +16,9 @@ class CreateLogInvoicesTable extends Migration
         Schema::create('log_invoices', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->bigIncrements('id');
-            $table->string('gateway',40);
-            $table->text('request');
+            $table->string('gateway',10);
+            $table->string('service',20);
+            $table->text('payload');
             $table->timestamps();
         });
     }

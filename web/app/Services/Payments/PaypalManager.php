@@ -2,20 +2,18 @@
 
 namespace App\Services\Payments;
 
-use App\Contracts\IPaymentSystemContract;
+use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
-use App\Models\PaymentOrderCoinbase;
 use App\Models\PaymentOrderPaypal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 
-class PaypalManager implements IPaymentSystemContract
+class PaypalManager implements PaymentSystemContract
 {
     private $gateway;
 
@@ -69,7 +67,7 @@ class PaypalManager implements IPaymentSystemContract
 
             // Create internal order
             $paymentOrder = PaymentOrderPaypal::create([
-                'user_id' => Auth::user()->getAuthIdentifier(),
+                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'amount' => $data['amount'],
                 'currency_id' => Currency::$currencies[mb_strtoupper($data['currency'])],
                 'check_code' => $checkCode,
@@ -123,14 +121,14 @@ class PaypalManager implements IPaymentSystemContract
             }
 
             return [
-                'type' => 'success',
+                'status' => 'success',
                 'title' => 'Create Invoice',
                 'message' => 'Invoice successfully created',
                 'invoice_url' => $invoiceUrl
             ];
         } catch (\Exception $e) {
             return [
-                'type' => 'error',
+                'status' => 'error',
                 'title' => 'Create Invoice',
                 'message' => sprintf("Unable to create an order. Error: %s \n", $e->getMessage())
             ];
@@ -175,5 +173,8 @@ class PaypalManager implements IPaymentSystemContract
         $order->status = PaymentOrderPaypal::$$status;
         $order->response = $orderData;
         $order->save();
+
+        // Send response code
+        http_response_code(200);
     }
 }

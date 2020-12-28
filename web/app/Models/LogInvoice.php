@@ -14,14 +14,23 @@ class LogInvoice extends Model
     protected $table = 'log_invoices';
 
     /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'payload' => 'array',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'user_id',
         'gateway',
-        'request'
+        'service',
+        'payload'
     ];
 
     /**

@@ -14,6 +14,15 @@ class LogInvoiceError extends Model
     protected $table = 'log_invoices_errors';
 
     /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'error' => 'array',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array

@@ -16,8 +16,8 @@ class CreateLogWebhooksTable extends Migration
         Schema::create('log_webhooks', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->bigIncrements('id');
-            $table->string('gateway',40);
-            $table->text('request');
+            $table->string('gateway',10);
+            $table->text('payload');
             $table->timestamps();
         });
     }

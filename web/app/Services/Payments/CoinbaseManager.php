@@ -2,7 +2,7 @@
 
 namespace App\Services\Payments;
 
-use App\Contracts\IPaymentSystemContract;
+use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
 use App\Models\PaymentOrderCoinbase;
 use CoinbaseCommerce\ApiClient;
@@ -12,7 +12,7 @@ use CoinbaseCommerce\Webhook;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
-class CoinbaseManager implements IPaymentSystemContract
+class CoinbaseManager implements PaymentSystemContract
 {
     private $gateway;
 
@@ -75,7 +75,7 @@ class CoinbaseManager implements IPaymentSystemContract
 
             // Create internal order
             $transaction = PaymentOrderCoinbase::create([
-                'user_id' => Auth::user()->getAuthIdentifier(),
+                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'document_id' => $chargeObj->id,
                 //'document_data' => ['code' => $chargeObj->code],
                 'amount' => $data['amount'],
@@ -87,14 +87,14 @@ class CoinbaseManager implements IPaymentSystemContract
             ]);
 
             return [
-                'type' => 'success',
+                'status' => 'success',
                 'title' => 'Create Invoice',
                 'message' => 'Invoice successfully created',
                 'invoice_url' => $chargeObj->hosted_url
             ];
         } catch (\Exception $e) {
             return [
-                'type' => 'error',
+                'status' => 'error',
                 'title' => 'Create Invoice',
                 'message' => sprintf("unable to create a charge. Error: %s \n", $e->getMessage())
             ];
