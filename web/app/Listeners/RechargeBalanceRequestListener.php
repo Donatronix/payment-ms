@@ -92,7 +92,7 @@ class RechargeBalanceRequestListener
         // Return response
         if ($result['status'] === 'error') {
             LogPaymentRequestError::create([
-                'error' => $result
+                'error' => $result['message']
             ]);
         }
 
