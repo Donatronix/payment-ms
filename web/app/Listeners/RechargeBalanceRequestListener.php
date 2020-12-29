@@ -20,7 +20,7 @@ class RechargeBalanceRequestListener
     /**
      * @var string
      */
-    private const RECEIVER_LISTENER = 'rechargeBalance';
+    private const RECEIVER_LISTENER = 'rechargeBalanceResponse';
 
     /**
      * Create the event listener.
