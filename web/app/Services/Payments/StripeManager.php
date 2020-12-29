@@ -2,22 +2,26 @@
 
 namespace App\Services\Payments;
 
-use App\Contracts\IPaymentSystemContract;
+use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
 use App\Models\PaymentOrder;
-use App\Models\PaymentOrderPaypal;
-use App\Models\PaymentOrderStripe;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
-use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 
-class StripeManager implements IPaymentSystemContract
+class StripeManager implements PaymentSystemContract
 {
     private $gateway;
 
+    const STATUS_ORDER_REQUIRES_PAYMENT_METHOD = 1;
+    const STATUS_ORDER_REQUIRES_CONFIRMATION = 2;
+    const STATUS_ORDER_REQUIRES_ACTION = 3;
+    const STATUS_ORDER_PROCESSING = 4;
+    const STATUS_ORDER_REQUIRES_CAPTURE = 5;
+    const STATUS_ORDER_CANCELED = 6;
+    const STATUS_ORDER_SUCCEEDED = 7;
+
     /**
-     * BitPayManager constructor.
+     * constructor.
      */
     public function __construct()
     {
@@ -63,8 +67,8 @@ class StripeManager implements IPaymentSystemContract
             ]);
 
             $checkout_session = \Stripe\Checkout\Session::create([
-                'success_url' => env('PAYMENTS_WEBHOOK_URL').'?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => env('PAYMENTS_WEBHOOK_URL').'?session_id={CHECKOUT_SESSION_ID}',
+//                'success_url' => env('PAYMENTS_WEBHOOK_URL').'?session_id={CHECKOUT_SESSION_ID}',
+//                'cancel_url' => env('PAYMENTS_WEBHOOK_URL').'?session_id={CHECKOUT_SESSION_ID}',
                 'payment_method_types' => ['card'],
                 'mode' => 'payment',
                 'line_items' => [[
@@ -83,15 +87,12 @@ class StripeManager implements IPaymentSystemContract
 
             return [
                 'status' => 'success',
-                'title' => 'Create Invoice',
-                'message' => 'Invoice successfully created',
                 'invoice_url' => '',
                 'session_id' => $checkout_session['id'],
             ];
         } catch (\Exception $e) {
             return [
                 'status' => 'error',
-                'title' => 'Create Invoice',
                 'message' => sprintf("Unable to create an order. Error: %s \n", $e->getMessage())
             ];
         }
@@ -104,14 +105,14 @@ class StripeManager implements IPaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request)
     {
+        \Log::info($request);
         $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
-        $payload = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
         $event = null;
 
         try {
             $event = \Stripe\Webhook::constructEvent(
-                $payload, $sig_header, $endpoint_secret
+                $request, $sig_header, $endpoint_secret
             );
         } catch(\UnexpectedValueException $e) {
             // Invalid payload
@@ -124,13 +125,12 @@ class StripeManager implements IPaymentSystemContract
         }
 
         // Handle the event
-        // TODO: find ALL needed event type
         switch ($event->type) {
-            case 'payment_intent.succeeded':
+            case 'checkout.session.completed':
+            case 'checkout.session.async_payment_succeeded':
+            case 'checkout.session.async_payment_failed':
                 $paymentIntent = $event->data->object; // contains a StripePaymentIntent
-                handlePaymentIntentSucceeded($paymentIntent);
                 break;
-            // ... handle other event types
             default:
                 http_response_code(400);
 //                echo 'Received unknown event type ' . $event->type;
@@ -146,7 +146,7 @@ class StripeManager implements IPaymentSystemContract
 
         // Find order
         $order = PaymentOrder::where('type', PaymentOrder::TYPE_ORDER_INVOICE)
-            ->where('document_id', $orderData->id)
+            ->where('document_id', $orderData->payment_order)
             ->where('gateway', self::type())
             ->first();
 
@@ -156,7 +156,7 @@ class StripeManager implements IPaymentSystemContract
 
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentIntent->status);
         $order->status = self::$$status;
-//        $order->payload = $orderData;
+        $order->payload = $request;
         $order->save();
     }
 
