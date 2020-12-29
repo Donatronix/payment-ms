@@ -126,14 +126,11 @@ class CoinbaseManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
-                'title' => 'Create Invoice',
-                'message' => 'Invoice successfully created',
                 'invoice_url' => $chargeObj->hosted_url
             ];
         } catch (\Exception $e) {
             return [
                 'status' => 'error',
-                'title' => 'Create Invoice',
                 'message' => sprintf("unable to create a charge. Error: %s \n", $e->getMessage())
             ];
         }

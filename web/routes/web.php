@@ -21,5 +21,5 @@ $router->group(['prefix' => 'v1'], function () use ($router) {
     require base_path('app/Api/V1/routes.php');
 });
 
-if(file_exists(__DIR__.'/tests.php'))
-    require_once(__DIR__.'/tests.php');
+if (file_exists(__DIR__ . '/tests.php'))
+    require_once(__DIR__ . '/tests.php');
