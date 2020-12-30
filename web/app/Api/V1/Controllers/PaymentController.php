@@ -65,6 +65,16 @@ class PaymentController extends Controller
      */
     public function handlerWebhookInvoice(Request $request, string $gateway)
     {
+        // Check content type
+        if (!$request->isJson()) {
+            LogPaymentWebhookError::create([
+                'gateway' => $gateway,
+                'payload' => $request->all()
+            ]);
+
+            http_response_code(400);
+        }
+
         try {
             LogPaymentWebhook::create([
                 'gateway' => $gateway,
@@ -86,85 +96,92 @@ class PaymentController extends Controller
         // Handle webhook
         $result = $system->handlerWebhookInvoice($request);
 
-        // Return response
+        // If error, logging and send status 400
         if ($result['status'] === 'error') {
             LogPaymentWebhookError::create([
-                'error' => $result
+                'gateway' => $gateway,
+                'payload' => $result['message']
             ]);
+
+            http_response_code(400);
+            exit();
         }
 
         // Send payment request to payment gateway
-//        \PubSub::transaction(function () {})->publish('rechargeBalanceWebhook', array_merge($result, [
-//            'order_id' => $inputData['order_id'],
-//        ]), $inputData['replay_to']);
+        \PubSub::transaction(function () {})->publish('rechargeBalanceWebhook', array_merge($result, [
+            'order_id' => $result['order_id'],
+        ]), $result['service']);
+
+        // Send status OK
+        http_response_code(200);
     }
 
-//    / **
-//     * Recharge wallet balance
-//     *
-//     * @ OA\Post(
-//     *     path="/v1/payments/payments/charge",
-//     *     description="Recharge wallet balance",
-//     *     tags={"Payments"},
-//     *
-//     *     security={{
-//     *         "default": {
-//     *             "ManagerRead",
-//     *             "User",
-//     *             "ManagerWrite"
-//     *         }
-//     *     }},
-//     *     x={
-//     *         "auth-type": "Application & Application User",
-//     *         "throttling-tier": "Unlimited",
-//     *         "wso2-application-security": {
-//     *             "security-types": {"oauth2"},
-//     *             "optional": "false"
-//     *         }
-//     *     },
-//     *
-//     *     @ OA\RequestBody(
-//     *         required=true,
-//     *
-//     *         @ OA\JsonContent(
-//     *             @ OA\Property(
-//     *                 property="gateway",
-//     *                 description="Payment gateway",
-//     *                 type="string",
-//     *                 default="bitpay"
-//     *             ),
-//     *             @ OA\Property(
-//     *                 property="amount",
-//     *                 description="The amount of money replenished to the balance",
-//     *                 type="integer",
-//     *                 default=1000
-//     *             ),
-//     *             @ OA\Property(
-//     *                 property="currency",
-//     *                 description="Currency of balance",
-//     *                 type="string",
-//     *                 default="GBP"
-//     *             )
-//     *         )
-//     *     ),
-//     *
-//     *     @ OA\Response(
-//     *         response=200,
-//     *         description="Success",
-//     *     )
-//     * )
-//     *
-//     * @param \Illuminate\Http\Request $request
-//     *
-//     * @return \Illuminate\Http\JsonResponse
-//     * @throws \Illuminate\Validation\ValidationException
-//     * @throws \ReflectionException
-//     * /
+    /**
+     * Recharge wallet balance
+     *
+     * @OA\Post(
+     *     path="/v1/payments/payments/charge",
+     *     description="Recharge wallet balance",
+     *     tags={"Payments"},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="gateway",
+     *                 description="Payment gateway",
+     *                 type="string",
+     *                 default="bitpay"
+     *             ),
+     *             @OA\Property(
+     *                 property="amount",
+     *                 description="The amount of money replenished to the balance",
+     *                 type="integer",
+     *                 default=1000
+     *             ),
+     *             @OA\Property(
+     *                 property="currency",
+     *                 description="Currency of balance",
+     *                 type="string",
+     *                 default="GBP"
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *     )
+     * )
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \ReflectionException
+     */
     public function recharge(Request $request)
     {
         $inputData = $request->all();
 
-//        // Validate input
+        // Validate input
         $validation = Validator::make($inputData, [
             'gateway' => 'string|required',
             'amount' => 'integer|required',
@@ -177,19 +194,17 @@ class PaymentController extends Controller
             ], 400);
         }
 
-//        // Write log
+        // Write log
         try {
-            /*
             $log = new LogPaymentRequest;
             $log->gateway = $inputData['gateway'];
             $log->payload = $inputData;
             $log->save();
-            */
         } catch (\Exception $e) {
             Log::info('Log of invoice failed: ' . $e->getMessage());
         }
 
-//        // Init manager
+        // Init manager
         $system = Payment::getServiceManager($inputData['gateway']);
 
         if ($system === null)
@@ -198,21 +213,20 @@ class PaymentController extends Controller
                 'message' => 'No class for ' . $inputData['gateway'],
             ], 400);
 
-//        // Create invoice
+        // Create invoice
         $result = $system->createInvoice($inputData);
 
-         //Return response
+        // Return response
         $code = 200;
         if ($result['status'] === 'error') {
             $code = 400;
 
-            //$log = new LogPaymentRequestError;
-            //$log->error = var_export($result, true);
-            //$log->save();
+            $log = new LogPaymentRequestError;
+            $log->error = var_export($result, true);
+            $log->save();
         }
 
-//        // Return result
+        // Return result
         return response()->json($result, $code);
     }
-
 }

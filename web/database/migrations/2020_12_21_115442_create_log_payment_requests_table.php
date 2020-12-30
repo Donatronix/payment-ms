@@ -14,7 +14,6 @@ class CreateLogPaymentRequestsTable extends Migration
     public function up()
     {
         Schema::create('log_payment_requests', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
             $table->bigIncrements('id');
             $table->string('gateway',10);
             $table->string('service',20);

@@ -13,9 +13,10 @@ $router->group([
     $router->group([
         'middleware' => 'checkUser'
     ], function () use ($router) {
-
-            $router->get('systems', 'PaymentSystemsController@index');
+        $router->group(['prefix' => 'payments'], function () use ($router) {
+            $router->get('systems', 'PaymentSystemController@index');
             $router->post('recharge', 'PaymentController@recharge');
+        });
 
         /**
          * ADMIN PANEL
@@ -28,11 +29,8 @@ $router->group([
             ],
             function ($router) {
                 // Wallets Admin
-                $router->get('/payment-orders', 'PaymentOrderController@index');
-                $router->post('/payment-orders/{id:[\d]+}', 'PaymentOrderController@update');
-
-//                $router->get('/payment-orders/{id:[\d]+}', 'PaymentOrderController@show');
-//                $router->post('/payment-orders/{id:[\d]+}/update-status', 'PaymentOrderController@updateStatus');
+                $router->get('/payment-orders', 'PaymentController@index');
+                $router->post('/payment-orders/{id:[\d]+}', 'PaymentController@update');
             }
         );
     });

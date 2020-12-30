@@ -10,7 +10,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @package App\Api\V1\Controllers
  */
-class PaymentSystemsController extends Controller
+class PaymentSystemController extends Controller
 {
     /**
      * @OA\Get(
