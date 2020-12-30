@@ -4,7 +4,7 @@ namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
-use App\Models\PaymentOrder;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Stripe\Stripe;
 
@@ -59,12 +59,12 @@ class StripeManager implements PaymentSystemContract
             $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
 
             // Create internal order
-            $paymentOrder = PaymentOrder::create([
+            $payment = Payment::create([
                 'user_id' => $data['user_id'],
                 'amount' => $data['amount'],
                 'currency_id' => $currency_id,
                 'check_code' => '',
-                'type' => PaymentOrder::TYPE_ORDER_INVOICE,
+                'type' => Payment::TYPE_ORDER_INVOICE,
                 'gateway' => self::type()
             ]);
 
@@ -80,14 +80,14 @@ class StripeManager implements PaymentSystemContract
                     'name' => 'Wallet Charge',
                 ]],
                 'metadata' => [
-                    'payment_order' => $paymentOrder->id
+                    'payment_order' => $payment->id
                 ]
             ]);
 
             // Update order data
-            $paymentOrder->document_id = $checkout_session['id'];
-            $paymentOrder->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
-            $paymentOrder->save();
+            $payment->document_id = $checkout_session['id'];
+            $payment->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
+            $payment->save();
 
             return [
                 'status' => 'success',
@@ -149,7 +149,7 @@ class StripeManager implements PaymentSystemContract
         http_response_code(200);
 
         // Find order
-        $order = PaymentOrder::where('type', PaymentOrder::TYPE_ORDER_INVOICE)
+        $order = Payment::where('type', Payment::TYPE_ORDER_INVOICE)
             ->where('document_id', $orderData->payment_order)
             ->where('gateway', self::type())
             ->first();
