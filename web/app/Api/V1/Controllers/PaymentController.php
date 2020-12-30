@@ -118,7 +118,7 @@ class PaymentController extends Controller
     /**
      * Recharge wallet balance
      *
-     * @ OA\Post(
+     * @OA\Post(
      *     path="/v1/payments/payments/charge",
      *     description="Recharge wallet balance",
      *     tags={"Payments"},
@@ -139,23 +139,23 @@ class PaymentController extends Controller
      *         }
      *     },
      *
-     *     @ OA\RequestBody(
+     *     @OA\RequestBody(
      *         required=true,
      *
-     *         @ OA\JsonContent(
-     *             @ OA\Property(
+     *         @OA\JsonContent(
+     *             @OA\Property(
      *                 property="gateway",
      *                 description="Payment gateway",
      *                 type="string",
      *                 default="bitpay"
      *             ),
-     *             @ OA\Property(
+     *             @OA\Property(
      *                 property="amount",
      *                 description="The amount of money replenished to the balance",
      *                 type="integer",
      *                 default=1000
      *             ),
-     *             @ OA\Property(
+     *             @OA\Property(
      *                 property="currency",
      *                 description="Currency of balance",
      *                 type="string",
@@ -164,7 +164,7 @@ class PaymentController extends Controller
      *         )
      *     ),
      *
-     *     @ OA\Response(
+     *     @OA\Response(
      *         response=200,
      *         description="Success",
      *     )
