@@ -14,7 +14,6 @@ class CreateLogPaymentWebhooksTable extends Migration
     public function up()
     {
         Schema::create('log_payment_webhooks', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
             $table->bigIncrements('id');
             $table->string('gateway',10);
             $table->text('payload');

@@ -64,6 +64,19 @@ class PaymentController extends Controller
      */
     public function handlerWebhookInvoice(Request $request, string $gateway)
     {
+        \Log::info($request);
+
+        // Check content type
+        if (!$request->isJson()) {
+            http_response_code(400);
+
+            return response()->json([
+                'status' => 'error',
+                'title' => 'Order detail',
+                'message' => 'Incorrect input data'
+            ], 400);
+        }
+
         try {
             LogPaymentWebhook::create([
                 'gateway' => $gateway,
@@ -93,9 +106,9 @@ class PaymentController extends Controller
         }
 
         // Send payment request to payment gateway
-//        \PubSub::transaction(function () {})->publish('rechargeBalanceWebhook', array_merge($result, [
-//            'order_id' => $inputData['order_id'],
-//        ]), $inputData['replay_to']);
+        \PubSub::transaction(function () {})->publish('rechargeBalanceWebhook', array_merge($result, [
+            'order_id' => $result->order_id,
+        ]), $result->replay_to);
     }
 
 //    / **

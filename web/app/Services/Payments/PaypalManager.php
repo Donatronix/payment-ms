@@ -4,7 +4,8 @@ namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
-use App\Models\PaymentOrder;
+use App\Models\Payment;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -50,12 +51,12 @@ class PaypalManager implements PaymentSystemContract
      */
     public function __construct()
     {
-        if(config('payments.paypal.mode') === 'sandbox'){
+        if (config('payments.paypal.mode') === 'sandbox') {
             $environment = new SandboxEnvironment(
                 config('payments.paypal.sandbox.client_id'),
                 config('payments.paypal.sandbox.client_secret')
             );
-        }else{
+        } else {
             $environment = new ProductionEnvironment(
                 config('payments.paypal.live.client_id'),
                 config('payments.paypal.live.client_secret')
@@ -63,11 +64,6 @@ class PaypalManager implements PaymentSystemContract
         }
 
         $this->gateway = new PayPalHttpClient($environment);
-    }
-
-    public static function type(): string
-    {
-        return 'paypal';
     }
 
     public static function name(): string
@@ -91,17 +87,17 @@ class PaypalManager implements PaymentSystemContract
     {
         try {
             // Create check code
-            $checkCode = PaymentOrder::getCheckCode();
+            $checkCode = Payment::getCheckCode();
 
             $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
 
             // Create internal order
-            $paymentOrder = PaymentOrder::create([
+            $payment = Payment::create([
                 'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'amount' => $data['amount'],
                 'currency_id' => $currency_id,
                 'check_code' => $checkCode,
-                'type' => PaymentOrder::TYPE_ORDER_INVOICE,
+                'type' => Payment::TYPE_ORDER_INVOICE,
                 'gateway' => self::type()
             ]);
 
@@ -115,13 +111,13 @@ class PaypalManager implements PaymentSystemContract
                         'description' => 'Charge Balance for Sumra User',
                         'custom_id' => $checkCode,
                         'check_code' => $checkCode,
-                        'invoice_id' => $paymentOrder->id,
+                        'invoice_id' => $payment->id,
                         'amount' => [
                             'value' => $data['amount'],
                             'currency_code' => $data['currency']['code'],
                         ],
                         'payment_instruction' => [
-                           'disbursement_mode' => 'INSTANT'
+                            'disbursement_mode' => 'INSTANT'
                         ],
                         'soft_descriptor' => 'SUMRA.NET',
                     ]
@@ -139,13 +135,13 @@ class PaypalManager implements PaymentSystemContract
             $chargeObj = $this->gateway->execute($request);
 
             // Update order data
-            $paymentOrder->document_id = $chargeObj->result->id;
-            $paymentOrder->status = self::STATUS_ORDER_CREATED;
-            $paymentOrder->save();
+            $payment->document_id = $chargeObj->result->id;
+            $payment->status = self::STATUS_ORDER_CREATED;
+            $payment->save();
 
             $invoiceUrl = '';
-            foreach($chargeObj->result->links as $link){
-                if($link->rel === 'approve'){
+            foreach ($chargeObj->result->links as $link) {
+                if ($link->rel === 'approve') {
                     $invoiceUrl = $link->href;
                 }
             }
@@ -154,12 +150,17 @@ class PaypalManager implements PaymentSystemContract
                 'status' => 'success',
                 'invoice_url' => $invoiceUrl
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'status' => 'error',
                 'message' => sprintf("Unable to create an order. Error: %s \n", $e->getMessage())
             ];
         }
+    }
+
+    public static function type(): string
+    {
+        return 'paypal';
     }
 
     /**
@@ -169,37 +170,35 @@ class PaypalManager implements PaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request)
     {
-        // Check content type
-        if (!$request->isJson()) {
-            http_response_code(400);
-        }
-
         // Check sender
         if (!Str::contains($request->header('User-Agent'), 'PayPal')) {
             http_response_code(400);
         }
 
-        // Get invoice data
-        $orderData = $request->get('resource', null);
-        if ($orderData === null) {
+        // Get payment data
+        $paymentData = $request->get('resource', null);
+        if ($paymentData === null) {
             http_response_code(400);
+
+            //return response()->json('Input data incorrect 2', 400);
         }
 
         // Find order
-        $order = PaymentOrder::where('type', PaymentOrder::TYPE_ORDER_INVOICE)
-            ->where('document_id', $orderData->id)
-            ->where('check_code', $orderData->purchase_units[0]->custom_id)
+        $payment = Payment::where('type', Payment::TYPE_ORDER_INVOICE)
+            ->where('document_id', $paymentData->id)
+            ->where('check_code', $paymentData->purchase_units[0]->custom_id)
             ->where('gateway', self::type())
             ->first();
 
-        if (!$order) {
+        if (!$payment) {
             http_response_code(400);
+            //return response()->json('Order not found', 400);
         }
 
-        $status = 'STATUS_ORDER_' . mb_strtoupper($orderData->status);
-        $order->status = self::$$status;
-        $order->payload = $orderData;
-        $order->save();
+        $status = 'STATUS_ORDER_' . mb_strtoupper($paymentData->status);
+        $payment->status = self::$$status;
+        $payment->payload = $paymentData;
+        $payment->save();
 
         // Send response code
         http_response_code(200);

@@ -4,11 +4,12 @@ namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
-use App\Models\PaymentOrder;
+use App\Models\Payment;
 use BitPaySDK\Client;
 use BitPaySDK\Exceptions\BitPayException;
 use BitPaySDK\Model\Invoice\Invoice;
 use BitPaySDK\Tokens;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -60,13 +61,8 @@ class BitpayManager implements PaymentSystemContract
                 config('payments.bitpay.private_key.password')
             );
         } catch (BitPayException $e) {
-            throw new \Exception($e->getMessage());
+            throw new Exception($e->getMessage());
         }
-    }
-
-    public static function type(): string
-    {
-        return 'bitpay';
     }
 
     public static function name(): string
@@ -86,17 +82,17 @@ class BitpayManager implements PaymentSystemContract
      *
      * @return \BitPaySDK\Model\Invoice\Invoice|string
      */
-    public function createInvoice(array $data)
+    public function createInvoice(array $data): array
     {
         try {
             // Create check code
-            $checkCode = PaymentOrder::getCheckCode();
+            $checkCode = Payment::getCheckCode();
 
             $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
 
             // Create internal order
-            $transaction = PaymentOrder::create([
-                'type' => PaymentOrder::TYPE_ORDER_INVOICE,
+            $transaction = Payment::create([
+                'type' => Payment::TYPE_ORDER_INVOICE,
                 'gateway' => self::type(),
                 'amount' => $data['amount'],
                 'currency_id' => $currency_id,
@@ -110,11 +106,7 @@ class BitpayManager implements PaymentSystemContract
             $invoice->setOrderId($transaction->id);
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
-            $invoice->setTransactionSpeed("medium");
-
-            $url = env('PAYMENTS_WEBHOOK_URL','https://bitpay.com') . '/bitpay/invoices';
-
-            $invoice->setNotificationURL($url);
+            $invoice->setNotificationURL(config('payments.bitpay.webhook_url') . '/bitpay/invoices');
             $invoice->setRedirectURL(config('payments.bitpay.redirect_url'));
             $invoice->setPosData(json_encode(['code' => $checkCode]));
             $invoice->setItemDesc("Charge Balance for Sumra User");
@@ -130,12 +122,17 @@ class BitpayManager implements PaymentSystemContract
                 'status' => 'success',
                 'invoice_url' => $chargeObj->getURL()
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'status' => 'error',
                 'message' => sprintf("Unable to create an invoice. Error: %s \n", $e->getMessage())
             ];
         }
+    }
+
+    public static function type(): string
+    {
+        return 'bitpay';
     }
 
     /**
@@ -145,55 +142,38 @@ class BitpayManager implements PaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request)
     {
-        // Check content type
-        if (!$request->isJson()) {
-            http_response_code(400);
-            //return response()->json('Input data incorrect', 400);
-        }
-
-        if(!$request->has('event')){
+        // Check event property
+        if (!$request->has('event')) {
             http_response_code(400);
         }
 
-        // Get invoice data
-        $invoiceData = $request->get('data', null);
-        if ($invoiceData === null) {
+        // Get payment data
+        $paymentData = $request->get('data', null);
+        if ($paymentData === null) {
             http_response_code(400);
+
             //return response()->json('Input data incorrect 2', 400);
         }
 
         // Find order
-        $order = PaymentOrder::where('type', PaymentOrder::TYPE_ORDER_INVOICE)
-            ->where('document_id', $invoiceData['id'])
-            ->where('check_code', $invoiceData['posData']['code'])
+        $payment = Payment::where('type', Payment::TYPE_ORDER_INVOICE)
+            ->where('document_id', $paymentData['id'])
+            ->where('check_code', $paymentData['posData']['code'])
             ->where('gateway', self::type())
             ->first();
 
-        if (!$order) {
+        if (!$payment) {
             http_response_code(400);
             //return response()->json('Order not found', 400);
         }
 
-        $order->status = $request->event['code'];
-        $order->payload = $invoiceData;
-        $order->save();
-    }
+        $payment->status = $request->event['code'];
+        $payment->payload = $paymentData;
+        $payment->save();
 
-//    public function getInvoices()
-//    {
-//        $invoices = null;
-//
-//        try {
-//            $date = new DateTime();
-//            $today = $date->format("Y-m-d");
-//            $sevenDaysAgo = $date->modify('-30 day')->format("Y-m-d");
-//
-//            $invoices = $this->gateway->getInvoices($sevenDaysAgo, $today, null, null, 50);
-//
-//            dd($invoices);
-//        } catch (Exception $e) {
-//            $e->getTraceAsString();
-//            $e->getMessage();
-//        }
-//    }
+        // Send response code
+        http_response_code(200);
+
+        return $payment;
+    }
 }

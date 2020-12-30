@@ -14,9 +14,9 @@ class CreateLogPaymentRequestErrorsTable extends Migration
     public function up()
     {
         Schema::create('log_payment_request_errors', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
             $table->bigIncrements('id');
-            $table->text('error');
+            $table->string('error');
+            $table->text('payload');
             $table->timestamps();
         });
     }

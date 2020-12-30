@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class PaymentOrder extends Model
+class Payment extends Model
 {
     /**
      * Type of order

@@ -4,11 +4,12 @@ namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
-use App\Models\PaymentOrder;
+use App\Models\Payment;
 use CoinbaseCommerce\ApiClient;
 use CoinbaseCommerce\Resources\Charge;
-use Illuminate\Http\Request;
 use CoinbaseCommerce\Webhook;
+use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -60,14 +61,9 @@ class CoinbaseManager implements PaymentSystemContract
         try {
             $this->gateway = ApiClient::init(config('payments.coinbase.api_key'));
             $this->gateway->setTimeout(3);
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-    }
-
-    public static function type(): string
-    {
-        return 'coinbase';
     }
 
     public static function name(): string
@@ -87,11 +83,11 @@ class CoinbaseManager implements PaymentSystemContract
      *
      * @return mixed|void
      */
-    public function createInvoice(array $data)
+    public function createInvoice(array $data): array
     {
         try {
             // Create check code
-            $checkCode = PaymentOrder::getCheckCode();
+            $checkCode = Payment::getCheckCode();
 
             // Create new charge
             $chargeObj = Charge::create([
@@ -112,14 +108,14 @@ class CoinbaseManager implements PaymentSystemContract
             $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
 
             // Create internal order
-            $transaction = PaymentOrder::create([
+            $payment = Payment::create([
                 'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'document_id' => $chargeObj->id,
                 //'document_data' => ['code' => $chargeObj->code],
                 'amount' => $data['amount'],
                 'currency_id' => $currency_id,
                 'check_code' => $checkCode,
-                'type' => PaymentOrder::TYPE_ORDER_INVOICE,
+                'type' => Payment::TYPE_ORDER_INVOICE,
                 'gateway' => self::type(),
                 'status' => self::STATUS_CHARGE_CREATED
             ]);
@@ -128,12 +124,17 @@ class CoinbaseManager implements PaymentSystemContract
                 'status' => 'success',
                 'invoice_url' => $chargeObj->hosted_url
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'status' => 'error',
                 'message' => sprintf("unable to create a charge. Error: %s \n", $e->getMessage())
             ];
         }
+    }
+
+    public static function type(): string
+    {
+        return 'coinbase';
     }
 
     /**
@@ -143,47 +144,46 @@ class CoinbaseManager implements PaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request)
     {
-        // Check content type
-        if (!$request->isJson()) {
-            http_response_code(400);
-            //return response()->json('Input data incorrect', 400);
-        }
-
+        //
         try {
             $event = Webhook::buildEvent(
                 trim(file_get_contents('php://input')),
                 $request->header('X-Cc-Webhook-Signature', null),
                 config('payments.coinbase.webhook_key')
             );
-
-            http_response_code(200);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             http_response_code(400);
             //return response()->json($exception->getMessage(), 400);
         }
 
         // Get invoice data
-        $invoiceData = $event->data;
-        if ($invoiceData === null) {
+        $paymentData = $event->data;
+        if ($paymentData === null) {
             http_response_code(400);
+
             //return response()->json('Input data incorrect 2', 400);
         }
 
         // Find order
-        $order = PaymentOrder::where('type', PaymentOrder::TYPE_ORDER_INVOICE)
-            ->where('document_id', $invoiceData->id)
-            ->where('check_code', $invoiceData->metadata->code ?? null)
+        $payment = Payment::where('type', Payment::TYPE_ORDER_INVOICE)
+            ->where('document_id', $paymentData->id)
+            ->where('check_code', $paymentData->metadata->code ?? null)
             ->where('gateway', self::type())
             ->first();
 
-        if (!$order) {
+        if (!$payment) {
             http_response_code(400);
             //return response()->json('Order not found', 400);
         }
 
         $status = 'STATUS_' . mb_strtoupper(Str::snake(str_replace(':', ' ', $event->type)));
-        $order->status = self::$$status;
-        $order->payload = $invoiceData;
-        $order->save();
+        $payment->status = self::$$status;
+        $payment->payload = $paymentData;
+        $payment->save();
+
+        // Send response code
+        http_response_code(200);
+
+        return $payment;
     }
 }
