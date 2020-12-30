@@ -6,7 +6,7 @@ use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
 use App\Models\PaymentOrder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Stripe\Stripe;
 
 class StripeManager implements PaymentSystemContract
 {
@@ -26,6 +26,8 @@ class StripeManager implements PaymentSystemContract
     public function __construct()
     {
         $this->gateway = [];
+        $this->publisher_key = env('STRIPE_PUBLISHER_KEY', 'pk_test_ZZGWT0pQRB47mX9Qfg9vY3q000tnr0ycgG');
+        $this->secret_key = env('STRIPE_SECRET_KEY', 'sk_test_mwiW1DmmnkYFzhOUfspqLxH000wGfzYpGY');
     }
 
     public static function type(): string
@@ -53,12 +55,12 @@ class StripeManager implements PaymentSystemContract
     public function createInvoice(array $data)
     {
         try {
-            // Create check code
+            Stripe::setApiKey($this->secret_key);
             $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
 
             // Create internal order
             $paymentOrder = PaymentOrder::create([
-                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
+                'user_id' => $data['user_id'],
                 'amount' => $data['amount'],
                 'currency_id' => $currency_id,
                 'check_code' => '',
@@ -67,13 +69,15 @@ class StripeManager implements PaymentSystemContract
             ]);
 
             $checkout_session = \Stripe\Checkout\Session::create([
-//                'success_url' => env('PAYMENTS_WEBHOOK_URL').'?session_id={CHECKOUT_SESSION_ID}',
-//                'cancel_url' => env('PAYMENTS_WEBHOOK_URL').'?session_id={CHECKOUT_SESSION_ID}',
+                'success_url' => env('PAYMENTS_WEBHOOK_URL').'?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => env('PAYMENTS_WEBHOOK_URL').'?session_id={CHECKOUT_SESSION_ID}',
                 'payment_method_types' => ['card'],
                 'mode' => 'payment',
                 'line_items' => [[
-                    'amount' => $data['amount'],
+                    'amount' => $data['amount']*100,
                     'currency' => $data['currency']['code'],
+                    'quantity' => 1,
+                    'name' => 'Wallet Charge',
                 ]],
                 'metadata' => [
                     'payment_order' => $paymentOrder->id
@@ -82,7 +86,7 @@ class StripeManager implements PaymentSystemContract
 
             // Update order data
             $paymentOrder->document_id = $checkout_session['id'];
-            $paymentOrder->status = self::STATUS_ORDER_CREATED;
+            $paymentOrder->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
             $paymentOrder->save();
 
             return [

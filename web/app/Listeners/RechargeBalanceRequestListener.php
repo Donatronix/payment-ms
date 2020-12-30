@@ -37,9 +37,9 @@ class RechargeBalanceRequestListener
      *
      * @param array $inputData
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return void
      */
-    public function handle(array $inputData): JsonResponse
+    public function handle(array $inputData)
     {
         // Validate input
         $validation = Validator::make($inputData, [

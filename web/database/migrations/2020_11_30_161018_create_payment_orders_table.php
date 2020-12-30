@@ -20,7 +20,7 @@ class CreatePaymentOrdersTable extends Migration
             $table->decimal('amount');
             $table->unsignedTinyInteger('currency_id')->nullable();
             $table->string('check_code');
-            $table->string('document_id', 36)->nullable();
+            $table->string('document_id')->nullable();
 
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
