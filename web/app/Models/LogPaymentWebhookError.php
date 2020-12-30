@@ -17,7 +17,7 @@ class LogPaymentWebhookError extends Model
      * @var array
      */
     protected $casts = [
-        'error' => 'array',
+        'payload' => 'array',
     ];
 
     /**
@@ -26,7 +26,8 @@ class LogPaymentWebhookError extends Model
      * @var array
      */
     protected $fillable = [
-        'error'
+        'gateway',
+        'payload'
     ];
 
     /**

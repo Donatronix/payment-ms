@@ -15,7 +15,7 @@ class CreateLogPaymentRequestErrorsTable extends Migration
     {
         Schema::create('log_payment_request_errors', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('error');
+            $table->string('gateway',10);
             $table->text('payload');
             $table->timestamps();
         });

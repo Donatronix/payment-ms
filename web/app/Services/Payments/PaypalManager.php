@@ -8,6 +8,7 @@ use App\Models\Payment;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
@@ -76,6 +77,11 @@ class PaypalManager implements PaymentSystemContract
         return 'PayPal payment is..';
     }
 
+    public static function type(): string
+    {
+        return 'paypal';
+    }
+
     /**
      * Wrapper for create paypal invoice for charge money
      *
@@ -93,12 +99,15 @@ class PaypalManager implements PaymentSystemContract
 
             // Create internal order
             $payment = Payment::create([
-                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
+                'type' => Payment::TYPE_INVOICE,
+                'gateway' => self::type(),
                 'amount' => $data['amount'],
                 'currency_id' => $currency_id,
                 'check_code' => $checkCode,
-                'type' => Payment::TYPE_ORDER_INVOICE,
-                'gateway' => self::type()
+                'order_id' => $data['order_id'],
+                'service' => $data['replay_to'],
+                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
+                'status' => self::STATUS_ORDER_CREATED
             ]);
 
             // Create new charge
@@ -110,7 +119,6 @@ class PaypalManager implements PaymentSystemContract
                     [
                         'description' => 'Charge Balance for Sumra User',
                         'custom_id' => $checkCode,
-                        'check_code' => $checkCode,
                         'invoice_id' => $payment->id,
                         'amount' => [
                             'value' => $data['amount'],
@@ -134,9 +142,8 @@ class PaypalManager implements PaymentSystemContract
             ];
             $chargeObj = $this->gateway->execute($request);
 
-            // Update order data
+            // Update payment transaction data
             $payment->document_id = $chargeObj->result->id;
-            $payment->status = self::STATUS_ORDER_CREATED;
             $payment->save();
 
             $invoiceUrl = '';
@@ -158,49 +165,57 @@ class PaypalManager implements PaymentSystemContract
         }
     }
 
-    public static function type(): string
-    {
-        return 'paypal';
-    }
-
     /**
      * @param \Illuminate\Http\Request $request
      *
-     * @return mixed|void
+     * @return array|string[]
      */
-    public function handlerWebhookInvoice(Request $request)
+    public function handlerWebhookInvoice(Request $request): array
     {
         // Check sender
         if (!Str::contains($request->header('User-Agent'), 'PayPal')) {
-            http_response_code(400);
+            return [
+                'status' => 'error',
+                'message' => 'Payload was sent not from PayPal'
+            ];
         }
 
-        // Get payment data
+        // Get event data
         $paymentData = $request->get('resource', null);
         if ($paymentData === null) {
-            http_response_code(400);
-
-            //return response()->json('Input data incorrect 2', 400);
+            return [
+                'status' => 'error',
+                'message' => 'Empty / Incorrect event data'
+            ];
         }
 
-        // Find order
-        $payment = Payment::where('type', Payment::TYPE_ORDER_INVOICE)
-            ->where('document_id', $paymentData->id)
-            ->where('check_code', $paymentData->purchase_units[0]->custom_id)
+        // Find payment transaction
+        $payment = Payment::where('type', Payment::TYPE_INVOICE)
+            ->where('id', $paymentData->purchase_units[0]->invoice_id ?? null)
+            ->where('document_id', $paymentData['id'])
+            ->where('check_code', $paymentData->purchase_units[0]->custom_id ?? null)
             ->where('gateway', self::type())
             ->first();
 
         if (!$payment) {
-            http_response_code(400);
-            //return response()->json('Order not found', 400);
+            return [
+                'status' => 'error',
+                'message' => 'Payment transaction not found in Payment Microservice database'
+            ];
         }
 
+        // Update payment transaction status
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentData->status);
-        $payment->status = self::$$status;
+        $payment->status = constant("self::{$status}");
         $payment->payload = $paymentData;
         $payment->save();
 
-        // Send response code
-        http_response_code(200);
+        // Return result
+        return [
+            'status' => 'success',
+            'order_id' => $payment->order_id,
+            'service' => $payment->service,
+            'payment_status' => ''
+        ];
     }
 }

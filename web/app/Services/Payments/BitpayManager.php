@@ -75,6 +75,11 @@ class BitpayManager implements PaymentSystemContract
         return 'BitPay is..';
     }
 
+    public static function type(): string
+    {
+        return 'bitpay';
+    }
+
     /**
      * Wrapper for create bitpay invoice for charge money
      *
@@ -91,19 +96,21 @@ class BitpayManager implements PaymentSystemContract
             $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
 
             // Create internal order
-            $transaction = Payment::create([
-                'type' => Payment::TYPE_ORDER_INVOICE,
+            $payment = Payment::create([
+                'type' => Payment::TYPE_INVOICE,
                 'gateway' => self::type(),
                 'amount' => $data['amount'],
                 'currency_id' => $currency_id,
                 'check_code' => $checkCode,
+                'order_id' => $data['order_id'],
+                'service' => $data['replay_to'],
                 'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_INVOICE_NEW
             ]);
 
             // Set invoice detail
             $invoice = new Invoice($data['amount'], $data['currency']['code']);
-            $invoice->setOrderId($transaction->id);
+            $invoice->setOrderId($payment->id);
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
             $invoice->setNotificationURL(config('payments.bitpay.webhook_url') . '/bitpay/invoices');
@@ -114,9 +121,9 @@ class BitpayManager implements PaymentSystemContract
             // Send data to bitpay and get created invoice
             $chargeObj = $this->gateway->createInvoice($invoice);
 
-            // Update order data
-            $transaction->document_id = $chargeObj->getId();
-            $transaction->save();
+            // Update payment transaction data
+            $payment->document_id = $chargeObj->getId();
+            $payment->save();
 
             return [
                 'status' => 'success',
@@ -130,50 +137,53 @@ class BitpayManager implements PaymentSystemContract
         }
     }
 
-    public static function type(): string
-    {
-        return 'bitpay';
-    }
-
     /**
      * @param \Illuminate\Http\Request $request
      *
-     * @return mixed|void
+     * @return array|string[]
      */
-    public function handlerWebhookInvoice(Request $request)
+    public function handlerWebhookInvoice(Request $request): array
     {
         // Check event property
         if (!$request->has('event')) {
             http_response_code(400);
+
+
         }
 
-        // Get payment data
+        // Get event data
         $paymentData = $request->get('data', null);
         if ($paymentData === null) {
-            http_response_code(400);
-
-            //return response()->json('Input data incorrect 2', 400);
+            return [
+                'status' => 'error',
+                'message' => 'Empty / Incorrect event data'
+            ];
         }
 
-        // Find order
-        $payment = Payment::where('type', Payment::TYPE_ORDER_INVOICE)
+        // Find payment transaction
+        $payment = Payment::where('type', Payment::TYPE_INVOICE)
+            ->where('id', $paymentData['order_id'])
             ->where('document_id', $paymentData['id'])
             ->where('check_code', $paymentData['posData']['code'])
             ->where('gateway', self::type())
             ->first();
 
         if (!$payment) {
-            http_response_code(400);
-            //return response()->json('Order not found', 400);
+            return [
+                'status' => 'error',
+                'message' => 'Payment transaction not found in Payment Microservice database'
+            ];
         }
 
         $payment->status = $request->event['code'];
         $payment->payload = $paymentData;
         $payment->save();
 
-        // Send response code
-        http_response_code(200);
-
-        return $payment;
+        // Return result
+        return [
+            'status' => 'success',
+            'payment' => $payment,
+            'event' => $paymentData
+        ];
     }
 }

@@ -10,8 +10,8 @@ class Payment extends Model
     /**
      * Type of order
      */
-    const TYPE_ORDER_INVOICE = 1;
-    const TYPE_ORDER_PAYOUTS = 2;
+    const TYPE_INVOICE = 1;
+    const TYPE_PAYOUTS = 2;
 
     /**
      * The attributes that should be cast.
