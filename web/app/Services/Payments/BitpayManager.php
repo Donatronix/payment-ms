@@ -182,8 +182,9 @@ class BitpayManager implements PaymentSystemContract
         // Return result
         return [
             'status' => 'success',
-            'payment' => $payment,
-            'event' => $paymentData
+            'order_id' => $payment->order_id,
+            'service' => $payment->service,
+            'payment_status' => ''
         ];
     }
 }
