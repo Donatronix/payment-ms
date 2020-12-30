@@ -13,12 +13,9 @@ $router->group([
     $router->group([
         'middleware' => 'checkUser'
     ], function () use ($router) {
-        $router->group(['prefix' => 'payments'], function () use ($router) {
+
             $router->get('systems', 'PaymentSystemsController@index');
             $router->post('recharge', 'PaymentController@recharge');
-
-            $router->post('charge', 'PaymentController@rrrr');
-        });
 
         /**
          * ADMIN PANEL

@@ -8,6 +8,7 @@ use App\Models\LogPaymentWebhookError;
 use App\Services\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * Class PaymentController
@@ -159,69 +160,59 @@ class PaymentController extends Controller
 //     * @throws \Illuminate\Validation\ValidationException
 //     * @throws \ReflectionException
 //     * /
-//    public function recharge(Request $request)
-//    {
-//        $inputData = $request->all();
-//
+    public function recharge(Request $request)
+    {
+        $inputData = $request->all();
+
 //        // Validate input
-//        $validation = Validator::make($inputData, [
-//            'gateway' => 'string|required',
-//            'amount' => 'integer|required',
-//            'currency' => 'string|required'
-//        ]);
-//
-//        if ($validation->fails()) {
-//            return response()->json([
-//                'error' => $validation->errors()->toJson()
-//            ], 400);
-//        }
-//
+        $validation = Validator::make($inputData, [
+            'gateway' => 'string|required',
+            'amount' => 'integer|required',
+            'currency' => 'string|required'
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json([
+                'error' => $validation->errors()->toJson()
+            ], 400);
+        }
+
 //        // Write log
-//        try {
-//            $log = new LogPaymentRequest;
-//            $log->gateway = $inputData['gateway'];
-//            $log->payload = $inputData;
-//            $log->save();
-//        } catch (\Exception $e) {
-//            Log::info('Log of invoice failed: ' . $e->getMessage());
-//        }
-//
+        try {
+            /*
+            $log = new LogPaymentRequest;
+            $log->gateway = $inputData['gateway'];
+            $log->payload = $inputData;
+            $log->save();
+            */
+        } catch (\Exception $e) {
+            Log::info('Log of invoice failed: ' . $e->getMessage());
+        }
+
 //        // Init manager
-//        $system = Payment::getServiceManager($inputData['gateway']);
-//
-//        if ($system === null)
-//            return response()->json([
-//                'success' => false,
-//                'message' => 'No class for ' . $inputData['gateway'],
-//            ], 400);
-//
+        $system = Payment::getServiceManager($inputData['gateway']);
+
+        if ($system === null)
+            return response()->json([
+                'success' => false,
+                'message' => 'No class for ' . $inputData['gateway'],
+            ], 400);
+
 //        // Create invoice
-//        $result = $system->createInvoice($inputData);
-//
-//        // Return response
-//        $code = 200;
-//        if ($result['type'] === 'error') {
-//            $code = 400;
-//
-//            $log = new LogPaymentRequestError;
-//            $log->error = var_export($result, true);
-//            $log->save();
-//        }
-//
+        $result = $system->createInvoice($inputData);
+
+         //Return response
+        $code = 200;
+        if ($result['status'] === 'error') {
+            $code = 400;
+
+            //$log = new LogPaymentRequestError;
+            //$log->error = var_export($result, true);
+            //$log->save();
+        }
+
 //        // Return result
-//        return response()->json($result, $code);
-//    }
-//
-//    public function rrrr(){
-//        // Send payment request to payment gateway
-//        \PubSub::transaction(function () {})->publish('rechargeBalance', [
-//            'gateway' => 'bitpay',
-//            'amount' => 'etrtrtr',
-//            'currency' => 'EUR',
-//            'order_id' => 10,
-//            'user_id' => 3,
-//        ], 'paymentGateways');
-//
-//        dd(1);
-//    }
+        return response()->json($result, $code);
+    }
+
 }
