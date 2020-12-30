@@ -128,14 +128,11 @@ class BitpayManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
-                'title' => 'Create Invoice',
-                'message' => 'Invoice successfully created',
                 'invoice_url' => $chargeObj->getURL()
             ];
         } catch (\Exception $e) {
             return [
                 'status' => 'error',
-                'title' => 'Create Invoice',
                 'message' => sprintf("Unable to create an invoice. Error: %s \n", $e->getMessage())
             ];
         }

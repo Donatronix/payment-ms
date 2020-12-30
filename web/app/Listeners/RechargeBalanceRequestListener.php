@@ -20,7 +20,7 @@ class RechargeBalanceRequestListener
     /**
      * @var string
      */
-    private const RECEIVER_LISTENER = 'rechargeBalance';
+    private const RECEIVER_LISTENER = 'rechargeBalanceResponse';
 
     /**
      * Create the event listener.
@@ -37,9 +37,9 @@ class RechargeBalanceRequestListener
      *
      * @param array $inputData
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return void
      */
-    public function handle(array $inputData): JsonResponse
+    public function handle(array $inputData)
     {
         // Validate input
         $validation = Validator::make($inputData, [
@@ -92,7 +92,7 @@ class RechargeBalanceRequestListener
         // Return response
         if ($result['status'] === 'error') {
             LogPaymentRequestError::create([
-                'error' => $result
+                'error' => $result['message']
             ]);
         }
 

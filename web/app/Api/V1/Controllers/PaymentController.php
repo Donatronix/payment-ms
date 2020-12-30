@@ -93,7 +93,7 @@ class PaymentController extends Controller
         }
 
         // Send payment request to payment gateway
-//        \PubSub::transaction(function () {})->publish(self::RECEIVER_LISTENER, array_merge($result, [
+//        \PubSub::transaction(function () {})->publish('rechargeBalanceWebhook', array_merge($result, [
 //            'order_id' => $inputData['order_id'],
 //        ]), $inputData['replay_to']);
     }
