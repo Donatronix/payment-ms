@@ -8,7 +8,6 @@ use App\Models\Payment;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
@@ -211,8 +210,10 @@ class PaypalManager implements PaymentSystemContract
         // Return result
         return [
             'status' => 'success',
-            'order_id' => $payment->order_id,
+            'payment_id' => $payment->id,
             'service' => $payment->service,
+            'amount' => $payment->amount,
+            'currency' => $payment->currency,
             'payment_status' => ''
         ];
     }

@@ -8,6 +8,7 @@ use App\Models\LogPaymentWebhookError;
 use App\Services\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * Class PaymentController
@@ -107,9 +108,7 @@ class PaymentController extends Controller
         }
 
         // Send payment request to payment gateway
-        \PubSub::transaction(function () {})->publish('rechargeBalanceWebhook', array_merge($result, [
-            'order_id' => $result['order_id'],
-        ]), $result['service']);
+        \PubSub::transaction(function () {})->publish('rechargeBalanceWebhook', $result, $result['service']);
 
         // Send status OK
         http_response_code(200);
@@ -119,7 +118,7 @@ class PaymentController extends Controller
      * Recharge wallet balance
      *
      * @OA\Post(
-     *     path="/v1/payments/payments/recharge",
+     *     path="/v1/payments/recharge",
      *     description="Recharge wallet balance",
      *     tags={"Payments"},
      *
@@ -161,6 +160,11 @@ class PaymentController extends Controller
      *                 type="string",
      *                 default="GBP"
      *             )
+     *             @OA\Property(
+     *                 property="service",
+     *                 description="Target service: infinityWallet | divitExchange",
+     *                 type="string"
+     *             )
      *         )
      *     ),
      *
@@ -184,7 +188,8 @@ class PaymentController extends Controller
         $validation = Validator::make($inputData, [
             'gateway' => 'string|required',
             'amount' => 'integer|required',
-            'currency' => 'string|required'
+            'currency' => 'string|required',
+            'service' => 'string|required',
         ]);
 
         if ($validation->fails()) {
@@ -217,7 +222,7 @@ class PaymentController extends Controller
 
         // Return response
         $code = 200;
-        if ($result['type'] === 'error') {
+        if ($result['status'] === 'error') {
             $code = 400;
 
             $log = new LogPaymentRequestError;

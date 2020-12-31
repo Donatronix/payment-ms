@@ -15,7 +15,7 @@ $router->group([
     ], function () use ($router) {
         $router->group(['prefix' => 'payments'], function () use ($router) {
             $router->get('systems', 'PaymentSystemController@index');
-           // $router->post('recharge', 'PaymentController@recharge');
+            $router->post('recharge', 'PaymentController@recharge');
         });
 
         /**
