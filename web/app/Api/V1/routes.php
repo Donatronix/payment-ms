@@ -29,6 +29,7 @@ $router->group([
                 // Wallets Admin
                 $router->get('/payments', 'PaymentController@index');
                 $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
+                $router->get('/paymentslost', 'PaymentLostController@index');
             }
         );
     });
