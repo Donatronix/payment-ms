@@ -29,8 +29,8 @@ $router->group([
             ],
             function ($router) {
                 // Wallets Admin
-                $router->get('/payment-orders', 'PaymentController@index');
-                $router->post('/payment-orders/{id:[\d]+}', 'PaymentController@update');
+                $router->get('/payments', 'PaymentController@index');
+                $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
             }
         );
     });

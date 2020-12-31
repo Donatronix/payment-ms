@@ -159,7 +159,7 @@ class PaymentController extends Controller
      *                 description="Currency of balance",
      *                 type="string",
      *                 default="GBP"
-     *             )
+     *             ),
      *             @OA\Property(
      *                 property="service",
      *                 description="Target service: infinityWallet | divitExchange",
