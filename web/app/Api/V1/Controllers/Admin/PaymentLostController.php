@@ -84,12 +84,15 @@ class PaymentLostController extends Controller
      */
     public function index(Request $request) {
 
-        $newStatuses = [
-            "bitpay" => BitpayManager::STATUS_INVOICE_NEW,
-            "coinbase" => CoinbaseManager::STATUS_CHARGE_CREATED,
-            "paypal" => PaypalManager::STATUS_ORDER_CREATED,
-            "stripe" => StripeManager::STATUS_ORDER_REQUIRES_PAYMENT_METHOD,
-        ];
+        $newStatuses = [];
+        foreach(glob(base_path('app/Services/Payments').'/*.php') as $fullname) {
+            if(preg_match('/\/([a-z0-9]+)\.php$/i', $fullname, $ms)) {
+                $class = "\\App\\Services\\Payments\\".$ms[1];
+                if(class_exists($class)) {
+                    $newStatuses[$class::type()] = $class::getNewStatusId();
+                }
+            }
+        }
 
         $limit = intval($request->get('limit', 20));
         $page = intval($request->get('page', 1));

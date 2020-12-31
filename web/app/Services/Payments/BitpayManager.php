@@ -80,6 +80,11 @@ class BitpayManager implements PaymentSystemContract
         return 'bitpay';
     }
 
+    public static function getNewStatusId(): int
+    {
+        return self::STATUS_INVOICE_NEW;
+    }
+
     /**
      * Wrapper for create bitpay invoice for charge money
      *

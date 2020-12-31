@@ -81,6 +81,11 @@ class PaypalManager implements PaymentSystemContract
         return 'paypal';
     }
 
+    public static function getNewStatusId(): int
+    {
+        return self::STATUS_ORDER_CREATED;
+    }
+
     /**
      * Wrapper for create paypal invoice for charge money
      *

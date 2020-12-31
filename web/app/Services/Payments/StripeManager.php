@@ -45,6 +45,11 @@ class StripeManager implements PaymentSystemContract
         return 'Stripe is..';
     }
 
+    public static function getNewStatusId(): int
+    {
+        return self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
+    }
+
     /**
      * Wrapper for create bitpay invoice for charge money
      *

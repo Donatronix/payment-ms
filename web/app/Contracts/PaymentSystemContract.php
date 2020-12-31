@@ -22,6 +22,11 @@ interface PaymentSystemContract
     public static function description();
 
     /**
+     * @return integer
+     */
+    public static function getNewStatusId();
+
+    /**
      * @param array $data
      *
      * @return mixed
