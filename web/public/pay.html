@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment test page</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        function doStripe(key,sessid) {
+            var stripe = Stripe(key);
+            stripe.redirectToCheckout({sessionId: sessid});
+        }
+
+        function doAnswer(data) {
+            console.log(data);
+            if(data.status=="error") {
+                console.log(data.message);
+                alert(data.message);
+                return;
+            }
+            if(data.gateway=="stripe") {
+                doStripe(data.stripe_pubkey, data.session_id);
+            } else {
+                location.href = data.invoice_url;
+            }
+        }
+
+        function doSubmit() {
+            $.ajax({
+                url: "http://localhost:8100/v1/payments/recharge",
+                method: "POST",
+                data: {
+                    amount: $("#amount").val(),
+                    currency: $("#currency").val(),
+                    gateway: $("#gateway").val(),
+                    service: $("#service").val()
+                },
+                headers: {
+                    "user-id": 2
+                },
+                success: doAnswer,
+                complete: function(data){console.log(data)},
+                error: function(data){alert(data.responseText)},
+                dataType: "json"
+            });
+        }
+    </script>
+</head>
+<body>
+<form method="post">
+    amount: <input type="text" name="amount" value="10" id="amount"><br />
+    currency: <select name="currency" id="currency"><option value="USD">USD</option><option value="EUR">EUR</option></select><br />
+    gateway: <select name="gateway" id="gateway"><option value="paypal">PayPal</option><option value="coinbase">Coinbase</option><option value="bitpay">BitPay</option><option value="stripe">Stripe</option></select><br />
+    service: <select name="service" id="service"><option value="infinityWalletTest">infinityWalletTest</option><option value="infinityWallet">infinityWallet</option></select><br />
+    <input type="submit" onclick="doSubmit();return false">
+</form>
+</body>
+</html>
