@@ -108,9 +108,7 @@ class PaymentController extends Controller
         }
 
         // Send payment request to payment gateway
-        \PubSub::transaction(function () {})->publish('rechargeBalanceWebhook', array_merge($result, [
-            'order_id' => $result['order_id'],
-        ]), $result['service']);
+        \PubSub::transaction(function () {})->publish('rechargeBalanceWebhook', $result, $result['service']);
 
         // Send status OK
         http_response_code(200);
@@ -162,6 +160,11 @@ class PaymentController extends Controller
      *                 type="string",
      *                 default="GBP"
      *             )
+     *             @OA\Property(
+     *                 property="service",
+     *                 description="Target service: infinityWallet | divitExchange",
+     *                 type="string"
+     *             )
      *         )
      *     ),
      *
@@ -185,7 +188,8 @@ class PaymentController extends Controller
         $validation = Validator::make($inputData, [
             'gateway' => 'string|required',
             'amount' => 'integer|required',
-            'currency' => 'string|required'
+            'currency' => 'string|required',
+            'service' => 'string|required',
         ]);
 
         if ($validation->fails()) {

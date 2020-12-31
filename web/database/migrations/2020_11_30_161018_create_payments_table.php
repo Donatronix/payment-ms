@@ -18,10 +18,10 @@ class CreatePaymentsTable extends Migration
             $table->tinyInteger('type');
             $table->string('gateway', 10);
             $table->decimal('amount');
-            $table->unsignedTinyInteger('currency_id')->nullable();
+            $table->char('currency', 3);
             $table->string('check_code');
-            $table->string('document_id', 36)->nullable();
-            $table->unsignedBigInteger('order_id');
+            $table->string('document_id')->nullable();
+//            $table->unsignedBigInteger('order_id');
             $table->string('service', 36)->nullable();
 
             $table->unsignedBigInteger('user_id');

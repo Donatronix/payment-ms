@@ -3,9 +3,9 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
-use App\Models\Currency;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Stripe\Stripe;
 
 class StripeManager implements PaymentSystemContract
@@ -56,16 +56,19 @@ class StripeManager implements PaymentSystemContract
     {
         try {
             Stripe::setApiKey($this->secret_key);
-            $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
+            $checkCode = Payment::getCheckCode();
 
             // Create internal order
             $payment = Payment::create([
-                'user_id' => $data['user_id'],
+                'type' => Payment::TYPE_INVOICE,
+                'gateway' => self::type(),
                 'amount' => $data['amount'],
-                'currency_id' => $currency_id,
-                'check_code' => '',
-                'type' => Payment::TYPE_ORDER_INVOICE,
-                'gateway' => self::type()
+                'currency' => $data['currency'],
+                'check_code' => $checkCode,
+                'order_id' => intval($data['order_id']),
+                'service' => $data['service'],
+                'user_id' => Auth::user()->getAuthIdentifier(),
+                'status' => self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD
             ]);
 
             $checkout_session = \Stripe\Checkout\Session::create([
@@ -80,19 +83,20 @@ class StripeManager implements PaymentSystemContract
                     'name' => 'Wallet Charge',
                 ]],
                 'metadata' => [
-                    'payment_order' => $payment->id
+                    'payment_order' => $payment->id,
+                    'check_code' => $checkCode,
                 ]
             ]);
 
             // Update order data
             $payment->document_id = $checkout_session['id'];
-            $payment->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
             $payment->save();
 
             return [
                 'status' => 'success',
-                'invoice_url' => '',
+                'service' => self::type(),
                 'session_id' => $checkout_session['id'],
+                'stripe_pubkey' => $this->publisher_key,
             ];
         } catch (\Exception $e) {
             return [
@@ -105,7 +109,7 @@ class StripeManager implements PaymentSystemContract
     /**
      * @param \Illuminate\Http\Request $request
      *
-     * @return mixed|void
+     * @return mixed
      */
     public function handlerWebhookInvoice(Request $request)
     {
@@ -120,12 +124,16 @@ class StripeManager implements PaymentSystemContract
             );
         } catch(\UnexpectedValueException $e) {
             // Invalid payload
-            http_response_code(400);
-            exit();
+            return [
+                'status' => 'error',
+                'message' => 'Unexpected value error'
+            ];
         } catch(\Stripe\Exception\SignatureVerificationException $e) {
             // Invalid signature
-            http_response_code(400);
-            exit();
+            return [
+                'status' => 'error',
+                'message' => 'Signature check error'
+            ];
         }
 
         // Handle the event
@@ -136,32 +144,53 @@ class StripeManager implements PaymentSystemContract
                 $paymentIntent = $event->data->object; // contains a StripePaymentIntent
                 break;
             default:
-                http_response_code(400);
-//                echo 'Received unknown event type ' . $event->type;
+                return [
+                    'status' => 'error',
+                    'message' => 'Unexpected event type'
+                ];
         }
 
         // Get invoice data
         $orderData = $paymentIntent->metadata;
         if (!$orderData) {
-            http_response_code(400);
+            return [
+                'status' => 'error',
+                'message' => 'No order data'
+            ];
         }
 
         http_response_code(200);
 
         // Find order
-        $order = Payment::where('type', Payment::TYPE_ORDER_INVOICE)
-            ->where('document_id', $orderData->payment_order)
-            ->where('gateway', self::type())
+        $payment = Payment::where('id', $orderData->payment_order)
+            ->where('check_code', $orderData->check_code)
             ->first();
 
-        if (!$order) {
-            http_response_code(400);
+        if (!$payment) {
+            return [
+                'status' => 'error',
+                'message' => 'Order not found'
+            ];
         }
 
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentIntent->status);
-        $order->status = self::$$status;
-        $order->payload = $request;
-        $order->save();
+        if(!isset(self::$$status)) {
+            return [
+                'status' => 'error',
+                'message' => 'Status error: '.mb_strtoupper($paymentIntent->status)
+            ];
+        }
+        $payment->status = self::$$status;
+        $payment->payload = $request;
+        $payment->save();
+        return [
+            'status' => 'success',
+            'payment_id' => $payment->id,
+            'service' => $payment->service,
+            'amount' => $payment->amount,
+            'currency' => $payment->currency,
+            'payment_status' => ''
+        ];
     }
 
 }

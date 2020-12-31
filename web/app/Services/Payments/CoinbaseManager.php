@@ -196,7 +196,9 @@ class CoinbaseManager implements PaymentSystemContract
         // Return result
         return [
             'status' => 'success',
-            'order_id' => $payment->order_id,
+            'payment_id' => $payment->id,
+            'amount' => $payment->amount,
+            'currency' => $payment->currency,
             'service' => $payment->service,
             'payment_status' => ''
         ];
