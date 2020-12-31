@@ -101,8 +101,7 @@ class CoinbaseManager implements PaymentSystemContract
                 'amount' => $data['amount'],
                 'currency' => mb_strtoupper($data['currency']),
                 'check_code' => $checkCode,
-                'order_id' => $data['order_id'],
-                'service' => $data['replay_to'],
+                'service' => $data['service'],
                 'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_CHARGE_CREATED
             ]);

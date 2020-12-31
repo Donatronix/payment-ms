@@ -21,7 +21,6 @@ class CreatePaymentsTable extends Migration
             $table->char('currency', 3);
             $table->string('check_code');
             $table->string('document_id')->nullable();
-//            $table->unsignedBigInteger('order_id');
             $table->string('service', 36)->nullable();
 
             $table->unsignedBigInteger('user_id');
