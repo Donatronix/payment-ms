@@ -3,6 +3,8 @@
 namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\LogPaymentRequest;
+use App\Models\LogPaymentRequestError;
 use App\Models\LogPaymentWebhook;
 use App\Models\LogPaymentWebhookError;
 use App\Services\Payment;
@@ -194,28 +196,31 @@ class PaymentController extends Controller
 
         if ($validation->fails()) {
             return response()->json([
-                'error' => $validation->errors()->toJson()
+                'status' => 'error',
+                'message' => $validation->errors()->toJson()
             ], 400);
         }
 
         // Write log
         try {
-            $log = new LogPaymentRequest;
-            $log->gateway = $inputData['gateway'];
-            $log->payload = $inputData;
-            $log->save();
+            LogPaymentRequest::create([
+                'gateway' => $inputData['gateway'],
+                'service' => $inputData['service'],
+                'payload' => $inputData
+            ]);
         } catch (\Exception $e) {
             Log::info('Log of invoice failed: ' . $e->getMessage());
         }
 
         // Init manager
-        $system = Payment::getServiceManager($inputData['gateway']);
-
-        if ($system === null)
+        try{
+            $system = Payment::getServiceManager($inputData['gateway']);
+        } catch(\Exception $e){
             return response()->json([
-                'success' => false,
-                'message' => 'No class for ' . $inputData['gateway'],
+                'status' => 'error',
+                'message' => $e->getMessage()
             ], 400);
+        }
 
         // Create invoice
         $result = $system->createInvoice($inputData);
@@ -225,9 +230,10 @@ class PaymentController extends Controller
         if ($result['status'] === 'error') {
             $code = 400;
 
-            $log = new LogPaymentRequestError;
-            $log->error = var_export($result, true);
-            $log->save();
+            LogPaymentRequestError::create([
+                'gateway' => $inputData['gateway'],
+                'payload' => $result['message']
+            ]);
         }
 
         // Return result
