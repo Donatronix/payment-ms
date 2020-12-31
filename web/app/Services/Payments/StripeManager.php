@@ -65,7 +65,6 @@ class StripeManager implements PaymentSystemContract
                 'amount' => $data['amount'],
                 'currency' => $data['currency'],
                 'check_code' => $checkCode,
-                'order_id' => intval($data['order_id']),
                 'service' => $data['service'],
                 'user_id' => Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD
