@@ -132,6 +132,7 @@ class CoinbaseManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
+                'gateway' => self::type(),
                 'invoice_url' => $chargeObj->hosted_url
             ];
         } catch (Exception $e) {

@@ -94,7 +94,7 @@ class StripeManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
-                'service' => self::type(),
+                'gateway' => self::type(),
                 'session_id' => $checkout_session['id'],
                 'stripe_pubkey' => $this->publisher_key,
             ];
