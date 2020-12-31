@@ -27,6 +27,8 @@ class CreatePaymentsTable extends Migration
             $table->foreign('user_id')->references('id')->on('users');
 
             $table->smallInteger('status')->nullable();
+            $table->boolean('transaction_created')->default(false);
+
             $table->text('payload')->nullable();
             $table->timestamps();
         });
