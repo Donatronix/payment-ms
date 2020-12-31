@@ -15,12 +15,12 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 class PaymentController extends Controller
 {
     /**
-     * Display payment orders list
+     * Display Payments list
      *
      * @OA\Get(
      *     path="/v1/payments/admin/payments",
      *     description="Display list of all patment orders",
-     *     tags={"Admin - Payment Orders"},
+     *     tags={"Admin - Payments"},
      *
      *     security={{
      *         "default": {
@@ -87,7 +87,7 @@ class PaymentController extends Controller
      * @OA\Post(
      *     path="/v1/payments/admin/payments",
      *     description="Method for proof of payment by payment order",
-     *     tags={"Admin - Payment Orders"},
+     *     tags={"Admin - Payments"},
      *
      *     security={{
      *         "default": {
@@ -130,30 +130,6 @@ class PaymentController extends Controller
                 'type' => 'error',
                 'title' => 'Payment order not found',
                 'message' => "Payment order #{$id} not found"
-            ], 404);
-        }
-
-        try {
-            // Create transaction for charge user balance
-//            $charge = Transaction::create([
-//                'name' => 'Activate card',
-//                'sender_id' => env('SUMRA_USER'),
-//                'receiver_id' => $order->user_id,
-//                'amount' => $order->amount,
-//                'currency_id' => $order->currency_id,
-//                'status' => Transaction::STATUS_NOT_CONFIRMED
-//            ]);
-
-            return response()->jsonApi([
-                'type' => 'success',
-                'title' => 'Proof of payment',
-                'message' => "Charge transaction created successfully"
-            ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->jsonApi([
-                'type' => 'error',
-                'title' => 'Proof of payment',
-                'message' => "Can't create transaction for charge user balance"
             ], 404);
         }
     }

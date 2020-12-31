@@ -20,6 +20,11 @@ use Illuminate\Support\Facades\Validator;
 class PaymentController extends Controller
 {
     /**
+     * @var string
+     */
+    private const RECEIVER_LISTENER = 'rechargeBalanceWebhook';
+
+    /**
      * Invoices webhook
      *
      * @OA\Post(
@@ -110,7 +115,7 @@ class PaymentController extends Controller
         }
 
         // Send payment request to payment gateway
-        \PubSub::transaction(function () {})->publish('rechargeBalanceWebhook', $result, $result['service']);
+        \PubSub::transaction(function () {})->publish(self::RECEIVER_LISTENER, $result, $result['service']);
 
         // Send status OK
         http_response_code(200);
