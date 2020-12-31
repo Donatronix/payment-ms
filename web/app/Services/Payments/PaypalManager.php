@@ -95,14 +95,12 @@ class PaypalManager implements PaymentSystemContract
             // Create check code
             $checkCode = Payment::getCheckCode();
 
-            $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
-
             // Create internal order
             $payment = Payment::create([
                 'type' => Payment::TYPE_INVOICE,
                 'gateway' => self::type(),
                 'amount' => $data['amount'],
-                'currency_id' => $currency_id,
+                'currency' => $data['currency'],
                 'check_code' => $checkCode,
                 'order_id' => $data['order_id'],
                 'service' => $data['replay_to'],
@@ -122,7 +120,7 @@ class PaypalManager implements PaymentSystemContract
                         'invoice_id' => $payment->id,
                         'amount' => [
                             'value' => $data['amount'],
-                            'currency_code' => $data['currency']['code'],
+                            'currency_code' => $data['currency'],
                         ],
                         'payment_instruction' => [
                             'disbursement_mode' => 'INSTANT'

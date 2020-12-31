@@ -82,7 +82,7 @@
                 first = '&';
             }
 
-            let url = '/v1/payments/payments/charge';
+            let url = '/v1/payments/payments/recharge';
 
             let curl = 'curl -X POST -H "user-id:'+user_id+'" -d "'+arr+'" {{$http}}://{{ $host }}'+url;
 

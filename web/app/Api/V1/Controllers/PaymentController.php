@@ -119,7 +119,7 @@ class PaymentController extends Controller
      * Recharge wallet balance
      *
      * @OA\Post(
-     *     path="/v1/payments/payments/charge",
+     *     path="/v1/payments/payments/recharge",
      *     description="Recharge wallet balance",
      *     tags={"Payments"},
      *
