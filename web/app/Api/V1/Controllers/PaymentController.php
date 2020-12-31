@@ -118,7 +118,7 @@ class PaymentController extends Controller
      * Recharge wallet balance
      *
      * @OA\Post(
-     *     path="/v1/payments/payments/charge",
+     *     path="/v1/payments/recharge",
      *     description="Recharge wallet balance",
      *     tags={"Payments"},
      *
@@ -159,7 +159,7 @@ class PaymentController extends Controller
      *                 description="Currency of balance",
      *                 type="string",
      *                 default="GBP"
-     *             )
+     *             ),
      *             @OA\Property(
      *                 property="service",
      *                 description="Target service: infinityWallet | divitExchange",

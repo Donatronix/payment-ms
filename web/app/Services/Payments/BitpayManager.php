@@ -93,14 +93,12 @@ class BitpayManager implements PaymentSystemContract
             // Create check code
             $checkCode = Payment::getCheckCode();
 
-            $currency_id = $data['currency']['id'] ?? Currency::$currencies[mb_strtoupper($data['currency']['code'])];
-
             // Create internal order
             $payment = Payment::create([
                 'type' => Payment::TYPE_INVOICE,
                 'gateway' => self::type(),
                 'amount' => $data['amount'],
-                'currency_id' => $currency_id,
+                'currency' => mb_strtoupper($data['currency']),
                 'check_code' => $checkCode,
                 'order_id' => $data['order_id'],
                 'service' => $data['replay_to'],
@@ -109,7 +107,7 @@ class BitpayManager implements PaymentSystemContract
             ]);
 
             // Set invoice detail
-            $invoice = new Invoice($data['amount'], $data['currency']['code']);
+            $invoice = new Invoice($data['amount'], $data['currency']);
             $invoice->setOrderId($payment->id);
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
@@ -146,9 +144,10 @@ class BitpayManager implements PaymentSystemContract
     {
         // Check event property
         if (!$request->has('event')) {
-            http_response_code(400);
-
-
+            return [
+                'status' => 'error',
+                'message' => 'Empty / Incorrect event data'
+            ];
         }
 
         // Get event data
