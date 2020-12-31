@@ -77,7 +77,7 @@ class StripeManager implements PaymentSystemContract
                 'mode' => 'payment',
                 'line_items' => [[
                     'amount' => $data['amount']*100,
-                    'currency' => $data['currency']['code'],
+                    'currency' => $data['currency'],
                     'quantity' => 1,
                     'name' => 'Wallet Charge',
                 ]],
