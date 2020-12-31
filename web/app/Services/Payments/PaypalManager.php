@@ -151,6 +151,7 @@ class PaypalManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
+                'gateway' => self::type(),
                 'invoice_url' => $invoiceUrl
             ];
         } catch (Exception $e) {

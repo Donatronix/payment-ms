@@ -77,7 +77,7 @@ class StripeManager implements PaymentSystemContract
                 'mode' => 'payment',
                 'line_items' => [[
                     'amount' => $data['amount']*100,
-                    'currency' => $data['currency']['code'],
+                    'currency' => $data['currency'],
                     'quantity' => 1,
                     'name' => 'Wallet Charge',
                 ]],
@@ -93,7 +93,7 @@ class StripeManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
-                'service' => self::type(),
+                'gateway' => self::type(),
                 'session_id' => $checkout_session['id'],
                 'stripe_pubkey' => $this->publisher_key,
             ];
