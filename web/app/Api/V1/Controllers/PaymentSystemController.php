@@ -4,7 +4,7 @@ namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-
+use Illuminate\Support\Facades\Cache;
 
 
 /**
@@ -14,6 +14,8 @@ use Illuminate\Http\JsonResponse;
  */
 class PaymentSystemController extends Controller
 {
+    const cache_id = "PaysystemList";
+
     /**
      * @OA\Get(
      *     path="/v1/payments/systems",
@@ -50,37 +52,30 @@ class PaymentSystemController extends Controller
         return response()->json(['success' => true, 'systems' => $systems], 200);
     }
 
-
     public function catalog()
-        {
-
-            $systems = $this->catalog_cache();
-
-            if( count($systems) == 0 )
-            {
-                $systems = $this->catalog_fresh();
-                $this->save_cache();
-            }
-
-            return $systems;
+    {
+        $systems = $this->catalog_cache();
+        if (!is_array($systems) || count($systems) == 0) {
+            $systems = $this->catalog_fresh();
+            $this->save_cache($systems);
+        }
+        return $systems;
     }
 
     public function clear_cache()
     {
-
-        // Stub
-
+        Cache::forget(self::cache_id);
     }
-
 
     private function catalog_cache()
     {
-
-        // Stub
-        return [];
-
+        return Cache::get(self::cache_id, []);
     }
 
+    private function save_cache($systems)
+    {
+        Cache::put(self::cache_id, $systems);
+    }
 
     private function catalog_fresh()
     {
@@ -120,14 +115,5 @@ class PaymentSystemController extends Controller
 
         return $systems;
     }
-
-    private function save_cache()
-    {
-
-        // Stub
-
-    }
-
-
 
 }
