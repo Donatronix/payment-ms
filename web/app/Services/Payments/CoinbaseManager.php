@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use phpDocumentor\Reflection\Types\Integer;
 
 class CoinbaseManager implements PaymentSystemContract
 {
@@ -76,9 +77,14 @@ class CoinbaseManager implements PaymentSystemContract
         return 'Coinbase Commerce is..';
     }
 
-    public static function type(): string
+    public static function gateway(): string
     {
         return 'coinbase';
+    }
+
+    public static function getNewStatusId(): int
+    {
+        return self::STATUS_CHARGE_CREATED;
     }
 
     /**

@@ -9,7 +9,7 @@ interface PaymentSystemContract
     /**
      * @return mixed
      */
-    public static function type();
+    public static function gateway();
 
     /**
      * @return mixed
@@ -20,6 +20,11 @@ interface PaymentSystemContract
      * @return mixed
      */
     public static function description();
+
+    /**
+     * @return integer
+     */
+    public static function getNewStatusId();
 
     /**
      * @param array $data

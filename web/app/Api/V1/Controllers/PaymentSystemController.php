@@ -4,6 +4,8 @@ namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
+
 
 /**
  * Class PaymentController
@@ -12,6 +14,8 @@ use Illuminate\Http\JsonResponse;
  */
 class PaymentSystemController extends Controller
 {
+    const CACHE_ID = "PAYSYSTEMLIST";
+
     /**
      * @OA\Get(
      *     path="/v1/payments/systems",
@@ -44,6 +48,38 @@ class PaymentSystemController extends Controller
      */
     public function index(): JsonResponse
     {
+        $systems = $this->catalog();
+        return response()->json(['success' => true, 'systems' => $systems], 200);
+    }
+
+    public function catalog()
+    {
+        $systems = $this->catalog_cache();
+        if (!is_array($systems) || count($systems) == 0) {
+            $systems = $this->catalog_fresh();
+            $this->save_cache($systems);
+        }
+        return $systems;
+    }
+
+    public function clear_cache()
+    {
+        Cache::forget(self::CACHE_ID);
+    }
+
+    private function catalog_cache()
+    {
+        return Cache::get(self::CACHE_ID, []);
+    }
+
+    private function save_cache($systems)
+    {
+        Cache::put(self::CACHE_ID, $systems);
+    }
+
+    private function catalog_fresh()
+    {
+
         $systems = [];
 
         $dir = base_path('app/Services/Payments');
@@ -60,20 +96,24 @@ class PaymentSystemController extends Controller
                     continue;
 
                 try {
-                    $type = $class::type();
+                    $gateway = $class::gateway();
                     $name = $class::name();
                     $description = $class::description();
+                    $new_status = $class::getNewStatusId() ;
                 } catch (\Exception $e) {
+                    $gateway = 'error';
                     $name = 'error';
                     $description = $entry . ' ' . $e->getMessage();
+                    $new_status = null;
                 }
 
-                $systems[] = ['type' => $type, 'name' => $name, 'description' => $description];
+                $systems[] = ['gateway' => $gateway, 'name' => $name, 'description' => $description, 'new_status'=>$new_status];
             }
 
             closedir($handle);
         }
 
-        return response()->json(['success' => true, 'systems' => $systems], 200);
+        return $systems;
     }
+
 }
