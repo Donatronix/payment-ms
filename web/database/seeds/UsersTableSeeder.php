@@ -1,11 +1,9 @@
 <?php
 
-use App\Models\Balance;
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Currency;
 
-class UsersSeeder extends Seeder
+class UsersTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,13 +13,15 @@ class UsersSeeder extends Seeder
     public function run()
     {
         // Sumra User
-        $sumraUser = factory(User::class)->create([
+        factory(User::class)->create([
+            'id' => 1,
             'first_name' => 'Sumra',
-            'last_name' => 'Net',
-            'email' => 'admin@sumra.net'
+            'last_name' => 'Net'
         ]);
 
         // Other users
-        $users = factory(User::class, 10)->create();
+        for($a = 2; $a < 10; $a++){
+            factory(User::class)->create(['id' => $a]);
+        }
     }
 }

@@ -2,18 +2,46 @@
 
 namespace App\Services\Payments;
 
-use App\Contracts\IPaymentSystemContract;
+use App\Contracts\PaymentSystemContract;
 use App\Models\Currency;
-use App\Models\PaymentOrderBitPay;
+use App\Models\Payment;
 use BitPaySDK\Client;
 use BitPaySDK\Exceptions\BitPayException;
 use BitPaySDK\Model\Invoice\Invoice;
 use BitPaySDK\Tokens;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class BitpayManager implements IPaymentSystemContract
+class BitpayManager implements PaymentSystemContract
 {
+    /**
+     * Invoice statuses
+     */
+    // New
+    const STATUS_INVOICE_NEW = 1000;
+
+    // To notify merchant that an invoice has reached the status paid
+    const STATUS_INVOICE_PAID_IN_FULL = 1003;
+
+    // To notify a merchant that an invoice has expired without being paid
+    const STATUS_INVOICE_EXPIRED = 1004;
+
+    // To notify merchant that an invoice has reached the status confirmed
+    const STATUS_INVOICE_CONFIRMED = 1005;
+
+    // To notify merchant that an invoice has reached the status completed
+    const STATUS_INVOICE_COMPLETED = 1006;
+
+    // To notify merchant that an invoice has reached the status invalid
+    const STATUS_INVOICE_FAILED_TO_CONFIRM = 1013;
+
+    // To notify a merchant that a refund request has been successfully processed
+    const STATUS_INVOICE_REFUND_COMPLETE = 1016;
+
+    /**
+     * @var \BitPaySDK\Client
+     */
     private $gateway;
 
     /**
@@ -33,13 +61,8 @@ class BitpayManager implements IPaymentSystemContract
                 config('payments.bitpay.private_key.password')
             );
         } catch (BitPayException $e) {
-            throw new \Exception($e->getMessage());
+            throw new Exception($e->getMessage());
         }
-    }
-
-    public static function type(): string
-    {
-        return 'bitpay';
     }
 
     public static function name(): string
@@ -52,6 +75,16 @@ class BitpayManager implements IPaymentSystemContract
         return 'BitPay is..';
     }
 
+    public static function gateway(): string
+    {
+        return 'bitpay';
+    }
+
+    public static function getNewStatusId(): int
+    {
+        return self::STATUS_INVOICE_NEW;
+    }
+
     /**
      * Wrapper for create bitpay invoice for charge money
      *
@@ -59,34 +92,31 @@ class BitpayManager implements IPaymentSystemContract
      *
      * @return \BitPaySDK\Model\Invoice\Invoice|string
      */
-    public function createInvoice(array $data)
+    public function createInvoice(array $data): array
     {
         try {
             // Create check code
-            $checkCode = PaymentOrderBitPay::getCheckCode();
+            $checkCode = Payment::getCheckCode();
 
             // Create internal order
-            $transaction = PaymentOrderBitPay::create([
-                'user_id' => Auth::user()->getAuthIdentifier(),
-                'amount' => $data['amount'],
-                'currency_id' => Currency::$currencies[mb_strtoupper($data['currency'])],
-                'check_code' => $checkCode,
-                'type' => PaymentOrderBitPay::TYPE_ORDER_INVOICE,
+            $payment = Payment::create([
+                'type' => Payment::TYPE_INVOICE,
                 'gateway' => self::type(),
-                'status' => PaymentOrderBitPay::STATUS_INVOICE_NEW
+                'amount' => $data['amount'],
+                'currency' => mb_strtoupper($data['currency']),
+                'check_code' => $checkCode,
+                'order_id' => $data['order_id'],
+                'service' => $data['replay_to'],
+                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
+                'status' => self::STATUS_INVOICE_NEW
             ]);
 
             // Set invoice detail
             $invoice = new Invoice($data['amount'], $data['currency']);
-
-            $invoice->setOrderId($transaction->id);
+            $invoice->setOrderId($payment->id);
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
-            $invoice->setTransactionSpeed("medium");
-
-            $url = env('PAYMENTS_WEBHOOK_URL','https://bitpay.com') . '/bitpay/invoices';
-
-            $invoice->setNotificationURL($url);
+            $invoice->setNotificationURL(config('payments.bitpay.webhook_url') . '/bitpay/invoices');
             $invoice->setRedirectURL(config('payments.bitpay.redirect_url'));
             $invoice->setPosData(json_encode(['code' => $checkCode]));
             $invoice->setItemDesc("Charge Balance for Sumra User");
@@ -94,20 +124,17 @@ class BitpayManager implements IPaymentSystemContract
             // Send data to bitpay and get created invoice
             $chargeObj = $this->gateway->createInvoice($invoice);
 
-            // Update order data
-            $transaction->document_id = $chargeObj->getId();
-            $transaction->save();
+            // Update payment transaction data
+            $payment->document_id = $chargeObj->getId();
+            $payment->save();
 
             return [
-                'type' => 'success',
-                'title' => 'Create Invoice',
-                'message' => 'Invoice successfully created',
+                'status' => 'success',
                 'invoice_url' => $chargeObj->getURL()
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
-                'type' => 'error',
-                'title' => 'Create Invoice',
+                'status' => 'error',
                 'message' => sprintf("Unable to create an invoice. Error: %s \n", $e->getMessage())
             ];
         }
@@ -116,58 +143,54 @@ class BitpayManager implements IPaymentSystemContract
     /**
      * @param \Illuminate\Http\Request $request
      *
-     * @return mixed|void
+     * @return array|string[]
      */
-    public function handlerWebhookInvoice(Request $request)
+    public function handlerWebhookInvoice(Request $request): array
     {
-        // Check content type
-        if (!$request->isJson()) {
-            http_response_code(400);
-            //return response()->json('Input data incorrect', 400);
+        // Check event property
+        if (!$request->has('event')) {
+            return [
+                'status' => 'error',
+                'message' => 'Empty / Incorrect event data'
+            ];
         }
 
-        // Get invoice data
-        $invoiceData = $request->get('data', null);
-        if ($invoiceData === null) {
-            http_response_code(400);
-            //return response()->json('Input data incorrect 2', 400);
+        // Get event data
+        $paymentData = $request->get('data', null);
+        if ($paymentData === null) {
+            return [
+                'status' => 'error',
+                'message' => 'Empty / Incorrect event data'
+            ];
         }
 
-        // Find order
-        $order = PaymentOrderBitPay::where('type', PaymentOrderBitPay::TYPE_ORDER_INVOICE)
-            ->where('document_id', $invoiceData['id'])
-            ->where('check_code', $invoiceData['posData']['code'])
+        // Find payment transaction
+        $payment = Payment::where('type', Payment::TYPE_INVOICE)
+            ->where('id', $paymentData['order_id'])
+            ->where('document_id', $paymentData['id'])
+            ->where('check_code', $paymentData['posData']['code'])
             ->where('gateway', self::type())
             ->first();
 
-        if (!$order) {
-            http_response_code(400);
-            //return response()->json('Order not found', 400);
+        if (!$payment) {
+            return [
+                'status' => 'error',
+                'message' => 'Payment transaction not found in Payment Microservice database'
+            ];
         }
 
-        $order->status = $request->event['code'];
-        $order->response = $invoiceData;
-        $order->save();
-    }
+        $payment->status = $request->event['code'];
+        $payment->payload = $paymentData;
+        $payment->save();
 
-    /**
-     *
-     */
-//    public function getInvoices()
-//    {
-//        $invoices = null;
-//
-//        try {
-//            $date = new DateTime();
-//            $today = $date->format("Y-m-d");
-//            $sevenDaysAgo = $date->modify('-30 day')->format("Y-m-d");
-//
-//            $invoices = $this->gateway->getInvoices($sevenDaysAgo, $today, null, null, 50);
-//
-//            dd($invoices);
-//        } catch (Exception $e) {
-//            $e->getTraceAsString();
-//            $e->getMessage();
-//        }
-//    }
+        // Return result
+        return [
+            'status' => 'success',
+            'payment_id' => $payment->id,
+            'amount' => $payment->amount,
+            'currency' => $payment->currency,
+            'service' => $payment->service,
+            'payment_status' => ''
+        ];
+    }
 }

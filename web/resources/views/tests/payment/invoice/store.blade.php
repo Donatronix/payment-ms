@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Test for create invoice in bitpay</title>
+    <title>Test for create invoice </title>
 
     <style type="text/css">
 
@@ -58,6 +58,7 @@
         {
 
             $('#response').html('');
+            $('#json_decode').html('');
 
             var user_id = document.getElementById('user_id').value;
 
@@ -82,7 +83,7 @@
                 first = '&';
             }
 
-            let url = '/v1/payments/payments/charge';
+            let url = '/v1/payments/recharge';
 
             let curl = 'curl -X POST -H "user-id:'+user_id+'" -d "'+arr+'" {{$http}}://{{ $host }}'+url;
 
@@ -134,14 +135,14 @@
 </head>
 <body>
 <p><a href="/tests/payments">Tests contents</a></p>
-<h1>test for create invoice in bitpay</h1>
+<h1>test for create invoice </h1>
 
 <table>
  <tr><td>user-id (to header)<span style="color:red;font-size:16pt">*</span></td><td> <input type="number" id="user_id" value="8" /></td></tr>
 
 <tr><td>amount<span style="color:red;font-size:16pt">*</span></td><td> <input type="text" id="amount" value="10" /></td></tr>
 <tr><td>currency<span style="color:red;font-size:16pt">*</span><br /></td><td> <input type="text" id="currency" value="USD" /></td></tr>
-<tr><td>gateway<span style="color:red;font-size:16pt">*</span><br /></td><td> <input type="text" id="gateway" value="bitpay" /></td></tr>
+<tr><td>gateway<span style="color:red;font-size:16pt">*</span><br /></td><td> <input type="text" id="gateway" value="bitpay" /><input type="button" value="stripe" onclick="document.getElementById('gateway').value=this.value" /></td></tr>
 
 </table>
 <p> <input type="button" value="Test" onclick="store_invoice()" /> </p>

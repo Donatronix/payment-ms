@@ -9,9 +9,16 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models
  */
-class LogInvoiceError extends Model
+class LogPaymentRequest extends Model
 {
-    protected $table = 'log_invoices_errors';
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'payload' => 'array',
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -19,7 +26,9 @@ class LogInvoiceError extends Model
      * @var array
      */
     protected $fillable = [
-        'error'
+        'gateway',
+        'service',
+        'payload'
     ];
 
     /**

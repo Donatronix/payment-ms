@@ -13,14 +13,15 @@ return [
             'path' => dirname(__FILE__) . DIRECTORY_SEPARATOR . 'bitpay-test.key',
             'password' => env('BITPAY_MASTER_PASSWORD', null),
         ],
-        'redirect_url' => env('PAYMENTS_REDIRECT_URL')
+        'webhook_url' => env('PAYMENTS_WEBHOOK_URL','https://sumra.net/payment/'),
+        'redirect_url' => env('PAYMENTS_REDIRECT_URL', 'https://sumra.net/')
     ],
 
     'coinbase' => [
         'api_key' => env('COINBASE_API_KEY', null),
         'webhook_key' => env('COINBASE_WEBHOOK_KEY', null),
-        'redirect_url' => env('PAYMENTS_REDIRECT_URL'),
-        'cancel_url' => env('PAYMENTS_REDIRECT_URL')
+        'redirect_url' => env('PAYMENTS_REDIRECT_URL', 'https://sumra.net/'),
+        'cancel_url' => env('PAYMENTS_REDIRECT_URL', 'https://sumra.net/')
     ],
 
     'paypal' => [

@@ -4,19 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Currency extends Model
+/**
+ * Model Balance
+ *
+ * @package App\Models
+ */
+class LogPaymentWebhook extends Model
 {
-    const CURRENCY_USD = 1;
-    const CURRENCY_EUR = 2;
-    const CURRENCY_GBP = 3;
-
     /**
-     * @var int[]
+     * The attributes that should be cast.
+     *
+     * @var array
      */
-    public static $currencies = [
-        'USD' => self::CURRENCY_USD,
-        'EUR' => self::CURRENCY_EUR,
-        'GBP' => self::CURRENCY_GBP
+    protected $casts = [
+        'payload' => 'array',
     ];
 
     /**
@@ -24,7 +25,10 @@ class Currency extends Model
      *
      * @var array
      */
-    protected $fillable = [];
+    protected $fillable = [
+        'gateway',
+        'payload'
+    ];
 
     /**
      * The attributes excluded from the model's JSON form.

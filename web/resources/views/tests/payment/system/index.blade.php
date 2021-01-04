@@ -42,7 +42,7 @@
 
                 let user_id = document.getElementById('user_id').value;
 
-                let url = '/v1/payments/payments/systems' ;
+                let url = '/v1/payments/systems' ;
 
                 let curl = 'curl -X GET -H "user-id:'+user_id+'" {{$http}}://{{ $host }}' + url;
 

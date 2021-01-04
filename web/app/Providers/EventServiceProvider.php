@@ -12,8 +12,8 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        'chargeBalance' => [
-            'App\Listeners\ChargeBalanceListener',
+        'rechargeBalanceRequest' => [
+            'App\Listeners\RechargeBalanceRequestListener',
         ],
     ];
 }

@@ -3,23 +3,22 @@
 namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PaymentOrder;
-use App\Models\Transaction;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
- * Class PaymentOrderController
+ * Class PaymentController
  *
  * @package App\Api\V1\Controllers
  */
-class PaymentOrderController extends Controller
+class PaymentController extends Controller
 {
     /**
      * Display payment orders list
      *
      * @OA\Get(
-     *     path="/v1/payments/admin/payment-orders",
+     *     path="/v1/payments/admin/payments",
      *     description="Display list of all patment orders",
      *     tags={"Admin - Payment Orders"},
      *
@@ -71,7 +70,7 @@ class PaymentOrderController extends Controller
      */
     public function index(Request $request){
         try {
-            $data = PaymentOrder::paginate($request->get('limit', 20));
+            $data = Payment::paginate($request->get('limit', 20));
 
             return response()->json(array_merge(['success' => true], $data->toArray()), 200);
         } catch (\Exception $e) {
@@ -86,7 +85,7 @@ class PaymentOrderController extends Controller
      * Method for proof of payment by payment order
      *
      * @OA\Post(
-     *     path="/v1/payments/admin/payment-orders",
+     *     path="/v1/payments/admin/payments",
      *     description="Method for proof of payment by payment order",
      *     tags={"Admin - Payment Orders"},
      *
@@ -125,7 +124,7 @@ class PaymentOrderController extends Controller
 
         // Get payment order model
         try {
-            $order = PaymentOrder::findOrFail($id);
+            $order = Payment::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
                 'type' => 'error',

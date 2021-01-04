@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class PaymentOrder extends Model
+class Payment extends Model
 {
     /**
      * Type of order
      */
-    const TYPE_ORDER_INVOICE = 1;
-    const TYPE_ORDER_PAYOUTS = 2;
+    const TYPE_INVOICE = 1;
+    const TYPE_PAYOUTS = 2;
 
     /**
      * The attributes that should be cast.
@@ -28,14 +28,16 @@ class PaymentOrder extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id',
-        'document_id',
-        'amount',
-        'check_code',
         'type',
         'gateway',
+        'amount',
+        'currency',
+        'check_code',
+        'service',
+        'document_id',
+        'user_id',
         'status',
-        'response'
+        'payload'
     ];
 
     /**
@@ -44,11 +46,6 @@ class PaymentOrder extends Model
      * @var array
      */
     protected $hidden = [];
-
-    /**
-     * @var string
-     */
-    protected $table = 'orders';
 
     /**
      * Generate unique ID

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateLogWebhooksTable extends Migration
+class CreateLogPaymentWebhookErrorsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,10 @@ class CreateLogWebhooksTable extends Migration
      */
     public function up()
     {
-        Schema::create('log_webhooks', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
+        Schema::create('log_payment_webhook_errors', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('gateway',40);
-            $table->text('request');
+            $table->string('gateway',10);
+            $table->text('payload');
             $table->timestamps();
         });
     }
@@ -29,6 +28,6 @@ class CreateLogWebhooksTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('log_webhooks');
+        Schema::dropIfExists('log_payment_webhook_errors');
     }
 }

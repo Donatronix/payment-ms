@@ -4,12 +4,12 @@ namespace App\Contracts;
 
 use Illuminate\Http\Request;
 
-interface IPaymentSystemContract
+interface PaymentSystemContract
 {
     /**
      * @return mixed
      */
-    public static function type();
+    public static function gateway();
 
     /**
      * @return mixed
@@ -20,6 +20,11 @@ interface IPaymentSystemContract
      * @return mixed
      */
     public static function description();
+
+    /**
+     * @return integer
+     */
+    public static function getNewStatusId();
 
     /**
      * @param array $data
