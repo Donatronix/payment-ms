@@ -9,7 +9,7 @@ interface PaymentSystemContract
     /**
      * @return mixed
      */
-    public static function type();
+    public static function gateway();
 
     /**
      * @return mixed

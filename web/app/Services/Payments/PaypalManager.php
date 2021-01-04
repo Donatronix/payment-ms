@@ -76,7 +76,7 @@ class PaypalManager implements PaymentSystemContract
         return 'PayPal payment is..';
     }
 
-    public static function type(): string
+    public static function gateway(): string
     {
         return 'paypal';
     }

@@ -77,7 +77,7 @@ class CoinbaseManager implements PaymentSystemContract
         return 'Coinbase Commerce is..';
     }
 
-    public static function type(): string
+    public static function gateway(): string
     {
         return 'coinbase';
     }

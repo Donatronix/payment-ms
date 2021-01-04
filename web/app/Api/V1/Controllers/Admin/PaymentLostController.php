@@ -2,12 +2,9 @@
 
 namespace App\Api\V1\Controllers\Admin;
 
+use App\Api\V1\Controllers\PaymentSystemController;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use App\Services\Payments\BitpayManager;
-use App\Services\Payments\CoinbaseManager;
-use App\Services\Payments\PaypalManager;
-use App\Services\Payments\StripeManager;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -85,14 +82,12 @@ class PaymentLostController extends Controller
     public function index(Request $request) {
 
         $newStatuses = [];
-        foreach(glob(base_path('app/Services/Payments').'/*.php') as $fullname) {
-            if(preg_match('/\/([a-z0-9]+)\.php$/i', $fullname, $ms)) {
-                $class = "\\App\\Services\\Payments\\".$ms[1];
-                if(class_exists($class)) {
-                    $newStatuses[$class::type()] = $class::getNewStatusId();
-                }
-            }
-        }
+
+        $ctrl = new PaymentSystemController();
+        $systems = $ctrl->catalog();
+
+        foreach($systems as $system)
+            $newStatuses[ $system['gateway'] ] = $system['new_status'];
 
         $limit = intval($request->get('limit', 20));
         $page = intval($request->get('page', 1));

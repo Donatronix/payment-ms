@@ -5,6 +5,8 @@ namespace App\Api\V1\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 
+
+
 /**
  * Class PaymentController
  *
@@ -44,6 +46,45 @@ class PaymentSystemController extends Controller
      */
     public function index(): JsonResponse
     {
+        $systems = $this->catalog();
+        return response()->json(['success' => true, 'systems' => $systems], 200);
+    }
+
+
+    public function catalog()
+        {
+
+            $systems = $this->catalog_cache();
+
+            if( count($systems) == 0 )
+            {
+                $systems = $this->catalog_fresh();
+                $this->save_cache();
+            }
+
+            return $systems;
+    }
+
+    public function clear_cache()
+    {
+
+        // Stub
+
+    }
+
+
+    private function catalog_cache()
+    {
+
+        // Stub
+        return [];
+
+    }
+
+
+    private function catalog_fresh()
+    {
+
         $systems = [];
 
         $dir = base_path('app/Services/Payments');
@@ -60,20 +101,33 @@ class PaymentSystemController extends Controller
                     continue;
 
                 try {
-                    $type = $class::type();
+                    $gateway = $class::gateway();
                     $name = $class::name();
                     $description = $class::description();
+                    $new_status = $class::getNewStatusId() ;
                 } catch (\Exception $e) {
+                    $gateway = 'error';
                     $name = 'error';
                     $description = $entry . ' ' . $e->getMessage();
+                    $new_status = null;
                 }
 
-                $systems[] = ['type' => $type, 'name' => $name, 'description' => $description];
+                $systems[] = ['gateway' => $gateway, 'name' => $name, 'description' => $description, 'new_status'=>$new_status];
             }
 
             closedir($handle);
         }
 
-        return response()->json(['success' => true, 'systems' => $systems], 200);
+        return $systems;
     }
+
+    private function save_cache()
+    {
+
+        // Stub
+
+    }
+
+
+
 }

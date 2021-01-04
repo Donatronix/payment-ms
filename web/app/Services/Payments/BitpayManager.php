@@ -75,7 +75,7 @@ class BitpayManager implements PaymentSystemContract
         return 'BitPay is..';
     }
 
-    public static function type(): string
+    public static function gateway(): string
     {
         return 'bitpay';
     }

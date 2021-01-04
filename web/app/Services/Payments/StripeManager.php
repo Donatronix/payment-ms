@@ -30,7 +30,7 @@ class StripeManager implements PaymentSystemContract
         $this->secret_key = env('STRIPE_SECRET_KEY', 'sk_test_mwiW1DmmnkYFzhOUfspqLxH000wGfzYpGY');
     }
 
-    public static function type(): string
+    public static function gateway(): string
     {
         return 'stripe';
     }
