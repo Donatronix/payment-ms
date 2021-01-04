@@ -147,11 +147,19 @@ class CoinbaseManager implements PaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request): array
     {
+        $signature = $request->header('X-Cc-Webhook-Signature', null);
+        if ($signature === null) {
+            return [
+                'status' => 'error',
+                'message' => 'Missing signature'
+            ];
+        }
+
         // Get event
         try {
             $event = Webhook::buildEvent(
                 trim(file_get_contents('php://input')),
-                $request->header('X-Cc-Webhook-Signature', null),
+                $signature,
                 config('payments.coinbase.webhook_key')
             );
         } catch (Exception $e) {
@@ -172,23 +180,23 @@ class CoinbaseManager implements PaymentSystemContract
 
         // Find payment transaction
         $payment = Payment::where('type', Payment::TYPE_INVOICE)
-            ->where('id', $paymentData->metadata->payment_id ?? null)
+            ->where('id', $paymentData->metadata['payment_id'] ?? null)
             ->where('document_id', $paymentData->id)
-            ->where('check_code', $paymentData->metadata->code ?? null)
+            ->where('check_code', $paymentData->metadata['code'] ?? null)
             ->where('gateway', self::type())
             ->first();
 
         if (!$payment) {
             return [
                 'status' => 'error',
-                'message' => 'Payment transaction not found in Payment Microservice database'
+                'message' => sprintf("Payment transaction not found in database: payment_id=%s, document_id=%s, code=%s", $paymentData->metadata['payment_id'], $paymentData->id, $paymentData->metadata['code'])
             ];
         }
 
         // Update payment transaction status
         $status = 'STATUS_' . mb_strtoupper(Str::snake(str_replace(':', ' ', $event->type)));
         $payment->status = constant("self::{$status}");
-        $payment->payload = $paymentData;
+        //$payment->payload = $paymentData;
         $payment->save();
 
         // Return result
@@ -198,7 +206,8 @@ class CoinbaseManager implements PaymentSystemContract
             'amount' => $payment->amount,
             'currency' => $payment->currency,
             'service' => $payment->service,
-            'payment_status' => ''
+            'user_id' => $payment->user_id,
+            'payment_completed' => (self::STATUS_CHARGE_CONFIRMED === $payment->status),
         ];
     }
 }

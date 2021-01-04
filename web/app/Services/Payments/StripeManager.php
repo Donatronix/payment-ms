@@ -173,23 +173,26 @@ class StripeManager implements PaymentSystemContract
         }
 
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentIntent->status);
-        if(!isset(self::$$status)) {
+        if(defined("self::{$status}")) {
             return [
                 'status' => 'error',
                 'message' => 'Status error: '.mb_strtoupper($paymentIntent->status)
             ];
         }
-        $payment->status = self::$$status;
-        $payment->payload = $request;
+
+        $payment->status = constant("self::{$status}");
+       // $payment->payload = $request;
         $payment->save();
+
+        // Return result
         return [
             'status' => 'success',
             'payment_id' => $payment->id,
             'service' => $payment->service,
             'amount' => $payment->amount,
             'currency' => $payment->currency,
-            'payment_status' => ''
+            'user_id' => $payment->user_id,
+            'payment_completed' => (self::STATUS_ORDER_SUCCEEDED === $payment->status),
         ];
     }
-
 }

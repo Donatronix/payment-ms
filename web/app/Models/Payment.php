@@ -19,7 +19,7 @@ class Payment extends Model
      * @var array
      */
     protected $casts = [
-        'response' => 'array',
+        'payload' => 'array',
     ];
 
     /**

@@ -174,7 +174,7 @@ class BitpayManager implements PaymentSystemContract
         }
 
         $payment->status = $request->event['code'];
-        $payment->payload = $paymentData;
+       // $payment->payload = $paymentData;
         $payment->save();
 
         // Return result
@@ -184,7 +184,8 @@ class BitpayManager implements PaymentSystemContract
             'amount' => $payment->amount,
             'currency' => $payment->currency,
             'service' => $payment->service,
-            'payment_status' => ''
+            'user_id' => $payment->user_id,
+            'payment_completed' => (self::STATUS_INVOICE_COMPLETED === $payment->status),
         ];
     }
 }

@@ -76,19 +76,11 @@ class PaymentController extends Controller
         if (!$request->isJson()) {
             LogPaymentWebhookError::create([
                 'gateway' => $gateway,
-                'payload' => $request->all()
+                'payload' => $request->getContent()
             ]);
 
             http_response_code(400);
-        }
-
-        try {
-            LogPaymentWebhook::create([
-                'gateway' => $gateway,
-                'payload' => $request->all(),
-            ]);
-        } catch (\Exception $e) {
-            Log::info('Log of invoice failed: ' . $e->getMessage());
+            exit();
         }
 
         // Init manager
@@ -114,8 +106,21 @@ class PaymentController extends Controller
             exit();
         }
 
-        // Send payment request to payment gateway
-        \PubSub::transaction(function () {})->publish(self::RECEIVER_LISTENER, $result, $result['service']);
+        // Logging success request content
+        try {
+            LogPaymentWebhook::create([
+                'gateway' => $gateway,
+                'payment_id' => $result['payment_id'],
+                'payload' => $request->all(),
+            ]);
+        } catch (\Exception $e) {
+            Log::info('Log of invoice failed: ' . $e->getMessage());
+        }
+
+        // If paid complete, than send notification
+        if($result['payment_completed']){
+            \PubSub::transaction(function () {})->publish(self::RECEIVER_LISTENER, $result, $result['service']);
+        }
 
         // Send status OK
         http_response_code(200);

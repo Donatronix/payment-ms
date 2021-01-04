@@ -27,13 +27,7 @@ class LogPaymentWebhook extends Model
      */
     protected $fillable = [
         'gateway',
+        'payment_id',
         'payload'
     ];
-
-    /**
-     * The attributes excluded from the model's JSON form.
-     *
-     * @var array
-     */
-    protected $hidden = [];
 }
