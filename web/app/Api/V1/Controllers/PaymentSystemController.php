@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class PaymentSystemController extends Controller
 {
-    const cache_id = "PaysystemList";
+    const cache_id = "PAYSYSTEMLIST";
 
     /**
      * @OA\Get(
