@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class PaymentSystemController extends Controller
 {
-    const cache_id = "PAYSYSTEMLIST";
+    const CACHE_ID = "PAYSYSTEMLIST";
 
     /**
      * @OA\Get(
@@ -64,17 +64,17 @@ class PaymentSystemController extends Controller
 
     public function clear_cache()
     {
-        Cache::forget(self::cache_id);
+        Cache::forget(self::CACHE_ID);
     }
 
     private function catalog_cache()
     {
-        return Cache::get(self::cache_id, []);
+        return Cache::get(self::CACHE_ID, []);
     }
 
     private function save_cache($systems)
     {
-        Cache::put(self::cache_id, $systems);
+        Cache::put(self::CACHE_ID, $systems);
     }
 
     private function catalog_fresh()
