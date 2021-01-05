@@ -42,6 +42,19 @@
             let url = '/v1/payments/admin/paymentslost';
             let curl = 'curl -X GET -H "user-id:2" {{$http}}://{{ $host }}';
 
+            let fields = ['gateway', 'limit', 'page'];
+            let _data = {};
+
+            for(let i=0; i<fields.length;i++)
+            {
+                let field = fields[i];
+                let v = $('#'+field).val();
+
+                if(  v != '' )
+                    _data[field] = v;
+
+            }
+
             $.ajax({
                 url: url,
                 type: 'get',
@@ -49,11 +62,7 @@
                 headers: {
                     'user-id': 2
                 },
-                data: {
-                    gateway: $("#gateway").val(),
-                    limit: $("#limit").val(),
-                    page: $("#page").val(),
-                },
+                data: _data,
                 beforeSend: function() {$('#a').html(curl + this.url)},
                 dataType: 'html',
                 success: function (data) {
@@ -67,6 +76,7 @@
                     let txt = '<span style="color:#ff0000">Error '+errorMessage;
                     txt += '</span>';
                     $('#response').html(txt);
+                    $('#json_decode').html('');
                 }
             });
         }

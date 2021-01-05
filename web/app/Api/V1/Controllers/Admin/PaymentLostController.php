@@ -91,6 +91,14 @@ class PaymentLostController extends Controller
 
         $limit = intval($request->get('limit', 20));
         $page = intval($request->get('page', 1));
+
+        if( $limit*$page == 0 ){
+            return response()->json([
+                'success' => false,
+                'error' => "Incorrect pagination: page or limit",
+            ], 400);
+        }
+
         $gateway = $request->get('gateway', "");
         $startItem = ($page-1)*$limit;
 
