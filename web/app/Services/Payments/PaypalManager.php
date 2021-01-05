@@ -104,10 +104,9 @@ class PaypalManager implements PaymentSystemContract
                 'type' => Payment::TYPE_INVOICE,
                 'gateway' => self::type(),
                 'amount' => $data['amount'],
-                'currency' => $data['currency'],
+                'currency' => mb_strtoupper($data['currency']),
                 'check_code' => $checkCode,
-                'order_id' => $data['order_id'],
-                'service' => $data['replay_to'],
+                'service' => $data['service'],
                 'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_ORDER_CREATED
             ]);
@@ -210,7 +209,7 @@ class PaypalManager implements PaymentSystemContract
         // Update payment transaction status
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentData->status);
         $payment->status = constant("self::{$status}");
-        $payment->payload = $paymentData;
+       // $payment->payload = $paymentData;
         $payment->save();
 
         // Return result
@@ -220,7 +219,8 @@ class PaypalManager implements PaymentSystemContract
             'service' => $payment->service,
             'amount' => $payment->amount,
             'currency' => $payment->currency,
-            'payment_status' => ''
+            'user_id' => $payment->user_id,
+            'payment_completed' => (self::STATUS_ORDER_COMPLETED === $payment->status),
         ];
     }
 }

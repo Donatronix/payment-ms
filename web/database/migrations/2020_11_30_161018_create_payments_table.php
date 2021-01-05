@@ -21,13 +21,14 @@ class CreatePaymentsTable extends Migration
             $table->char('currency', 3);
             $table->string('check_code');
             $table->string('document_id')->nullable();
-//            $table->unsignedBigInteger('order_id');
             $table->string('service', 36)->nullable();
 
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
 
             $table->smallInteger('status')->nullable();
+            $table->boolean('transaction_created')->default(false);
+
             $table->text('payload')->nullable();
             $table->timestamps();
         });

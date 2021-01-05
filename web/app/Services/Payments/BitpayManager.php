@@ -105,8 +105,7 @@ class BitpayManager implements PaymentSystemContract
                 'amount' => $data['amount'],
                 'currency' => mb_strtoupper($data['currency']),
                 'check_code' => $checkCode,
-                'order_id' => $data['order_id'],
-                'service' => $data['replay_to'],
+                'service' => $data['service'],
                 'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_INVOICE_NEW
             ]);
@@ -180,7 +179,7 @@ class BitpayManager implements PaymentSystemContract
         }
 
         $payment->status = $request->event['code'];
-        $payment->payload = $paymentData;
+       // $payment->payload = $paymentData;
         $payment->save();
 
         // Return result
@@ -190,7 +189,8 @@ class BitpayManager implements PaymentSystemContract
             'amount' => $payment->amount,
             'currency' => $payment->currency,
             'service' => $payment->service,
-            'payment_status' => ''
+            'user_id' => $payment->user_id,
+            'payment_completed' => (self::STATUS_INVOICE_COMPLETED === $payment->status),
         ];
     }
 }
