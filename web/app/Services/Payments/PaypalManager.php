@@ -102,7 +102,7 @@ class PaypalManager implements PaymentSystemContract
             // Create internal order
             $payment = Payment::create([
                 'type' => Payment::TYPE_INVOICE,
-                'gateway' => self::type(),
+                'gateway' => self::gateway(),
                 'amount' => $data['amount'],
                 'currency' => mb_strtoupper($data['currency']),
                 'check_code' => $checkCode,
@@ -156,7 +156,8 @@ class PaypalManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
-                'gateway' => self::type(),
+                'gateway' => self::gateway(),
+                'payment_id' => $payment->id,
                 'invoice_url' => $invoiceUrl
             ];
         } catch (Exception $e) {
@@ -174,6 +175,7 @@ class PaypalManager implements PaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request): array
     {
+        \Log::info($request);
         // Check sender
         if (!Str::contains($request->header('User-Agent'), 'PayPal')) {
             return [
@@ -193,10 +195,10 @@ class PaypalManager implements PaymentSystemContract
 
         // Find payment transaction
         $payment = Payment::where('type', Payment::TYPE_INVOICE)
-            ->where('id', $paymentData->purchase_units[0]->invoice_id ?? null)
-            ->where('document_id', $paymentData['id'])
-            ->where('check_code', $paymentData->purchase_units[0]->custom_id ?? null)
-            ->where('gateway', self::type())
+            ->where('id', $paymentData["purchase_units"][0]["invoice_id"])
+            ->where('document_id', $paymentData["id"])
+            ->where('check_code', $paymentData["purchase_units"][0]["custom_id"])
+            ->where('gateway', self::gateway())
             ->first();
 
         if (!$payment) {
@@ -207,7 +209,7 @@ class PaypalManager implements PaymentSystemContract
         }
 
         // Update payment transaction status
-        $status = 'STATUS_ORDER_' . mb_strtoupper($paymentData->status);
+        $status = 'STATUS_ORDER_' . mb_strtoupper($paymentData["status"]);
         $payment->status = constant("self::{$status}");
        // $payment->payload = $paymentData;
         $payment->save();

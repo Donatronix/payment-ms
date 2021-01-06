@@ -11,6 +11,8 @@ use Stripe\Stripe;
 class StripeManager implements PaymentSystemContract
 {
     private $gateway;
+    private $publisher_key;
+    private $secret_key;
 
     const STATUS_ORDER_REQUIRES_PAYMENT_METHOD = 1;
     const STATUS_ORDER_REQUIRES_CONFIRMATION = 2;
@@ -66,7 +68,7 @@ class StripeManager implements PaymentSystemContract
             // Create internal order
             $payment = Payment::create([
                 'type' => Payment::TYPE_INVOICE,
-                'gateway' => self::type(),
+                'gateway' => self::gateway(),
                 'amount' => $data['amount'],
                 'currency' => $data['currency'],
                 'check_code' => $checkCode,
@@ -98,7 +100,8 @@ class StripeManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
-                'gateway' => self::type(),
+                'gateway' => self::gateway(),
+                'payment_id' => $payment->id,
                 'session_id' => $checkout_session['id'],
                 'stripe_pubkey' => $this->publisher_key,
             ];
@@ -120,6 +123,7 @@ class StripeManager implements PaymentSystemContract
         \Log::info($request);
         $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+        \Log::info($_SERVER);
         $event = null;
 
         try {

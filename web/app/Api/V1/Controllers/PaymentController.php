@@ -9,6 +9,7 @@ use App\Models\LogPaymentWebhook;
 use App\Models\LogPaymentWebhookError;
 use App\Services\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -248,5 +249,12 @@ class PaymentController extends Controller
 
         // Return result
         return response()->json($result, $code);
+    }
+
+    public function get(Request $request, $id)
+    {
+        $user_id = Auth::user()->getAuthIdentifier();
+        $payment = \App\Models\Payment::where('id', $id)->where('user_id', $user_id)->first();
+        return $payment;
     }
 }

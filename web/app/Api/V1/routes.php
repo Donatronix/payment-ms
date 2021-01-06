@@ -15,6 +15,7 @@ $router->group([
     ], function () use ($router) {
         $router->get('systems', 'PaymentSystemController@index');
         $router->post('recharge', 'PaymentController@recharge');
+        $router->get('{id:[\d]+}', 'PaymentController@get');
 
         /**
          * ADMIN PANEL

@@ -19,6 +19,20 @@ $router->get('/tests/payments/lost', function () {
 });
 
 /* =================
+ * Full Test.
+==================== */
+
+$router->get('/tests/full', function () {
+    return \App\Http\Controllers\TestController::viewMake("tests.full");
+});
+$router->get('/tests/full-stripe', function () {
+    return \App\Http\Controllers\TestController::viewMake("tests.full-stripe");
+});
+$router->get('/tests/end', function () {
+    return \App\Http\Controllers\TestController::viewMake("tests.end");
+});
+
+/* =================
  * Version
 ==================== */
 

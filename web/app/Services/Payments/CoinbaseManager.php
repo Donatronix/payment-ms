@@ -3,7 +3,6 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
-use App\Models\Currency;
 use App\Models\Payment;
 use CoinbaseCommerce\ApiClient;
 use CoinbaseCommerce\Resources\Charge;
@@ -103,7 +102,7 @@ class CoinbaseManager implements PaymentSystemContract
             // Create internal order
             $payment = Payment::create([
                 'type' => Payment::TYPE_INVOICE,
-                'gateway' => self::type(),
+                'gateway' => self::gateway(),
                 'amount' => $data['amount'],
                 'currency' => mb_strtoupper($data['currency']),
                 'check_code' => $checkCode,
@@ -135,7 +134,8 @@ class CoinbaseManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
-                'gateway' => self::type(),
+                'gateway' => self::gateway(),
+                'payment_id' => $payment->id,
                 'invoice_url' => $chargeObj->hosted_url
             ];
         } catch (Exception $e) {
@@ -189,7 +189,7 @@ class CoinbaseManager implements PaymentSystemContract
             ->where('id', $paymentData->metadata['payment_id'] ?? null)
             ->where('document_id', $paymentData->id)
             ->where('check_code', $paymentData->metadata['code'] ?? null)
-            ->where('gateway', self::type())
+            ->where('gateway', self::gateway())
             ->first();
 
         if (!$payment) {
@@ -208,6 +208,7 @@ class CoinbaseManager implements PaymentSystemContract
         // Return result
         return [
             'status' => 'success',
+            'gateway' => self::gateway(),
             'payment_id' => $payment->id,
             'amount' => $payment->amount,
             'currency' => $payment->currency,
