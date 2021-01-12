@@ -21,6 +21,9 @@ class StripeManager implements PaymentSystemContract
     const STATUS_ORDER_REQUIRES_CAPTURE = 5;
     const STATUS_ORDER_CANCELED = 6;
     const STATUS_ORDER_SUCCEEDED = 7;
+    const STATUS_ORDER_PAID = 8;
+    const STATUS_ORDER_UNPAID = 9;
+    const STATUS_ORDER_NO_PAYMENT_REQUIRED = 10;
 
     /**
      * constructor.
@@ -185,12 +188,12 @@ class StripeManager implements PaymentSystemContract
             ];
         }
 
-        $status = 'STATUS_ORDER_' . mb_strtoupper($paymentIntent->status);
+        $status = 'STATUS_ORDER_' . mb_strtoupper($paymentIntent->payment_status);
         if(defined("self::{$status}")) {
             \Log::error("Status error: ".$payload);
             return [
                 'status' => 'error',
-                'message' => 'Status error: '.mb_strtoupper($paymentIntent->status)
+                'message' => 'Status error: '.mb_strtoupper($paymentIntent->payment_status)
             ];
         }
 
