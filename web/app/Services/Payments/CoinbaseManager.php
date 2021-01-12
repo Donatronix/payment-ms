@@ -107,7 +107,7 @@ class CoinbaseManager implements PaymentSystemContract
                 'currency' => mb_strtoupper($data['currency']),
                 'check_code' => $checkCode,
                 'service' => $data['service'],
-                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
+                'user_id' => Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_CHARGE_CREATED
             ]);
 
@@ -177,7 +177,8 @@ class CoinbaseManager implements PaymentSystemContract
 
         // Get event data
         $paymentData = $event->data;
-        if ($paymentData === null) {
+        \Log::info(json_encode($paymentData));
+        if (!isset($paymentData) || !is_object($paymentData) || !isset($paymentData["metadata"])) {
             return [
                 'status' => 'error',
                 'message' => 'Empty / Incorrect event data'
@@ -186,9 +187,9 @@ class CoinbaseManager implements PaymentSystemContract
 
         // Find payment transaction
         $payment = Payment::where('type', Payment::TYPE_INVOICE)
-            ->where('id', $paymentData->metadata['payment_id'] ?? null)
+            ->where('id', $paymentData->metadata['payment_id'])
             ->where('document_id', $paymentData->id)
-            ->where('check_code', $paymentData->metadata['code'] ?? null)
+            ->where('check_code', $paymentData->metadata['code'])
             ->where('gateway', self::gateway())
             ->first();
 

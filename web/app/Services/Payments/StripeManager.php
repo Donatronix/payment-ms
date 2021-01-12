@@ -120,30 +120,32 @@ class StripeManager implements PaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request)
     {
-        \Log::info($request);
         $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
-        \Log::info($_SERVER);
+        $payload = @file_get_contents('php://input');
         $event = null;
 
         try {
             $event = \Stripe\Webhook::constructEvent(
-                $request, $sig_header, $endpoint_secret
+                $payload, $sig_header, $endpoint_secret
             );
         } catch(\UnexpectedValueException $e) {
             // Invalid payload
+            \Log::error("Invalid payload: ".$payload);
             return [
                 'status' => 'error',
                 'message' => 'Unexpected value error'
             ];
         } catch(\Stripe\Exception\SignatureVerificationException $e) {
             // Invalid signature
+            \Log::error("Invalid signature: ".$payload);
             return [
                 'status' => 'error',
                 'message' => 'Signature check error'
             ];
         }
 
+        \Log::info($request);
         // Handle the event
         switch ($event->type) {
             case 'checkout.session.completed':
@@ -152,6 +154,7 @@ class StripeManager implements PaymentSystemContract
                 $paymentIntent = $event->data->object; // contains a StripePaymentIntent
                 break;
             default:
+                \Log::error("Unexpected event type: ".$payload);
                 return [
                     'status' => 'error',
                     'message' => 'Unexpected event type'
@@ -160,7 +163,7 @@ class StripeManager implements PaymentSystemContract
 
         // Get invoice data
         $orderData = $paymentIntent->metadata;
-        if (!$orderData) {
+        if (!$orderData || !is_object($orderData)) {
             return [
                 'status' => 'error',
                 'message' => 'No order data'
@@ -175,6 +178,7 @@ class StripeManager implements PaymentSystemContract
             ->first();
 
         if (!$payment) {
+            \Log::error("Order not found: ".$payload);
             return [
                 'status' => 'error',
                 'message' => 'Order not found'
@@ -183,14 +187,15 @@ class StripeManager implements PaymentSystemContract
 
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentIntent->status);
         if(defined("self::{$status}")) {
+            \Log::error("Status error: ".$payload);
             return [
                 'status' => 'error',
                 'message' => 'Status error: '.mb_strtoupper($paymentIntent->status)
             ];
         }
 
-        $payment->status = constant("self::{$status}");
-       // $payment->payload = $request;
+        $payment->status = intval(constant("self::{$status}"));
+        // $payment->payload = $request;
         $payment->save();
 
         // Return result

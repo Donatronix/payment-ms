@@ -3,7 +3,6 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
-use App\Models\Currency;
 use App\Models\Payment;
 use Exception;
 use Illuminate\Http\Request;
