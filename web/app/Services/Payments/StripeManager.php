@@ -142,7 +142,7 @@ class StripeManager implements PaymentSystemContract
         } catch(\Stripe\Exception\SignatureVerificationException $e) {
             // Invalid signature
             \Log::error("Invalid signature: ".$payload);
-            return [
+            if(!env("DEVMODE",0)) return [
                 'status' => 'error',
                 'message' => 'Signature check error'
             ];

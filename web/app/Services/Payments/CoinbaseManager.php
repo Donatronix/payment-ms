@@ -154,7 +154,7 @@ class CoinbaseManager implements PaymentSystemContract
     public function handlerWebhookInvoice(Request $request): array
     {
         $signature = $request->header('X-Cc-Webhook-Signature', null);
-        if ($signature === null) {
+        if ($signature === null && !env("DEVMODE",0)) {
             return [
                 'status' => 'error',
                 'message' => 'Missing signature'
@@ -169,16 +169,18 @@ class CoinbaseManager implements PaymentSystemContract
                 config('payments.coinbase.webhook_key')
             );
         } catch (Exception $e) {
-            return [
+            if(env("DEVMODE",0)) {
+                $event = $request->data;
+            } else return [
                 'status' => 'error',
                 'message' => $e->getMessage()
             ];
         }
 
         // Get event data
-        $paymentData = $event->data;
+        $paymentData = $event["data"];
         \Log::info(json_encode($paymentData));
-        if (!isset($paymentData) || !is_object($paymentData) || !isset($paymentData["metadata"])) {
+        if (!isset($paymentData) || !is_array($paymentData) || !isset($paymentData["metadata"])) {
             return [
                 'status' => 'error',
                 'message' => 'Empty / Incorrect event data'
@@ -187,9 +189,9 @@ class CoinbaseManager implements PaymentSystemContract
 
         // Find payment transaction
         $payment = Payment::where('type', Payment::TYPE_INVOICE)
-            ->where('id', $paymentData->metadata['payment_id'])
-            ->where('document_id', $paymentData->id)
-            ->where('check_code', $paymentData->metadata['code'])
+            ->where('id', $paymentData["metadata"]['payment_id'])
+            ->where('document_id', $paymentData["id"])
+            ->where('check_code', $paymentData["metadata"]['code'])
             ->where('gateway', self::gateway())
             ->first();
 
@@ -201,8 +203,8 @@ class CoinbaseManager implements PaymentSystemContract
         }
 
         // Update payment transaction status
-        $status = 'STATUS_' . mb_strtoupper(Str::snake(str_replace(':', ' ', $event->type)));
-        $payment->status = constant("self::{$status}");
+        $status = 'STATUS_' . mb_strtoupper(Str::snake(str_replace(':', ' ', $event["type"])));
+        $payment->status = intval(constant("self::{$status}"));
         //$payment->payload = $paymentData;
         $payment->save();
 
