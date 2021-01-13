@@ -5,4 +5,5 @@
 \Log::info($_GET);
 \Log::info('$_POST:');
 \Log::info($_POST);
-echo 1;
+?>
+This is the final page that the user sees after payment or non-payment

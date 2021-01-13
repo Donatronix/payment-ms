@@ -153,6 +153,14 @@ class CoinbaseManager implements PaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request): array
     {
+        \Log::info($_SERVER);
+        \Log::info(file_get_contents('php://input'));
+        \Log::info($request);
+        $event = $request["event"];
+        \Log::info("Event:");
+        \Log::info($event);
+        $paymentData = $event["data"];
+
         $signature = $request->header('X-Cc-Webhook-Signature', null);
         if ($signature === null && !env("DEVMODE",0)) {
             return [
@@ -168,9 +176,15 @@ class CoinbaseManager implements PaymentSystemContract
                 $signature,
                 config('payments.coinbase.webhook_key')
             );
+            $paymentData = [
+                "id" => $event->data->id,
+                "metadata" => [
+                    "code" => $event->data->metadata->code,
+                    "payment_id"=>$event->data->metadata->payment_id
+                ]
+            ];
         } catch (Exception $e) {
             if(env("DEVMODE",0)) {
-                $event = $request->data;
             } else return [
                 'status' => 'error',
                 'message' => $e->getMessage()
@@ -178,7 +192,7 @@ class CoinbaseManager implements PaymentSystemContract
         }
 
         // Get event data
-        $paymentData = $event["data"];
+        \Log::info($event);
         \Log::info(json_encode($paymentData));
         if (!isset($paymentData) || !is_array($paymentData) || !isset($paymentData["metadata"])) {
             return [

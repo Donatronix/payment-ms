@@ -33,13 +33,31 @@
             to {background-color: #000000}
         }
 
+        @keyframes wdth {
+            from {width: 0}
+            to {width: 20px}
+        }
+
         #btn {
-            animation-name: bg;
-            animation-duration: 4s;
-            animation-iteration-count: infinite;
-            padding: 3px;
             display: none;
         }
+
+        #dots {
+            animation-name: wdth;
+            animation-duration: 1s;
+            animation-iteration-count: infinite;
+            padding: 3px;
+            overflow: hidden;
+        }
+
+        #stripebtns {
+            display: none;
+        }
+
+        #coinbasebtns {
+            display: none;
+        }
+
     </style>
     <script type="text/javascript">
 
@@ -63,6 +81,8 @@
         let payment_id = 0;
         let interval_id = 0;
         let lastPayment = "";
+        let check_code = "";
+        let document_id = "";
 
         function startInterval()
         {
@@ -75,10 +95,17 @@
         {
             let str = JSON.stringify(data);
             if(str != lastPayment) {
+                check_code = data.check_code;
+                document_id = data.document_id;
                 lastPayment = str;
-                $("#renew_list").append("<br /><br /><pre>"+str+"</pre><hr />"+renderJson(data));
-                window.scrollTo(0, document.body.scrollHeight);
+                renewList(data);
             }
+        }
+
+        function renewList(data) {
+            console.log(data);
+            $("#renew_list").append("<br /><br /><pre>"+JSON.stringify(data)+"</pre><hr />"+renderJson(data));
+            window.scrollTo(0, document.body.scrollHeight);
         }
 
         function renewPayment()
@@ -92,8 +119,8 @@
                     "user-id": 2
                 },
                 success: doRenewPayment,
-                complete: function(data){console.log(data)},
-                error: function(data){alert(data.responseText)},
+//                complete: function(data){console.log(data)},
+                error: function(data){console.log("Error:");console.log(data);alert(data.responseText)},
                 dataType: "json"
             });
         }
@@ -107,6 +134,8 @@
                 window.scrollTo(0, document.body.scrollHeight);
                 $("#renewBtn").prop("disabled", true);
                 $("#btn").hide();
+                $("#stripebtns").hide();
+                $("#coinbasebtns").hide();
             }
         }
 
@@ -117,7 +146,8 @@
         function doAnswer(data) {
             console.log(data);
             if(data.status=="error") {
-                console.log(data.message);
+                console.log("Error:");
+                console.log(data);
                 alert(data.message);
                 return;
             }
@@ -127,7 +157,11 @@
             startInterval();
             if(data.gateway=="stripe") {
                 doStripe(data.stripe_pubkey, data.session_id);
+                $("#stripebtns").show();
             } else {
+                if(data.gateway=="coinbase") {
+                    $("#coinbasebtns").show();
+                }
                 window.open(data.invoice_url, "_blank");
             }
         }
@@ -153,6 +187,62 @@
             });
         }
 
+        function doCoinbaseSuccess() {
+            $.ajax({
+                url: "/v1/payments/webhooks/coinbase/invoices",
+                method: "POST",
+                data: JSON.stringify({
+                    event: {
+                        data: {
+                            id: document_id,
+                            metadata: {
+                                code: check_code,
+                                payment_id: payment_id
+                            }
+                        },
+                        type: "charge:confirmed"
+                    }
+                }),
+                contentType: 'application/json',
+                headers: {
+                    "user-id": 2,
+                }
+            });
+        }
+
+        function doStripeRequest(type, payment_status) {
+            $.ajax({
+                url: "/v1/payments/webhooks/stripe/invoices",
+                method: "POST",
+                data: JSON.stringify({
+                    type: type,
+                    data: {
+                        object: {
+                            id: "cs_00000000000000",
+                            metadata: {
+                                "payment_order": payment_id,
+                                "check_code": check_code
+                            },
+                            payment_intent: "pi_00000000000000",
+                            payment_status: payment_status
+                        }
+                    }
+                }),
+                contentType: 'application/json',
+                headers: {
+                    "user-id": 2,
+                }
+            });
+        }
+
+        function doStripeSuccess() {
+            doStripeRequest("checkout.session.async_payment_succeeded", "paid");
+        }
+
+        function doStripeFail() {
+            doStripeRequest("checkout.session.async_payment_failed", "unpaid");
+        }
+
     </script>
 </head>
 <body>
@@ -174,7 +264,11 @@
 <div id="json_decode" style="width:800px"></div>
 
 <div id="renew_list" style="width:800px"></div>
-<span id="btn"><input value="Stop renew payment" type="button" onclick="doStopRenew()" id="renewBtn" disabled="disabled"></span>
-
+<div id="btn">
+    <div id="dots">...</div><input value="Stop renew" type="button" onclick="doStopRenew()" id="renewBtn" disabled="disabled"><br />
+    <br />
+    <div id="stripebtns"><input type="button" onclick="doStripeSuccess()" value="Simulate Stripe's webhook as successful" />&nbsp;<input type="button" onclick="doStripeFail()" value="Simulate Stripe's webhook as error" /></div>
+    <div id="coinbasebtns"><input type="button" onclick="doCoinbaseSuccess()" value="Simulate Coinbase's webhook as successful" /></div>
+</div>
 </body>
 </html>

@@ -124,7 +124,11 @@ class StripeManager implements PaymentSystemContract
     public function handlerWebhookInvoice(Request $request)
     {
         $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
-        $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+        if(isset($_SERVER['HTTP_STRIPE_SIGNATURE'])) {
+            $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+        } else {
+            $sig_header = "";
+        }
         $payload = @file_get_contents('php://input');
         $event = null;
 
@@ -142,7 +146,20 @@ class StripeManager implements PaymentSystemContract
         } catch(\Stripe\Exception\SignatureVerificationException $e) {
             // Invalid signature
             \Log::error("Invalid signature: ".$payload);
-            if(!env("DEVMODE",0)) return [
+            if(env("DEVMODE",0)) {
+                $event = (object)[
+                    "type" => $request["type"],
+                    "data" => (object)[
+                        "object" => (object)[
+                            "metadata" => (object)[
+                                "payment_order" => $request["data"]["object"]["metadata"]["payment_order"],
+                                "check_code" => $request["data"]["object"]["metadata"]["check_code"],
+                            ],
+                            "payment_status" => $request["data"]["object"]["payment_status"],
+                        ]
+                    ]
+                ];
+            } else return [
                 'status' => 'error',
                 'message' => 'Signature check error'
             ];
@@ -189,7 +206,7 @@ class StripeManager implements PaymentSystemContract
         }
 
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentIntent->payment_status);
-        if(defined("self::{$status}")) {
+        if(!defined("self::{$status}")) {
             \Log::error("Status error: ".$payload);
             return [
                 'status' => 'error',
