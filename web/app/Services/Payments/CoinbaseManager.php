@@ -3,7 +3,6 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
-use App\Models\Currency;
 use App\Models\Payment;
 use CoinbaseCommerce\ApiClient;
 use CoinbaseCommerce\Resources\Charge;
@@ -103,12 +102,12 @@ class CoinbaseManager implements PaymentSystemContract
             // Create internal order
             $payment = Payment::create([
                 'type' => Payment::TYPE_INVOICE,
-                'gateway' => self::type(),
+                'gateway' => self::gateway(),
                 'amount' => $data['amount'],
                 'currency' => mb_strtoupper($data['currency']),
                 'check_code' => $checkCode,
                 'service' => $data['service'],
-                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
+                'user_id' => Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_CHARGE_CREATED
             ]);
 
@@ -135,7 +134,8 @@ class CoinbaseManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
-                'gateway' => self::type(),
+                'gateway' => self::gateway(),
+                'payment_id' => $payment->id,
                 'invoice_url' => $chargeObj->hosted_url
             ];
         } catch (Exception $e) {
@@ -153,8 +153,16 @@ class CoinbaseManager implements PaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request): array
     {
+        \Log::info($_SERVER);
+        \Log::info(file_get_contents('php://input'));
+        \Log::info($request);
+        $event = $request["event"];
+        \Log::info("Event:");
+        \Log::info($event);
+        $paymentData = $event["data"];
+
         $signature = $request->header('X-Cc-Webhook-Signature', null);
-        if ($signature === null) {
+        if ($signature === null && !env("DEVMODE",0)) {
             return [
                 'status' => 'error',
                 'message' => 'Missing signature'
@@ -168,16 +176,25 @@ class CoinbaseManager implements PaymentSystemContract
                 $signature,
                 config('payments.coinbase.webhook_key')
             );
+            $paymentData = [
+                "id" => $event->data->id,
+                "metadata" => [
+                    "code" => $event->data->metadata->code,
+                    "payment_id"=>$event->data->metadata->payment_id
+                ]
+            ];
         } catch (Exception $e) {
-            return [
+            if(env("DEVMODE",0)) {
+            } else return [
                 'status' => 'error',
                 'message' => $e->getMessage()
             ];
         }
 
         // Get event data
-        $paymentData = $event->data;
-        if ($paymentData === null) {
+        \Log::info($event);
+        \Log::info(json_encode($paymentData));
+        if (!isset($paymentData) || !is_array($paymentData) || !isset($paymentData["metadata"])) {
             return [
                 'status' => 'error',
                 'message' => 'Empty / Incorrect event data'
@@ -186,10 +203,10 @@ class CoinbaseManager implements PaymentSystemContract
 
         // Find payment transaction
         $payment = Payment::where('type', Payment::TYPE_INVOICE)
-            ->where('id', $paymentData->metadata['payment_id'] ?? null)
-            ->where('document_id', $paymentData->id)
-            ->where('check_code', $paymentData->metadata['code'] ?? null)
-            ->where('gateway', self::type())
+            ->where('id', $paymentData["metadata"]['payment_id'])
+            ->where('document_id', $paymentData["id"])
+            ->where('check_code', $paymentData["metadata"]['code'])
+            ->where('gateway', self::gateway())
             ->first();
 
         if (!$payment) {
@@ -200,14 +217,15 @@ class CoinbaseManager implements PaymentSystemContract
         }
 
         // Update payment transaction status
-        $status = 'STATUS_' . mb_strtoupper(Str::snake(str_replace(':', ' ', $event->type)));
-        $payment->status = constant("self::{$status}");
+        $status = 'STATUS_' . mb_strtoupper(Str::snake(str_replace(':', ' ', $event["type"])));
+        $payment->status = intval(constant("self::{$status}"));
         //$payment->payload = $paymentData;
         $payment->save();
 
         // Return result
         return [
             'status' => 'success',
+            'gateway' => self::gateway(),
             'payment_id' => $payment->id,
             'amount' => $payment->amount,
             'currency' => $payment->currency,

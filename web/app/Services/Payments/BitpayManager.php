@@ -101,7 +101,7 @@ class BitpayManager implements PaymentSystemContract
             // Create internal order
             $payment = Payment::create([
                 'type' => Payment::TYPE_INVOICE,
-                'gateway' => self::type(),
+                'gateway' => self::gateway(),
                 'amount' => $data['amount'],
                 'currency' => mb_strtoupper($data['currency']),
                 'check_code' => $checkCode,
@@ -129,6 +129,8 @@ class BitpayManager implements PaymentSystemContract
 
             return [
                 'status' => 'success',
+                'gateway' => self::gateway(),
+                'payment_id' => $payment->id,
                 'invoice_url' => $chargeObj->getURL()
             ];
         } catch (Exception $e) {
@@ -146,6 +148,7 @@ class BitpayManager implements PaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request): array
     {
+        \Log::info($request);
         // Check event property
         if (!$request->has('event')) {
             return [
@@ -163,12 +166,13 @@ class BitpayManager implements PaymentSystemContract
             ];
         }
 
+        $paymentData['posData'] = json_decode($paymentData['posData']);
         // Find payment transaction
         $payment = Payment::where('type', Payment::TYPE_INVOICE)
-            ->where('id', $paymentData['order_id'])
+            ->where('id', $paymentData['orderId'])
             ->where('document_id', $paymentData['id'])
-            ->where('check_code', $paymentData['posData']['code'])
-            ->where('gateway', self::type())
+            ->where('check_code', $paymentData['posData']->code)
+            ->where('gateway', self::gateway())
             ->first();
 
         if (!$payment) {
