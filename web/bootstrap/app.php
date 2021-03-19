@@ -110,9 +110,6 @@ $app->register(\Sumra\JsonApi\JsonApiServiceProvider::class);
 $app->configure('swagger-lume');
 $app->register(\SwaggerLume\ServiceProvider::class);
 
-/** Route List */
-$app->register(Appzcoder\LumenRoutesList\RoutesCommandServiceProvider::class);
-
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes

@@ -8,7 +8,6 @@
         li.h2{list-style-type: circle;font-size:15pt;padding-top:12px;padding-bottom:8px;font-weight: bold;background:#f5f5f5}
         li.h3{font-size:12pt;padding-top:8px;padding-bottom:4px;;font-weight: bold; }
         li.space{height:10px}
-
     </style>
 </head>
 <body>

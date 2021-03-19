@@ -1,25 +1,22 @@
 {
-    "name": "laravel/lumen",
-    "description": "The Laravel Lumen Framework.",
-    "keywords": ["framework", "laravel", "lumen"],
-    "license": "MIT",
+    "name": "sumra/payments",
+    "description": "Payments Gateways Microservice",
     "type": "project",
+    "private": true,
     "require": {
-        "php": "^7.3",
-        "ext-json": "*",
-        "appzcoder/lumen-routes-list": "~1",
-        "bitpay/sdk": "~4",
+        "php": "^7.3|^8.0",
+        "bitpay/sdk": "~5",
         "coinbase/coinbase-commerce": "~1",
-        "darkaonline/swagger-lume": "~6",
-        "doctrine/dbal": "^2.12.1",
-        "laravel/lumen-framework": "~6",
+        "darkaonline/swagger-lume": "~8",
+        "doctrine/dbal": "~2",
+        "ext-json": "*",
+        "laravel/lumen-framework": "~8",
         "paypal/paypal-checkout-sdk": "~1",
-        "php-amqplib/php-amqplib": "~2",
         "stripe/stripe-php": "~7",
         "ramsey/uuid": "~4",
         "sumra/json-api": "*",
         "sumra/pubsub": "*",
-        "vladimir-yuldashev/laravel-queue-rabbitmq": "~9",
+        "vladimir-yuldashev/laravel-queue-rabbitmq": "~11",
         "zircote/swagger-php": "~3"
     },
     "require-dev": {
@@ -28,12 +25,10 @@
         "phpunit/phpunit": "~9"
     },
     "autoload": {
-        "classmap": [
-            "database/seeds",
-            "database/factories"
-        ],
         "psr-4": {
-            "App\\": "app/"
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {
