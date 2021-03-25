@@ -17,7 +17,6 @@ class PagesController extends Controller
         $urls = [];
 
         foreach ($routeCollection as $value) {
-
             $uri = strstr($value['uri'], '/tests/');
 
             if ($uri) {
@@ -27,8 +26,8 @@ class PagesController extends Controller
 
         sort($urls);
 
-        $group="&nbsp;";
-        $subgroup="&nbsp;";
+        $group = "&nbsp;";
+        $subgroup = "&nbsp;";
 
         $re2 = '/\/tests\/payments\/([^\/]+)/u';
 
@@ -36,20 +35,18 @@ class PagesController extends Controller
 
         $new_urls = [];
 
-        foreach($urls as $uri)
-        {
-            preg_match($re2,$uri, $m);
-            if( isset($m[1]) ) {
+        foreach ($urls as $uri) {
+            preg_match($re2, $uri, $m);
+            if (isset($m[1])) {
                 $new_group = $m[1];
                 if ($new_group != $group) {
                     $new_urls[] = "h2$new_group";
                     $group = $new_group;
                 }
-            }
-            else
+            } else
                 continue;
 
-            if(preg_match($re3,$uri, $m)) {
+            if (preg_match($re3, $uri, $m)) {
                 $new_subgroup = $m[1];
 
                 if ($new_subgroup != $subgroup) {
@@ -59,13 +56,11 @@ class PagesController extends Controller
                         && ($new_subgroup != 'index')
                         && ($new_subgroup != 'update')
                         && ($new_subgroup != 'destroy')
-                    )
-                        {
+                    ) {
                         $new_urls[] = "h3$new_subgroup";
-                        }
-                    else {
+                    } else {
                         $new_urls[] = "-";
-                         }
+                    }
                     $subgroup = $new_subgroup;
                 }
             }

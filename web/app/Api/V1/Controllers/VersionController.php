@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 
 /**
  * Class VersionController
+ * Show version of service
  *
  * @package App\Api\V1\Controllers
  */
@@ -28,6 +29,6 @@ class VersionController extends Controller
      */
     public function version()
     {
-        return response()->json(['date' => '2020-12-07'], 200);
+        return response()->json(['date' => '2021-03-18'], 200);
     }
 }

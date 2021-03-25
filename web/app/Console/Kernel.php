@@ -26,4 +26,17 @@ class Kernel extends ConsoleKernel
     {
         //
     }
+
+    /**
+     * Get the timezone that should be used by default for scheduled events.
+     *
+     * @return string
+     */
+    /**
+     * @return string
+     */
+    protected function scheduleTimezone(): string
+    {
+        return 'Europe/London';
+    }
 }

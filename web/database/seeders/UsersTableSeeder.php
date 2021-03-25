@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class UsersTableSeeder extends Seeder
 {
@@ -9,11 +9,12 @@ class UsersTableSeeder extends Seeder
      * Run the database seeds.
      *
      * @return void
+     * @throws \Exception
      */
-    public function run()
+    public function run(): void
     {
         // Sumra User
-        factory(User::class)->create([
+        User::factory()->create([
             'id' => 1,
             'first_name' => 'Sumra',
             'last_name' => 'Net'
@@ -21,7 +22,7 @@ class UsersTableSeeder extends Seeder
 
         // Other users
         for($a = 2; $a < 10; $a++){
-            factory(User::class)->create(['id' => $a]);
+            User::factory()->create(['id' => $a]);
         }
     }
 }
