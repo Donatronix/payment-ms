@@ -175,7 +175,7 @@ class PaymentController extends Controller
      *             ),
      *             @OA\Property(
      *                 property="service",
-     *                 description="Target service: ultaInfinityWallet | divitExchange",
+     *                 description="Target service: ultaInfinityWallets | divitExchange",
      *                 type="string"
      *             )
      *         )
