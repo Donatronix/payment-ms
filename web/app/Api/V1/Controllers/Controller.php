@@ -6,14 +6,21 @@ use Laravel\Lumen\Routing\Controller as BaseController;
 
 /**
  * @OA\Info(
- *     title="Payments Gateways API",
- *     description= "This is Payments Gateways Microservice API",
- *     version="1.0",
+ *     title=SWAGGER_TITLE,
+ *     description=SWAGGER_DESCRIPTION,
+ *     version=SWAGGER_VERSION,
  *
  *     @OA\Contact(
- *         email="admin@sumra.net",
+ *         email=SWAGGER_SUPPORT_EMAILS,
  *         name="Support Team"
  *     )
+ * )
+ */
+
+/**
+ * @OA\Server(
+ *      url=SWAGGER_CONST_HOST,
+ *      description=SWAGGER_DESCRIPTION
  * )
  */
 
@@ -26,7 +33,7 @@ use Laravel\Lumen\Routing\Controller as BaseController;
  *
  *     @OA\Flow(
  *         flow="implicit",
- *         authorizationUrl="https://is.sumra.net/oauth2",
+ *         authorizationUrl="https://sumraid.com/oauth2",
  *         scopes={
  *             "ManagerRead"="Manager can read",
  *             "User":"User access",
@@ -35,6 +42,7 @@ use Laravel\Lumen\Routing\Controller as BaseController;
  *     )
  * )
  */
+
 /**
  * Api Base Class Controller
  *

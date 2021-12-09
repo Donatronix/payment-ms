@@ -4,15 +4,15 @@
  * @var Laravel\Lumen\Routing\Router $router
  */
 $router->group([
-    'prefix' => 'payments',
-    'namespace' => '\App\Api\V1\Controllers'
-], function () use ($router) {
+    'prefix' => env('APP_API_VERSION', ''),
+    'namespace' => '\App\Api\V1\Controllers',
+], function ($router) {
     /**
      * Internal access
      */
     $router->group([
         'middleware' => 'checkUser'
-    ], function () use ($router) {
+    ], function ($router) {
         $router->get('systems', 'PaymentSystemController@index');
         $router->post('recharge', 'PaymentController@recharge');
         $router->get('{id:[\d]+}', 'PaymentController@get');
@@ -20,13 +20,11 @@ $router->group([
         /**
          * ADMIN PANEL
          */
-        $router->group(
-            [
+        $router->group([
                 'prefix' => 'admin',
                 'namespace' => 'Admin',
                 'middleware' => 'checkAdmin'
-            ],
-            function ($router) {
+        ], function ($router) {
                 // Wallets Admin
                 $router->get('/payments', 'PaymentController@index');
                 $router->post('/payments/{id:[\d]+}', 'PaymentController@update');

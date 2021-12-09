@@ -140,7 +140,7 @@ class CoinbaseManager implements PaymentSystemContract
             ];
         } catch (Exception $e) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => sprintf("Unable to create a charge. Error: %s \n", $e->getMessage())
             ];
         }
@@ -162,9 +162,9 @@ class CoinbaseManager implements PaymentSystemContract
         $paymentData = $event["data"];
 
         $signature = $request->header('X-Cc-Webhook-Signature', null);
-        if ($signature === null && !env("DEVMODE",0)) {
+        if ($signature === null && !env("APP_DEBUG",0)) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => 'Missing signature'
             ];
         }
@@ -184,9 +184,9 @@ class CoinbaseManager implements PaymentSystemContract
                 ]
             ];
         } catch (Exception $e) {
-            if(env("DEVMODE",0)) {
+            if(env("APP_DEBUG",0)) {
             } else return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => $e->getMessage()
             ];
         }
@@ -196,7 +196,7 @@ class CoinbaseManager implements PaymentSystemContract
         \Log::info(json_encode($paymentData));
         if (!isset($paymentData) || !is_array($paymentData) || !isset($paymentData["metadata"])) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => 'Empty / Incorrect event data'
             ];
         }
@@ -211,7 +211,7 @@ class CoinbaseManager implements PaymentSystemContract
 
         if (!$payment) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => sprintf("Payment transaction not found in database: payment_id=%s, document_id=%s, code=%s", $paymentData->metadata['payment_id'], $paymentData->id, $paymentData->metadata['code'])
             ];
         }
