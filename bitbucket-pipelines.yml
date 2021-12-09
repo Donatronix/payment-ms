@@ -31,11 +31,11 @@ pipelines:
             - apk --update --no-cache add curl openssl git openssh-client jq
             - git clone git@bitbucket.org:sumraprague/bitbucket-cicd.git
             - bitbucket-cicd/deploy.sh kube-init
-            - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get -o helm_install.sh
-            - bash helm_install.sh
-            - helm init --client-only
-            - bitbucket-cicd/deploy.sh set-image
 
+            - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+            - chmod 700 get_helm.sh
+            - bash ./get_helm.sh
+            - bitbucket-cicd/deploy.sh set-image
 definitions:
   services:
     docker:

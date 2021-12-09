@@ -1,6 +1,13 @@
+/.idea
+/node_modules
+/public/hot
+/public/storage
+/storage/api-docs
+/storage/app
+/storage/framework
+/storage/logs
 /vendor
-.idea/*
-Homestead.json
-Homestead.yaml
 .env
 .phpunit.result.cache
+composer.lock
+package-lock.json

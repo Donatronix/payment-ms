@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -13,16 +15,14 @@ class UsersTableSeeder extends Seeder
      */
     public function run(): void
     {
-        // Sumra User
-        User::factory()->create([
-            'id' => 1,
-            'first_name' => 'Sumra',
-            'last_name' => 'Net'
-        ]);
-
-        // Other users
-        for($a = 2; $a < 10; $a++){
-            User::factory()->create(['id' => $a]);
+        // Generate default users
+        foreach(config('settings.default_users_ids') as $uuid){
+            User::factory()->create([
+                'id' => $uuid
+            ]);
         }
+
+        // Adding additional users
+        User::factory()->count(10)->create();
     }
 }

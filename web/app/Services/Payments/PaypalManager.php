@@ -161,7 +161,7 @@ class PaypalManager implements PaymentSystemContract
             ];
         } catch (Exception $e) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => sprintf("Unable to create an order. Error: %s \n", $e->getMessage())
             ];
         }
@@ -178,7 +178,7 @@ class PaypalManager implements PaymentSystemContract
         // Check sender
         if (!Str::contains($request->header('User-Agent'), 'PayPal')) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => 'Payload was sent not from PayPal'
             ];
         }
@@ -187,7 +187,7 @@ class PaypalManager implements PaymentSystemContract
         $paymentData = $request->get('resource', null);
         if ($paymentData === null) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => 'Empty / Incorrect event data'
             ];
         }
@@ -202,7 +202,7 @@ class PaypalManager implements PaymentSystemContract
 
         if (!$payment) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => 'Payment transaction not found in Payment Microservice database'
             ];
         }
