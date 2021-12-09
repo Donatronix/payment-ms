@@ -127,7 +127,7 @@ class PaymentController extends Controller
             $order = Payment::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'type' => 'error',
+                'type' => 'danger',
                 'title' => 'Payment order not found',
                 'message' => "Payment order #{$id} not found"
             ], 404);

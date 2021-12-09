@@ -207,7 +207,7 @@ class PaymentController extends Controller
 
         if ($validation->fails()) {
             return response()->json([
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => $validation->errors()->toJson()
             ], 400);
         }
@@ -228,7 +228,7 @@ class PaymentController extends Controller
             $system = Payment::getServiceManager($inputData['gateway']);
         } catch(\Exception $e){
             return response()->json([
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => $e->getMessage()
             ], 400);
         }

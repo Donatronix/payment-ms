@@ -135,7 +135,7 @@ class BitpayManager implements PaymentSystemContract
             ];
         } catch (Exception $e) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => sprintf("Unable to create an invoice. Error: %s \n", $e->getMessage())
             ];
         }
@@ -152,7 +152,7 @@ class BitpayManager implements PaymentSystemContract
         // Check event property
         if (!$request->has('event')) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => 'Empty / Incorrect event data'
             ];
         }
@@ -161,7 +161,7 @@ class BitpayManager implements PaymentSystemContract
         $paymentData = $request->get('data', null);
         if ($paymentData === null) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => 'Empty / Incorrect event data'
             ];
         }
@@ -177,7 +177,7 @@ class BitpayManager implements PaymentSystemContract
 
         if (!$payment) {
             return [
-                'status' => 'error',
+                'type' => 'danger',
                 'message' => 'Payment transaction not found in Payment Microservice database'
             ];
         }

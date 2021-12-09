@@ -60,6 +60,7 @@ $app->singleton(
 */
 
 $app->configure('app');
+$app->configure('settings');
 $app->configure('payments');
 
 /*
@@ -74,13 +75,14 @@ $app->configure('payments');
 */
 
 $app->middleware([
-    \App\Http\Middleware\CorsMiddleware::class
+  //  \Fruitcake\Cors\HandleCors::class,
+    \App\Http\Middleware\TrimStrings::class,
 ]);
 
 $app->routeMiddleware([
+    //'auth' => App\Http\Middleware\Authenticate::class,
     'checkUser' => App\Http\Middleware\CheckUserMiddleware::class,
     'checkAdmin' => App\Http\Middleware\CheckAdminMiddleware::class,
-    //'auth' => App\Http\Middleware\Authenticate::class
 ]);
 
 /*
@@ -88,7 +90,7 @@ $app->routeMiddleware([
 | Register Service Providers
 |--------------------------------------------------------------------------
 |
-| Here we will register all of the application's service providers which
+| Here we will register all the application's service providers which
 | are used to bind services into the container. Service providers are
 | totally optional, so you are not required to uncomment this line.
 |
@@ -98,15 +100,28 @@ $app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 
-/** Pubsub - RebbitMQ */
+/**
+ * Enable CORS policy
+ */
+//$app->configure('cors');
+//$app->register(Fruitcake\Cors\CorsServiceProvider::class);
+
+/**
+ * Pubsub - RabbitMQ
+ */
+$app->configure('queues');
 $app->register(VladimirYuldashev\LaravelQueueRabbitMQ\LaravelQueueRabbitMQServiceProvider::class);
 class_alias(\Illuminate\Support\Facades\App::class, 'App');
 $app->register(\Sumra\PubSub\PubSubServiceProvider::class);
 
-/** Json API */
+/**
+ * Json API
+ */
 $app->register(\Sumra\JsonApi\JsonApiServiceProvider::class);
 
-/** Swagger */
+/**
+ * Swagger
+ */
 $app->configure('swagger-lume');
 $app->register(\SwaggerLume\ServiceProvider::class);
 
@@ -116,7 +131,7 @@ $app->register(\SwaggerLume\ServiceProvider::class);
 |--------------------------------------------------------------------------
 |
 | Next we will include the routes file so that they can all be added to
-| the application. This will provide all of the URLs the application
+| the application. This will provide all the URLs the application
 | can respond to, as well as the controllers that may handle them.
 |
 */

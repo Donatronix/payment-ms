@@ -20,9 +20,9 @@ class CheckAdminMiddleware
     {
         $adminUsers = explode(',', env('SUMRA_ADMIN_USERS', ''));
 
-        if(empty($adminUsers) || !in_array(Auth::user()->getAuthIdentifier(), $adminUsers)){
+        if (empty($adminUsers) || !in_array(Auth::user()->getAuthIdentifier(), $adminUsers)) {
             return response()->jsonApi([
-                'status' => 'error',
+                'type' => 'danger',
                 'title' => 'Access error',
                 'message' => "You have not permissions to access"
             ], 403);

@@ -1,47 +1,54 @@
-FROM composer:latest as build
-LABEL maintainer "Eduard <ed@dev-ops.engineer>"
+FROM webdevops/php-nginx:8.0-alpine
+LABEL Maintainer="Ihor Porokhnenko <ihor.porokhnenko@gmail.com>"
+LABEL Description="Lightweight container with Nginx & PHP-FPM 8 based on Alpine Linux."
 
-###################	This Dockerfile is made of two parts:	###################
-#
-#	1. The first part extends a PHP composer image so that you can install the application's dependencies.
+# Do a single run command to make the intermediary containers smaller.
+RUN set -ex
 
-WORKDIR /app
-COPY ./web /app
-COPY ./pubsub /pubsub
-COPY ./json-api /json-api
-#COPY ./baum /baum
+## Update package list
+RUN apk update
 
-RUN apk update && apk add php7-intl icu-dev gmp-dev
-#RUN /usr/local/bin/docker-php-ext-configure intl
-RUN /usr/local/bin/docker-php-ext-install intl sockets bcmath gmp
+## Install packages necessary during the build phase
+RUN apk --no-cache add \
+    mc \
+    nano
 
+## Clean apk cache after all installed packages
+RUN rm -rf /var/cache/apk/*
+
+# Configure nginx
+#RUN rm -f /etc/nginx/http.d/default.conf
+#COPY config/nginx/nginx.conf /etc/nginx/nginx.conf
+#COPY config/nginx/http.d/app.conf /etc/nginx/http.d/app.conf
+
+COPY config/vhost.conf /opt/docker/etc/nginx/vhost.conf
+COPY config/vhost.ssl.conf /opt/docker/etc/nginx/vhost.ssl.conf
+COPY config/vhost.common.d/ /opt/docker/etc/nginx/vhost.common.d/
+
+# Configure PHP-FPM
+#COPY config/php/fpm-pool.conf /etc/php8/php-fpm.d/www.conf
+#COPY config/php/php.ini /etc/php8/conf.d/custom.ini
+
+## Copy existing application contents to workdir
+COPY --chown=nginx:nginx ./web /var/www/html
+COPY --chown=nginx:nginx ./pubsub /var/www/pubsub
+COPY --chown=nginx:nginx ./json-api /var/www/json-api
+
+## Set work directory
+WORKDIR /var/www/html
+
+## Set writable dirs
+RUN chmod -R 777 /var/www/html/storage/*
+
+## Remove unneeded files
+RUN rm -rf /var/www/html/.idea
+RUN find /var/www/html/storage/framework/ -type f -name "*.php" -delete
+RUN rm -rf -R /var/www/html/storage/logs/*.log
+RUN rm -rf /var/www/html/.editorconfig
+RUN rm -rf /var/www/html/.env.example
+RUN rm -rf /var/www/html/.gitignore
+RUN rm -rf /var/www/html/.styleci.yml
+
+## Composer packages install & update
 RUN composer -v install
 RUN composer -v update
-
-#	2. The second part creates a final Docker image with an Apache web server to serve the application
-
-FROM php:7.4.16-apache-buster
-
-COPY --from=build /app /app
-COPY conf/vhost.conf /etc/apache2/sites-available/000-default.conf
-#COPY conf/laravel-echo-server.json /app
-
-RUN apt update && apt install -y mc sudo openssh-client zlib1g-dev libicu-dev g++ libgmp-dev
-
-#RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && apt install -y npm && npm install -g laravel-echo-server
-
-RUN chown -R www-data:www-data /app \
-    && a2enmod rewrite ssl headers
-
-RUN /usr/local/bin/docker-php-ext-install pdo pdo_mysql intl sockets bcmath gmp
-
-RUN pecl install xdebug-3.0.3
-
-#RUN /usr/local/bin/docker-php-ext-configure xdebug
-RUN /usr/local/bin/docker-php-ext-enable xdebug
-#RUN cd /app && php artisan l5-swagger:generate
-
-RUN echo "Listen 8080" > /etc/apache2/ports.conf
-RUN echo "Listen 8443" >> /etc/apache2/ports.conf
-USER www-data
-EXPOSE 8443 8080
