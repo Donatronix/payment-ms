@@ -18,7 +18,7 @@ class PaymentController extends Controller
      * Display Payments list
      *
      * @OA\Get(
-     *     path="/v1/payments/admin/payments",
+     *     path="/admin/payments",
      *     description="Display list of all patment orders",
      *     tags={"Admin - Payments"},
      *
@@ -85,7 +85,7 @@ class PaymentController extends Controller
      * Method for proof of payment by payment order
      *
      * @OA\Post(
-     *     path="/v1/payments/admin/payments",
+     *     path="/admin/payments",
      *     description="Method for proof of payment by payment order",
      *     tags={"Admin - Payments"},
      *

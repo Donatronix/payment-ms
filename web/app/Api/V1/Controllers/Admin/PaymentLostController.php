@@ -19,7 +19,7 @@ class PaymentLostController extends Controller
      * Display invoice list not finished
      *
      * @OA\Get(
-     *     path="/v1/payments/admin/paymentslost",
+     *     path="/admin/paymentslost",
      *     description="Display list of all patment orders",
      *     tags={"Admin - Payment Orders"},
      *

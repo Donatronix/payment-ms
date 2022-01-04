@@ -18,7 +18,7 @@ class PaymentSystemController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/v1/payments/systems",
+     *     path="/systems",
      *     description="List of payment systems",
      *     tags={"Payments"},
      *

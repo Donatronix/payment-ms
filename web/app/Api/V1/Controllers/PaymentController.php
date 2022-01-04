@@ -29,7 +29,7 @@ class PaymentController extends Controller
      * Invoices webhook
      *
      * @OA\Post(
-     *     path="/v1/payments/webhooks/{gateway}/invoices",
+     *     path="/webhooks/{gateway}/invoices",
      *     description="Webhooks Notifications about invoices",
      *     tags={"Payments Webhooks"},
      *
@@ -131,7 +131,7 @@ class PaymentController extends Controller
      * Recharge wallet balance
      *
      * @OA\Post(
-     *     path="/v1/payments/recharge",
+     *     path="/recharge",
      *     description="Recharge wallet balance",
      *     tags={"Payments"},
      *

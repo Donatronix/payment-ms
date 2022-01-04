@@ -111,7 +111,7 @@
         function renewPayment()
         {
             $.ajax({
-                url: "/v1/payments/"+payment_id,
+                url: "/"+payment_id,
                 method: "GET",
                 cache: false,
                 data: {},
@@ -168,7 +168,7 @@
 
         function doSubmit() {
             $.ajax({
-                url: "/v1/payments/recharge",
+                url: "/recharge",
                 method: "POST",
                 data: {
                     amount: $("#amount").val(),
@@ -189,7 +189,7 @@
 
         function doCoinbaseSuccess() {
             $.ajax({
-                url: "/v1/payments/webhooks/coinbase/invoices",
+                url: "/webhooks/coinbase/invoices",
                 method: "POST",
                 data: JSON.stringify({
                     event: {
@@ -212,7 +212,7 @@
 
         function doStripeRequest(type, payment_status) {
             $.ajax({
-                url: "/v1/payments/webhooks/stripe/invoices",
+                url: "/webhooks/stripe/invoices",
                 method: "POST",
                 data: JSON.stringify({
                     type: type,

@@ -16,7 +16,7 @@ class VersionController extends Controller
      * Show version of service
      *
      * @OA\Get(
-     *     path="/v1/payments/version",
+     *     path="/version",
      *     summary="Show version of service",
      *     description="Show version of service",
      *

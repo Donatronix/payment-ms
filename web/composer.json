@@ -10,6 +10,7 @@
         "darkaonline/swagger-lume": "~8",
         "doctrine/dbal": "~3",
         "ext-json": "*",
+        "ext-gmp": "*",
         "fruitcake/laravel-cors": "~2",
         "laravel/lumen-framework": "~8",
         "paypal/paypal-checkout-sdk": "~1",
@@ -43,8 +44,7 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "repositories": [
-        {
+    "repositories": [{
             "type": "path",
             "url": "../pubsub",
             "options": {
