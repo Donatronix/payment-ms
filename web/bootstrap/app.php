@@ -24,7 +24,6 @@ $app = new Laravel\Lumen\Application(
 );
 
 $app->withFacades();
-
 $app->withEloquent();
 
 /*
@@ -75,7 +74,7 @@ $app->configure('payments');
 */
 
 $app->middleware([
-  //  \Fruitcake\Cors\HandleCors::class,
+    \Fruitcake\Cors\HandleCors::class,
     \App\Http\Middleware\TrimStrings::class,
 ]);
 
@@ -103,8 +102,8 @@ $app->register(App\Providers\EventServiceProvider::class);
 /**
  * Enable CORS policy
  */
-//$app->configure('cors');
-//$app->register(Fruitcake\Cors\CorsServiceProvider::class);
+$app->configure('cors');
+$app->register(Fruitcake\Cors\CorsServiceProvider::class);
 
 /**
  * Pubsub - RabbitMQ

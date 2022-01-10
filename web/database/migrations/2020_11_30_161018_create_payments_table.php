@@ -17,8 +17,11 @@ class CreatePaymentsTable extends Migration
             $table->bigIncrements('id');
             $table->tinyInteger('type');
             $table->string('gateway', 10);
+
             $table->decimal('amount');
+
             $table->char('currency', 3);
+
             $table->string('check_code');
             $table->string('document_id')->nullable();
             $table->string('service', 36)->nullable();

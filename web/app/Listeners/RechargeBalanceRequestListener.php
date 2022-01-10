@@ -46,7 +46,6 @@ class RechargeBalanceRequestListener
             'gateway' => 'string|required',
             'amount' => 'integer|required',
             'currency.id' => 'integer|required',
-            'currency.code' => 'string|required',
             'replay_to' => 'string|required',
             'order_id' => 'integer|required',
             'user_id' => 'integer|required',

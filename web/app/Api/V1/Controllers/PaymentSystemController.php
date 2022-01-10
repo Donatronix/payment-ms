@@ -6,9 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
-
 /**
- * Class PaymentController
+ * Class PaymentSystemController
  *
  * @package App\Api\V1\Controllers
  */
@@ -20,7 +19,7 @@ class PaymentSystemController extends Controller
      * @OA\Get(
      *     path="/systems",
      *     description="List of payment systems",
-     *     tags={"Payments"},
+     *     tags={"References"},
      *
      *     security={{
      *         "default": {
@@ -48,18 +47,19 @@ class PaymentSystemController extends Controller
      */
     public function index(): JsonResponse
     {
-        $systems = $this->catalog();
-        return response()->json(['success' => true, 'systems' => $systems], 200);
-    }
+        $systems = Cache::get(self::CACHE_ID, []);
 
-    public function catalog()
-    {
-        $systems = $this->catalog_cache();
         if (!is_array($systems) || count($systems) == 0) {
-            $systems = $this->catalog_fresh();
-            $this->save_cache($systems);
+
+            $systems = $this->catalog();
+
+            Cache::put(self::CACHE_ID, $systems);
         }
-        return $systems;
+
+        return response()->json([
+            'success' => true,
+            'systems' => $systems
+        ], 200);
     }
 
     public function clear_cache()
@@ -67,24 +67,14 @@ class PaymentSystemController extends Controller
         Cache::forget(self::CACHE_ID);
     }
 
-    private function catalog_cache()
+    public function catalog(): array
     {
-        return Cache::get(self::CACHE_ID, []);
-    }
-
-    private function save_cache($systems)
-    {
-        Cache::put(self::CACHE_ID, $systems);
-    }
-
-    private function catalog_fresh()
-    {
-
         $systems = [];
 
         $dir = base_path('app/Services/Payments');
 
         if ($handle = opendir($dir)) {
+
             /* Именно такой способ чтения элементов каталога является правильным. */
             while (false !== ($entry = readdir($handle))) {
                 if (($entry == '.') || ($entry == '..'))
@@ -120,5 +110,4 @@ class PaymentSystemController extends Controller
 
         return $systems;
     }
-
 }

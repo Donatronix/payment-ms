@@ -154,7 +154,7 @@ class PaypalManager implements PaymentSystemContract
             }
 
             return [
-                'status' => 'success',
+                'type' => 'success',
                 'gateway' => self::gateway(),
                 'payment_id' => $payment->id,
                 'invoice_url' => $invoiceUrl
@@ -170,7 +170,7 @@ class PaypalManager implements PaymentSystemContract
     /**
      * @param \Illuminate\Http\Request $request
      *
-     * @return array|string[]
+     * @return array
      */
     public function handlerWebhookInvoice(Request $request): array
     {

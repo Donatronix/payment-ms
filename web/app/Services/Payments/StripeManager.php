@@ -31,8 +31,8 @@ class StripeManager implements PaymentSystemContract
     public function __construct()
     {
         $this->gateway = [];
-        $this->publisher_key = env('STRIPE_PUBLISHER_KEY', 'pk_test_ZZGWT0pQRB47mX9Qfg9vY3q000tnr0ycgG');
-        $this->secret_key = env('STRIPE_SECRET_KEY', 'sk_test_mwiW1DmmnkYFzhOUfspqLxH000wGfzYpGY');
+        $this->publisher_key = env('STRIPE_PUBLISHER_KEY', 'pk_test_**');
+        $this->secret_key = env('STRIPE_SECRET_KEY', 'sk_test_**');
     }
 
     public static function gateway(): string
@@ -56,16 +56,17 @@ class StripeManager implements PaymentSystemContract
     }
 
     /**
-     * Wrapper for create bitpay invoice for charge money
+     * Wrapper for create Stripe invoice for charge money
      *
      * @param array $data
      *
      * @return array
      */
-    public function createInvoice(array $data)
+    public function createInvoice(array $data): array
     {
         try {
             Stripe::setApiKey($this->secret_key);
+
             $checkCode = Payment::getCheckCode();
 
             // Create internal order
@@ -102,7 +103,7 @@ class StripeManager implements PaymentSystemContract
             $payment->save();
 
             return [
-                'status' => 'success',
+                'type' => 'success',
                 'gateway' => self::gateway(),
                 'payment_id' => $payment->id,
                 'session_id' => $checkout_session['id'],
@@ -119,9 +120,9 @@ class StripeManager implements PaymentSystemContract
     /**
      * @param \Illuminate\Http\Request $request
      *
-     * @return mixed
+     * @return array
      */
-    public function handlerWebhookInvoice(Request $request)
+    public function handlerWebhookInvoice(Request $request): array
     {
         $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
         if(isset($_SERVER['HTTP_STRIPE_SIGNATURE'])) {

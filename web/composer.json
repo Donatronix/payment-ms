@@ -1,6 +1,6 @@
 {
-    "name": "sumra/payments",
-    "description": "Payments Gateways API Microservice",
+    "name": "sumra/payments-ms",
+    "description": "Payment Gateways API Microservice",
     "type": "project",
     "private": true,
     "require": {
@@ -44,7 +44,8 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "repositories": [{
+    "repositories": [
+        {
             "type": "path",
             "url": "../pubsub",
             "options": {

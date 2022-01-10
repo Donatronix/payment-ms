@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Class PaymentController
@@ -20,113 +21,6 @@ use Illuminate\Support\Facades\Validator;
  */
 class PaymentController extends Controller
 {
-    /**
-     * @var string
-     */
-    private const RECEIVER_LISTENER = 'rechargeBalanceWebhook';
-
-    /**
-     * Invoices webhook
-     *
-     * @OA\Post(
-     *     path="/webhooks/{gateway}/invoices",
-     *     description="Webhooks Notifications about invoices",
-     *     tags={"Payments Webhooks"},
-     *
-     *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
-     *     }},
-     *     x={
-     *         "auth-type": "Application & Application User",
-     *         "throttling-tier": "Unlimited",
-     *         "wso2-application-security": {
-     *             "security-types": {"oauth2"},
-     *             "optional": "false"
-     *         }
-     *     },
-     *
-     *     @OA\Parameter(
-     *         name="gateway",
-     *         description="Payment gateway",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(
-     *             type="string",
-     *              default="bitpay"
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Success",
-     *     )
-     * )
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param string                   $gateway
-     *
-     * @return mixed
-     */
-    public function handlerWebhookInvoice(Request $request, string $gateway)
-    {
-        // Check content type
-        if (!$request->isJson()) {
-            LogPaymentWebhookError::create([
-                'gateway' => $gateway,
-                'payload' => $request->getContent()
-            ]);
-
-            http_response_code(400);
-            exit();
-        }
-
-        // Init manager
-        try{
-            $system = Payment::getServiceManager($gateway);
-        } catch(\Exception $e){
-            Log::info($e->getMessage());
-
-            exit;
-        }
-
-        // Handle webhook
-        $result = $system->handlerWebhookInvoice($request);
-
-        // If error, logging and send status 400
-        if ($result['status'] === 'error') {
-            LogPaymentWebhookError::create([
-                'gateway' => $gateway,
-                'payload' => $result['message']
-            ]);
-
-            http_response_code(400);
-            exit();
-        }
-
-        // Logging success request content
-        try {
-            LogPaymentWebhook::create([
-                'gateway' => $gateway,
-                'payment_id' => $result['payment_id'],
-                'payload' => $request->all(),
-            ]);
-        } catch (\Exception $e) {
-            Log::info('Log of invoice failed: ' . $e->getMessage());
-        }
-
-        // If paid complete, than send notification
-        if($result['payment_completed']){
-            \PubSub::transaction(function () {})->publish(self::RECEIVER_LISTENER, $result, $result['service']);
-        }
-
-        // Send status OK
-        http_response_code(200);
-    }
-
     /**
      * Recharge wallet balance
      *
@@ -193,24 +87,27 @@ class PaymentController extends Controller
      * @throws \Illuminate\Validation\ValidationException
      * @throws \ReflectionException
      */
-    public function recharge(Request $request)
+    public function recharge(Request $request): \Illuminate\Http\JsonResponse
     {
-        $inputData = $request->all();
-
         // Validate input
-        $validation = Validator::make($inputData, [
-            'gateway' => 'string|required',
-            'amount' => 'integer|required',
-            'currency' => 'string|required',
-            'service' => 'string|required',
-        ]);
-
-        if ($validation->fails()) {
-            return response()->json([
-                'type' => 'danger',
-                'message' => $validation->errors()->toJson()
+        try {
+            $this->validate($request, [
+                'gateway' => 'string|required',
+                'amount' => 'integer|required',
+                'currency' => 'string|required',
+                'service' => 'string|required',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->jsonApi([
+                'type' => 'warning',
+                'title' => 'Contributor details data',
+                'message' => "Validation error",
+                'data' => $e->getMessage() // $validation->errors()->toJson()
             ], 400);
         }
+
+        $inputData = $request->all();
+
 
         // Write log
         try {
@@ -233,12 +130,14 @@ class PaymentController extends Controller
             ], 400);
         }
 
+        dd($system);
+
         // Create invoice
         $result = $system->createInvoice($inputData);
 
         // Return response
         $code = 200;
-        if ($result['status'] === 'error') {
+        if ($result['type'] === 'danger') {
             $code = 400;
 
             LogPaymentRequestError::create([
@@ -254,7 +153,11 @@ class PaymentController extends Controller
     public function get(Request $request, $id)
     {
         $user_id = Auth::user()->getAuthIdentifier();
-        $payment = \App\Models\Payment::where('id', $id)->where('user_id', $user_id)->first();
+
+        $payment = \App\Models\Payment::where('id', $id)
+        ->where('user_id', $user_id)
+        ->first();
+
         return $payment;
     }
 }

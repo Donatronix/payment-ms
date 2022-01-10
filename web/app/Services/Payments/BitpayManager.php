@@ -128,7 +128,7 @@ class BitpayManager implements PaymentSystemContract
             $payment->save();
 
             return [
-                'status' => 'success',
+                'type' => 'success',
                 'gateway' => self::gateway(),
                 'payment_id' => $payment->id,
                 'invoice_url' => $chargeObj->getURL()
