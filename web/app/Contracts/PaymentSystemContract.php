@@ -2,6 +2,7 @@
 
 namespace App\Contracts;
 
+use App\Models\Payment;
 use Illuminate\Http\Request;
 
 interface PaymentSystemContract
@@ -27,16 +28,30 @@ interface PaymentSystemContract
     public static function getNewStatusId();
 
     /**
-     * @param array $data
+     * Make one-time charge money to system
+     *
+     * @param Payment $payment
+     * @param object $inputData
+     * @return mixed
+     */
+    public function charge(Payment $payment, object $inputData): mixed;
+
+//    public function payout();
+//
+//    public function refund();
+
+    /**
+     * @param Payment $payment
+     * @param object $inputData
      *
      * @return mixed
      */
-    public function createInvoice(array $data);
+    public function createInvoice(Payment $payment, object $inputData): mixed;
 
     /**
      * @param \Illuminate\Http\Request $request
      *
      * @return mixed
      */
-    public function handlerWebhookInvoice(Request $request);
+    public function handlerWebhookInvoice(Request $request): mixed;
 }

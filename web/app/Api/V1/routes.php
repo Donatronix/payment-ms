@@ -13,18 +13,16 @@ $router->group([
     $router->group([
         'middleware' => 'checkUser'
     ], function ($router) {
-        $router->get('systems', 'PaymentSystemController@index');
-        $router->post('recharge', 'PaymentController@recharge');
-        $router->get('{id:[\d]+}', 'PaymentController@get');
+        /**
+         * Payment actions
+         */
+        $router->get('payments/{id:[\d]+}', 'PaymentController@show');
+        $router->post('payments/charge', 'PaymentController@charge');
 
-
-        $router->group(['prefix' => 'currencies'], function ($router) {
-            $router->get('/', 'CurrenciesController@index');
-            $router->post('/{id:[\d]+}/update-status', 'CurrenciesController@updateStatus');
-        });
-
-        $router->get('/currencies', 'CurrenciesController@reference');
-
+        /**
+         * Payment systems list
+         */
+        $router->get('payment-systems', 'PaymentSystemController');
 
         /**
          * ADMIN PANEL
@@ -39,9 +37,6 @@ $router->group([
             $router->get('/payments/lost', 'PaymentController@lost');
             $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
 
-            $router->group(['prefix' => 'currencies'], function ($router) {
-                $router->post('/', 'CurrenciesController@store');
-            });
         });
     });
 

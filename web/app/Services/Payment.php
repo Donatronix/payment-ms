@@ -12,7 +12,7 @@ class Payment
      * @return mixed
      * @throws \ReflectionException
      */
-    public static function getServiceManager($gateway)
+    public static function getInstance($gateway)
     {
         try{
             $class = '\App\Services\Payments\\' . Str::ucfirst($gateway) . 'Manager';

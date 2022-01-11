@@ -10,13 +10,6 @@ $router->get('/tests/payments/system/index', function () {
     return \App\Http\Controllers\TestController::viewMake("tests.payment.system.index");
 });
 
-$router->get('/tests/payments/invoices/recharge/', function () {
-    return \App\Http\Controllers\TestController::viewMake("tests.payment.invoice.store");
-});
-
-$router->get('/tests/payments/lost', function () {
-    return \App\Http\Controllers\TestController::viewMake("tests.payment.lost.index");
-});
 
 /* =================
  * Full Test.

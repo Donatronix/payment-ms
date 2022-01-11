@@ -89,32 +89,22 @@ class CoinbaseManager implements PaymentSystemContract
     /**
      * Wrapper for create coinbase invoice for charge money
      *
-     * @param array $data
+     * @param Payment $payment
+     * @param array $input
      *
-     * @return mixed|void
+     * @return array
      */
-    public function createInvoice(array $data): array
+    public function createInvoice(Payment $payment, object $inputData): array
     {
         try {
-            // Create internal order
-            $payment = Payment::create([
-                'type' => Payment::TYPE_INVOICE,
-                'gateway' => self::gateway(),
-                'amount' => $data['amount'],
-                'currency' => mb_strtoupper($data['currency']),
-                'service' => $data['service'],
-                'user_id' => Auth::user()->getAuthIdentifier(),
-                'status' => self::STATUS_CHARGE_CREATED
-            ]);
-
             // Create new charge
             $chargeObj = Charge::create([
                 'name' => 'Charge Balance',
                 'description' => 'Charge Balance for Sumra User',
                 'pricing_type' => 'fixed_price',
                 'local_price' => [
-                    'amount' => $data['amount'],
-                    'currency' => $data['currency']
+                    'amount' => $inputData->amount,
+                    'currency' => $inputData->currency
                 ],
                 'metadata' => [
                     'code' => $payment->check_code,
@@ -125,6 +115,7 @@ class CoinbaseManager implements PaymentSystemContract
             ]);
 
             // Update payment transaction data
+            $payment->status = self::STATUS_CHARGE_CREATED;
             $payment->document_id = $chargeObj->id;
             $payment->save();
 

@@ -5,15 +5,10 @@ namespace App\Services\Payments;
 use App\Contracts\PaymentSystemContract;
 use App\Models\Payment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Stripe\Stripe;
 
 class StripeManager implements PaymentSystemContract
 {
-    private array $gateway;
-    private $public_key;
-    private $secret_key;
-
     const STATUS_ORDER_REQUIRES_PAYMENT_METHOD = 1;
     const STATUS_ORDER_REQUIRES_CONFIRMATION = 2;
     const STATUS_ORDER_REQUIRES_ACTION = 3;
@@ -26,13 +21,19 @@ class StripeManager implements PaymentSystemContract
     const STATUS_ORDER_NO_PAYMENT_REQUIRED = 10;
 
     /**
+     * @var array
+     */
+    private array $gateway;
+
+    /**
      * constructor.
      */
     public function __construct()
     {
         $this->gateway = [];
-        $this->public_key = env('STRIPE_PUBLIC_KEY', 'pk_test_**');
-        $this->secret_key = env('STRIPE_SECRET_KEY', 'sk_test_**');
+
+        // Set your secret API key
+        Stripe::setApiKey(config('payments.stripe.secret_key'));
     }
 
     public static function gateway(): string
@@ -56,35 +57,68 @@ class StripeManager implements PaymentSystemContract
     }
 
     /**
-     * Wrapper for create Stripe invoice for charge money
-     *
-     * @param array $data
-     *
+     * @param Payment $payment
+     * @param object $inputData
      * @return array
+     * @throws \Stripe\Exception\ApiErrorException
      */
-    public function createInvoice(array $data): array
+    public function charge(Payment $payment, object $inputData): array
     {
         try {
-            // Set your secret API key
-            Stripe::setApiKey($this->secret_key);
-
-            // Create internal order
-            $payment = Payment::create([
-                'type' => Payment::TYPE_INVOICE,
-                'gateway' => self::gateway(),
-                'amount' => $data['amount'],
-                'currency' => $data['currency'],
-                'service' => $data['service'],
-                'user_id' => Auth::user()->getAuthIdentifier(),
-                'status' => self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD
+            // Create a PaymentIntent with amount and currency
+            $paymentIntent = \Stripe\PaymentIntent::create([
+                'amount' => $inputData->amount,
+                'currency' => 'eur',
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                ],
             ]);
 
+            // Update order data
+            $payment->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
+            $payment->document_id = $paymentIntent->id;
+            $payment->save();
+
+            // Return result
+            return [
+                'type' => 'success',
+                'title' => 'Stripe checkout payment session creating',
+                'message' => "Session successfully created",
+                'data' => [
+                    'gateway' => self::gateway(),
+                    'payment_id' => $payment->id,
+                    'session_id' => $paymentIntent->id,
+                    'public_key' => config('payments.stripe.public_key'),
+                    'clientSecret' => $paymentIntent->client_secret,
+                ]
+            ];
+        } catch (\Exception $e) {
+            return [
+                'type' => 'danger',
+                'title' => 'Stripe checkout payment session creating',
+                'message' => sprintf("Unable to create an session. Error: %s \n", $e->getMessage()),
+                'data' => []
+            ];
+        }
+    }
+
+    /**
+     * Wrapper for create Stripe invoice for charge money
+     *
+     * @param Payment $payment
+     * @param object $inputData
+     * @return array
+     */
+    public function createInvoice(Payment $payment, object $inputData): array
+    {
+        try {
+            // Create checkout session
             $checkout_session = \Stripe\Checkout\Session::create([
                 'mode' => 'payment',
                 'payment_method_types' => ['card'],
                 'line_items' => [[
-                    'amount' => $data['amount'] * 100,
-                    'currency' => $data['currency'],
+                    'amount' => $inputData->amount * 100,
+                    'currency' => $inputData->currency,
                     'quantity' => 1,
                     'name' => 'Wallet Charge',
                 ]],
@@ -97,6 +131,7 @@ class StripeManager implements PaymentSystemContract
             ]);
 
             // Update order data
+            $payment->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
             $payment->document_id = $checkout_session->id;
             $payment->save();
 
@@ -110,7 +145,7 @@ class StripeManager implements PaymentSystemContract
                     'payment_id' => $payment->id,
                     'session_id' => $checkout_session->id,
                     'session_url' => $checkout_session->url,
-                    'public_key' => $this->public_key
+                    'public_key' => config('payments.stripe.public_key')
                 ]
             ];
         } catch (\Exception $e) {
@@ -130,18 +165,15 @@ class StripeManager implements PaymentSystemContract
      */
     public function handlerWebhookInvoice(Request $request): array
     {
-        $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
-        if (isset($_SERVER['HTTP_STRIPE_SIGNATURE'])) {
-            $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
-        } else {
-            $sig_header = "";
-        }
         $payload = @file_get_contents('php://input');
+
         $event = null;
 
         try {
             $event = \Stripe\Webhook::constructEvent(
-                $payload, $sig_header, $endpoint_secret
+                $payload,
+                $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? null,
+                config('payments.stripe.webhook_secret')
             );
         } catch (\UnexpectedValueException $e) {
             // Invalid payload
@@ -173,6 +205,7 @@ class StripeManager implements PaymentSystemContract
         }
 
         \Log::info($request);
+
         // Handle the event
         switch ($event->type) {
             case 'checkout.session.completed':

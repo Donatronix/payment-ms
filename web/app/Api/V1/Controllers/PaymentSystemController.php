@@ -19,7 +19,7 @@ class PaymentSystemController extends Controller
      * @OA\Get(
      *     path="/systems",
      *     description="List of payment systems",
-     *     tags={"References"},
+     *     tags={"Payment Systems"},
      *
      *     security={{
      *         "default": {
@@ -45,7 +45,7 @@ class PaymentSystemController extends Controller
      *
      * @return JsonResponse
      */
-    public function index(): JsonResponse
+    public function __invoke(): JsonResponse
     {
         $systems = Cache::get(self::CACHE_ID, []);
 
@@ -74,7 +74,6 @@ class PaymentSystemController extends Controller
         $dir = base_path('app/Services/Payments');
 
         if ($handle = opendir($dir)) {
-
             /* Именно такой способ чтения элементов каталога является правильным. */
             while (false !== ($entry = readdir($handle))) {
                 if (($entry == '.') || ($entry == '..'))

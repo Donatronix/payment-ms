@@ -88,24 +88,13 @@ class PaypalManager implements PaymentSystemContract
     /**
      * Wrapper for create paypal invoice for charge money
      *
-     * @param array $data
+     * @param array $input
      *
      * @return mixed|void
      */
-    public function createInvoice(array $data): array
+    public function createInvoice(Payment $payment, object $inputData): array
     {
         try {
-            // Create internal order
-            $payment = Payment::create([
-                'type' => Payment::TYPE_INVOICE,
-                'gateway' => self::gateway(),
-                'amount' => $data['amount'],
-                'currency' => mb_strtoupper($data['currency']),
-                'service' => $data['service'],
-                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
-                'status' => self::STATUS_ORDER_CREATED
-            ]);
-
             // Create new charge
             $request = new OrdersCreateRequest();
             $request->prefer('return=representation');
@@ -117,8 +106,8 @@ class PaypalManager implements PaymentSystemContract
                         'custom_id' => $payment->check_code,
                         'invoice_id' => $payment->id,
                         'amount' => [
-                            'value' => $data['amount'],
-                            'currency_code' => $data['currency'],
+                            'value' => $inputData->amount,
+                            'currency_code' => $inputData->currency,
                         ],
                         'payment_instruction' => [
                             'disbursement_mode' => 'INSTANT'
@@ -139,6 +128,7 @@ class PaypalManager implements PaymentSystemContract
             $chargeObj = $this->gateway->execute($request);
 
             // Update payment transaction data
+            $payment->status = self::STATUS_ORDER_CREATED;
             $payment->document_id = $chargeObj->result->id;
             $payment->save();
 

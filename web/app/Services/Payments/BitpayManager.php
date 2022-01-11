@@ -88,26 +88,15 @@ class BitpayManager implements PaymentSystemContract
     /**
      * Wrapper for create bitpay invoice for charge money
      *
-     * @param array $data
-     *
-     * @return \BitPaySDK\Model\Invoice\Invoice|string
+     * @param Payment $payment
+     * @param array $input
+     * @return array
      */
-    public function createInvoice(array $data): array
+    public function createInvoice(Payment $payment, object $inputData): array
     {
         try {
-            // Create internal order
-            $payment = Payment::create([
-                'type' => Payment::TYPE_INVOICE,
-                'gateway' => self::gateway(),
-                'amount' => $data['amount'],
-                'currency' => mb_strtoupper($data['currency']),
-                'service' => $data['service'],
-                'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
-                'status' => self::STATUS_INVOICE_NEW
-            ]);
-
             // Set invoice detail
-            $invoice = new Invoice($data['amount'], $data['currency']);
+            $invoice = new Invoice($inputData->amount, $inputData->currency);
             $invoice->setOrderId($payment->id);
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
@@ -120,6 +109,7 @@ class BitpayManager implements PaymentSystemContract
             $chargeObj = $this->gateway->createInvoice($invoice);
 
             // Update payment transaction data
+            $payment->status = self::STATUS_INVOICE_NEW;
             $payment->document_id = $chargeObj->getId();
             $payment->save();
 

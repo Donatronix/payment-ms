@@ -86,7 +86,7 @@ class WebhookController extends Controller
 
         // Init manager
         try{
-            $system = Payment::getServiceManager($gateway);
+            $system = Payment::getInstance($gateway);
         } catch(\Exception $e){
             Log::info($e->getMessage());
 
