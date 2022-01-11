@@ -10,8 +10,8 @@ use Stripe\Stripe;
 
 class StripeManager implements PaymentSystemContract
 {
-    private $gateway;
-    private $publisher_key;
+    private array $gateway;
+    private $public_key;
     private $secret_key;
 
     const STATUS_ORDER_REQUIRES_PAYMENT_METHOD = 1;
@@ -31,7 +31,7 @@ class StripeManager implements PaymentSystemContract
     public function __construct()
     {
         $this->gateway = [];
-        $this->publisher_key = env('STRIPE_PUBLISHER_KEY', 'pk_test_**');
+        $this->public_key = env('STRIPE_PUBLIC_KEY', 'pk_test_**');
         $this->secret_key = env('STRIPE_SECRET_KEY', 'sk_test_**');
     }
 
@@ -65,9 +65,8 @@ class StripeManager implements PaymentSystemContract
     public function createInvoice(array $data): array
     {
         try {
+            // Set your secret API key
             Stripe::setApiKey($this->secret_key);
-
-            $checkCode = Payment::getCheckCode();
 
             // Create internal order
             $payment = Payment::create([
@@ -75,44 +74,51 @@ class StripeManager implements PaymentSystemContract
                 'gateway' => self::gateway(),
                 'amount' => $data['amount'],
                 'currency' => $data['currency'],
-                'check_code' => $checkCode,
                 'service' => $data['service'],
                 'user_id' => Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD
             ]);
 
             $checkout_session = \Stripe\Checkout\Session::create([
-                'success_url' => env('PAYMENTS_WEBHOOK_URL').'?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => env('PAYMENTS_WEBHOOK_URL').'?session_id={CHECKOUT_SESSION_ID}',
-                'payment_method_types' => ['card'],
                 'mode' => 'payment',
+                'payment_method_types' => ['card'],
                 'line_items' => [[
-                    'amount' => $data['amount']*100,
+                    'amount' => $data['amount'] * 100,
                     'currency' => $data['currency'],
                     'quantity' => 1,
                     'name' => 'Wallet Charge',
                 ]],
                 'metadata' => [
                     'payment_order' => $payment->id,
-                    'check_code' => $checkCode,
-                ]
+                    'check_code' => $payment->check_code,
+                ],
+                'success_url' => env('PAYMENTS_WEBHOOK_URL') . '?success=true',
+                'cancel_url' => env('PAYMENTS_WEBHOOK_URL') . '?canceled=true'
             ]);
 
             // Update order data
-            $payment->document_id = $checkout_session['id'];
+            $payment->document_id = $checkout_session->id;
             $payment->save();
 
+            // Return result
             return [
                 'type' => 'success',
-                'gateway' => self::gateway(),
-                'payment_id' => $payment->id,
-                'session_id' => $checkout_session['id'],
-                'stripe_pubkey' => $this->publisher_key,
+                'title' => 'Stripe checkout payment session creating',
+                'message' => "Session successfully created",
+                'data' => [
+                    'gateway' => self::gateway(),
+                    'payment_id' => $payment->id,
+                    'session_id' => $checkout_session->id,
+                    'session_url' => $checkout_session->url,
+                    'public_key' => $this->public_key
+                ]
             ];
         } catch (\Exception $e) {
             return [
                 'type' => 'danger',
-                'message' => sprintf("Unable to create an order. Error: %s \n", $e->getMessage())
+                'title' => 'Stripe checkout payment session creating',
+                'message' => sprintf("Unable to create an session. Error: %s \n", $e->getMessage()),
+                'data' => []
             ];
         }
     }
@@ -125,7 +131,7 @@ class StripeManager implements PaymentSystemContract
     public function handlerWebhookInvoice(Request $request): array
     {
         $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
-        if(isset($_SERVER['HTTP_STRIPE_SIGNATURE'])) {
+        if (isset($_SERVER['HTTP_STRIPE_SIGNATURE'])) {
             $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
         } else {
             $sig_header = "";
@@ -137,17 +143,17 @@ class StripeManager implements PaymentSystemContract
             $event = \Stripe\Webhook::constructEvent(
                 $payload, $sig_header, $endpoint_secret
             );
-        } catch(\UnexpectedValueException $e) {
+        } catch (\UnexpectedValueException $e) {
             // Invalid payload
-            \Log::error("Invalid payload: ".$payload);
+            \Log::error("Invalid payload: " . $payload);
             return [
                 'type' => 'danger',
                 'message' => 'Unexpected value error'
             ];
-        } catch(\Stripe\Exception\SignatureVerificationException $e) {
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
             // Invalid signature
-            \Log::error("Invalid signature: ".$payload);
-            if(env("APP_DEBUG",0)) {
+            \Log::error("Invalid signature: " . $payload);
+            if (env("APP_DEBUG", 0)) {
                 $event = (object)[
                     "type" => $request["type"],
                     "data" => (object)[
@@ -175,7 +181,7 @@ class StripeManager implements PaymentSystemContract
                 $paymentIntent = $event->data->object; // contains a StripePaymentIntent
                 break;
             default:
-                \Log::error("Unexpected event type: ".$payload);
+                \Log::error("Unexpected event type: " . $payload);
                 return [
                     'type' => 'danger',
                     'message' => 'Unexpected event type'
@@ -199,7 +205,7 @@ class StripeManager implements PaymentSystemContract
             ->first();
 
         if (!$payment) {
-            \Log::error("Order not found: ".$payload);
+            \Log::error("Order not found: " . $payload);
             return [
                 'type' => 'danger',
                 'message' => 'Order not found'
@@ -207,11 +213,11 @@ class StripeManager implements PaymentSystemContract
         }
 
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentIntent->payment_status);
-        if(!defined("self::{$status}")) {
-            \Log::error("Status error: ".$payload);
+        if (!defined("self::{$status}")) {
+            \Log::error("Status error: " . $payload);
             return [
                 'type' => 'danger',
-                'message' => 'Status error: '.mb_strtoupper($paymentIntent->payment_status)
+                'message' => 'Status error: ' . mb_strtoupper($paymentIntent->payment_status)
             ];
         }
 
