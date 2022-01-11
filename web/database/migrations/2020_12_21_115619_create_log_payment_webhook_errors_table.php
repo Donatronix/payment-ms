@@ -14,7 +14,7 @@ class CreateLogPaymentWebhookErrorsTable extends Migration
     public function up()
     {
         Schema::create('log_payment_webhook_errors', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->uuid('id')->primary();
             $table->string('gateway',10);
             $table->text('payload');
             $table->timestamps();

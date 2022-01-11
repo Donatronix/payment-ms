@@ -2,11 +2,20 @@
 
 namespace App\Models;
 
+use App\Traits\OwnerTrait;
+use App\Traits\UuidTrait;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Payment extends Model
 {
+    use HasFactory;
+    use OwnerTrait;
+    use UuidTrait;
+    use SoftDeletes;
+
     /**
      * Type of order
      */
@@ -32,7 +41,6 @@ class Payment extends Model
         'gateway',
         'amount',
         'currency',
-        'check_code',
         'service',
         'document_id',
         'user_id',
@@ -48,21 +56,22 @@ class Payment extends Model
     protected $hidden = [];
 
     /**
-     * Generate unique ID
+     * Boot the model.
      *
-     * Copied from Wallet
-     *
-     * @return string
+     * @return  void
      */
-    public static function getCheckCode(): string
+    protected static function boot()
     {
-        $checkCode = (string)Str::orderedUuid();
+        parent::boot();
 
-        $checkCodeExists = self::where('check_code', $checkCode)->exists();
-        if ($checkCodeExists) {
-            return self::getCheckCode();
-        }
+        static::creating(function ($obj) {
+            do {
+                // generate a random uuid
+                $checkCode = Str::orderedUuid();
+            } //check if the code already exists, try again
+            while (self::where('check_code', $checkCode)->first());
 
-        return $checkCode;
+            $obj->setAttribute('check_code', $checkCode);
+        });
     }
 }

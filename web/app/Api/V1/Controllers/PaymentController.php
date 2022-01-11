@@ -108,7 +108,6 @@ class PaymentController extends Controller
 
         $inputData = $request->all();
 
-
         // Write log
         try {
             LogPaymentRequest::create([
@@ -130,7 +129,7 @@ class PaymentController extends Controller
             ], 400);
         }
 
-        dd($system);
+       // dd($system);
 
         // Create invoice
         $result = $system->createInvoice($inputData);

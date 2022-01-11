@@ -14,7 +14,7 @@ class CreateLogPaymentRequestsTable extends Migration
     public function up()
     {
         Schema::create('log_payment_requests', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->uuid('id')->primary();
             $table->string('gateway',10);
             $table->string('service',20);
             $table->text('payload');

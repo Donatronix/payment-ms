@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class LogPaymentWebhookError extends Model
 {
+    use UuidTrait;
+
     /**
      * The attributes that should be cast.
      *

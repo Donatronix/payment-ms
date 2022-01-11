@@ -95,16 +95,12 @@ class PaypalManager implements PaymentSystemContract
     public function createInvoice(array $data): array
     {
         try {
-            // Create check code
-            $checkCode = Payment::getCheckCode();
-
             // Create internal order
             $payment = Payment::create([
                 'type' => Payment::TYPE_INVOICE,
                 'gateway' => self::gateway(),
                 'amount' => $data['amount'],
                 'currency' => mb_strtoupper($data['currency']),
-                'check_code' => $checkCode,
                 'service' => $data['service'],
                 'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_ORDER_CREATED
@@ -118,7 +114,7 @@ class PaypalManager implements PaymentSystemContract
                 'purchase_units' => [
                     [
                         'description' => 'Charge Balance for Sumra User',
-                        'custom_id' => $checkCode,
+                        'custom_id' => $payment->check_code,
                         'invoice_id' => $payment->id,
                         'amount' => [
                             'value' => $data['amount'],

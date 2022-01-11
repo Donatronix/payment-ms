@@ -14,26 +14,24 @@ class CreatePaymentsTable extends Migration
     public function up()
     {
         Schema::create('payments', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->uuid('id')->primary();
             $table->tinyInteger('type');
+
             $table->string('gateway', 10);
-
             $table->decimal('amount');
-
             $table->char('currency', 3);
-
-            $table->string('check_code');
             $table->string('document_id')->nullable();
             $table->string('service', 36)->nullable();
-
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users');
-
             $table->smallInteger('status')->nullable();
             $table->boolean('transaction_created')->default(false);
 
+            $table->uuid('user_id')->index();
+
+            $table->string('check_code');
             $table->text('payload')->nullable();
+
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

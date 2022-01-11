@@ -95,16 +95,12 @@ class BitpayManager implements PaymentSystemContract
     public function createInvoice(array $data): array
     {
         try {
-            // Create check code
-            $checkCode = Payment::getCheckCode();
-
             // Create internal order
             $payment = Payment::create([
                 'type' => Payment::TYPE_INVOICE,
                 'gateway' => self::gateway(),
                 'amount' => $data['amount'],
                 'currency' => mb_strtoupper($data['currency']),
-                'check_code' => $checkCode,
                 'service' => $data['service'],
                 'user_id' => $data['user_id'] ?? Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_INVOICE_NEW
@@ -117,7 +113,7 @@ class BitpayManager implements PaymentSystemContract
             $invoice->setExtendedNotifications(true);
             $invoice->setNotificationURL(config('payments.bitpay.webhook_url') . '/bitpay/invoices');
             $invoice->setRedirectURL(config('payments.bitpay.redirect_url'));
-            $invoice->setPosData(json_encode(['code' => $checkCode]));
+            $invoice->setPosData(json_encode(['code' => $payment->check_code]));
             $invoice->setItemDesc("Charge Balance for Sumra User");
 
             // Send data to bitpay and get created invoice

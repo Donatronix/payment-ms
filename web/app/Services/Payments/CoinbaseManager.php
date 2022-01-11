@@ -96,16 +96,12 @@ class CoinbaseManager implements PaymentSystemContract
     public function createInvoice(array $data): array
     {
         try {
-            // Create check code
-            $checkCode = Payment::getCheckCode();
-
             // Create internal order
             $payment = Payment::create([
                 'type' => Payment::TYPE_INVOICE,
                 'gateway' => self::gateway(),
                 'amount' => $data['amount'],
                 'currency' => mb_strtoupper($data['currency']),
-                'check_code' => $checkCode,
                 'service' => $data['service'],
                 'user_id' => Auth::user()->getAuthIdentifier(),
                 'status' => self::STATUS_CHARGE_CREATED
@@ -121,7 +117,7 @@ class CoinbaseManager implements PaymentSystemContract
                     'currency' => $data['currency']
                 ],
                 'metadata' => [
-                    'code' => $checkCode,
+                    'code' => $payment->check_code,
                     'payment_id' => $payment->id
                 ],
                 'redirect_url' => config('payments.coinbase.redirect_url'),
