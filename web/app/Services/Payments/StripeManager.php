@@ -68,7 +68,7 @@ class StripeManager implements PaymentSystemContract
             // Create a PaymentIntent with amount and currency
             $paymentIntent = \Stripe\PaymentIntent::create([
                 'amount' => $inputData->amount,
-                'currency' => 'gbp',
+                'currency' => mb_strtolower($inputData->currency),
 //                'automatic_payment_methods' => [
 //                    'enabled' => true,
 //                ],
