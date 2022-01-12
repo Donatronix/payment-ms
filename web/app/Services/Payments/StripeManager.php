@@ -68,10 +68,32 @@ class StripeManager implements PaymentSystemContract
             // Create a PaymentIntent with amount and currency
             $paymentIntent = \Stripe\PaymentIntent::create([
                 'amount' => $inputData->amount,
-                'currency' => 'eur',
-                'automatic_payment_methods' => [
-                    'enabled' => true,
-                ],
+                'currency' => 'gbp',
+//                'automatic_payment_methods' => [
+//                    'enabled' => true,
+//                ],
+                'payment_method_types' => [
+                    'acss_debit',
+                    'afterpay_clearpay',
+                    'alipay',
+                    'au_becs_debit',
+                    'grabpay',
+                    'bancontact',
+                    'boleto',
+                    'card',
+                    'card_present',
+                    'eps',
+                    'giropay',
+                    'fpx',
+                    'ideal',
+                    'interac_present',
+                    'klarna',
+                    'p24',
+                    'oxxo',
+                    'sepa_debit',
+                    'sofort',
+                    'wechat_pay'
+                ]
             ]);
 
             // Update order data
