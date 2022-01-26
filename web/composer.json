@@ -17,6 +17,7 @@
         "stripe/stripe-php": "~7",
         "sumra/json-api": "*",
         "sumra/pubsub": "*",
+        "sumra/sdk": "*",
         "vladimir-yuldashev/laravel-queue-rabbitmq": "~11"
     },
     "require-dev": {
@@ -45,6 +46,13 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "repositories": [
+        {
+            "type": "path",
+            "url": "../sumra-sdk",
+            "options": {
+                "symlink": false
+            }
+        },
         {
             "type": "path",
             "url": "../pubsub",

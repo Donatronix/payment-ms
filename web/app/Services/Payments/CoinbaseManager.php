@@ -9,9 +9,7 @@ use CoinbaseCommerce\Resources\Charge;
 use CoinbaseCommerce\Webhook;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use phpDocumentor\Reflection\Types\Integer;
 
 class CoinbaseManager implements PaymentSystemContract
 {

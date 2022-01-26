@@ -3,7 +3,6 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
-use App\Models\Currency;
 use App\Models\Payment;
 use BitPaySDK\Client;
 use BitPaySDK\Exceptions\BitPayException;
@@ -11,7 +10,6 @@ use BitPaySDK\Model\Invoice\Invoice;
 use BitPaySDK\Tokens;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class BitpayManager implements PaymentSystemContract
 {

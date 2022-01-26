@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Traits\UuidTrait;
+use Sumra\SDK\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**

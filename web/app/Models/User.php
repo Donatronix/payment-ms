@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Traits\UuidTrait;
+use Sumra\SDK\Traits\UuidTrait;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
