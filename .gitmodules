@@ -4,3 +4,6 @@
 [submodule "pubsub"]
 	path = pubsub
 	url = git@bitbucket.org:sumraprague/pubsub.git
+[submodule "sumra-sdk"]
+	path = sumra-sdk
+	url = git@bitbucket.org:sumraprague/sumra-sdk.git

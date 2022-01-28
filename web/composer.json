@@ -1,5 +1,5 @@
 {
-    "name": "sumra/payments-ms",
+    "name": "kus/payments-gateways-ms",
     "description": "Payment Gateways API Microservice",
     "type": "project",
     "private": true,
