@@ -210,4 +210,9 @@ class PaypalManager implements PaymentSystemContract
             'payment_completed' => (self::STATUS_ORDER_COMPLETED === $payment->status),
         ];
     }
+
+    public function charge(Payment $payment, object $inputData): mixed
+    {
+        // TODO: Implement charge() method.
+    }
 }

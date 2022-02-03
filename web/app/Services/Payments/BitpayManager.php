@@ -181,4 +181,10 @@ class BitpayManager implements PaymentSystemContract
             'payment_completed' => (self::STATUS_INVOICE_COMPLETED === $payment->status),
         ];
     }
+
+
+    public function charge(Payment $payment, object $inputData): mixed
+    {
+        // TODO: Implement charge() method.
+    }
 }

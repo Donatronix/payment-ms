@@ -73,7 +73,10 @@ class PaymentController extends Controller
         try {
             $data = Payment::paginate($request->get('limit', 20));
 
-            return response()->json(array_merge(['success' => true], $data->toArray()), 200);
+            return response()->json(array_merge([
+                'success' => true
+            ], $data->toArray()), 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

@@ -50,15 +50,16 @@ class PaymentSystemController extends Controller
         $systems = Cache::get(self::CACHE_ID, []);
 
         if (!is_array($systems) || count($systems) == 0) {
-
             $systems = $this->catalog();
 
             Cache::put(self::CACHE_ID, $systems);
         }
 
-        return response()->json([
-            'success' => true,
-            'systems' => $systems
+        return response()->jsonApi([
+            'type' => 'success',
+            'title' => "Get payment systems list",
+            'message' => "Payment systems data successfully",
+            'data' => $systems
         ], 200);
     }
 
