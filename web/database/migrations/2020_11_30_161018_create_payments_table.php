@@ -15,11 +15,12 @@ class CreatePaymentsTable extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->tinyInteger('type');
-
-            $table->string('gateway', 10);
             $table->decimal('amount');
             $table->char('currency', 3);
+
+
+            $table->tinyInteger('type');
+            $table->string('gateway', 10);
             $table->string('document_id')->nullable();
             $table->string('service', 36)->nullable();
             $table->smallInteger('status')->nullable();
@@ -34,6 +35,10 @@ class CreatePaymentsTable extends Migration
             $table->softDeletes();
         });
     }
+
+//            $table->tinyInteger('payment_method');
+//            $table->tinyInteger('payment_system');
+//            $table->unsignedTinyInteger('payment_currency_id')->nullable();
 
     /**
      * Reverse the migrations.

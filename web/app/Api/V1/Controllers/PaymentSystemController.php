@@ -97,8 +97,9 @@ class PaymentSystemController extends Controller
                 }
 
                 $systems[] = [
-                    'gateway' => $gateway,
-                    'name' => $name,
+                    'label' => $name,
+                    'value' => $gateway,
+                    'icon' => 'yyy',
                     'description' => $description,
                     'new_status' => $new_status
                 ];

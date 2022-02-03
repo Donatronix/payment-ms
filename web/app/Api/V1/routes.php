@@ -49,4 +49,3 @@ $router->group([
         $router->post('{gateway}/invoices', 'WebhookController@handlerWebhookInvoice');
     });
 });
-
