@@ -53,5 +53,5 @@ interface PaymentSystemContract
      *
      * @return mixed
      */
-    public function handlerWebhookInvoice(Request $request): mixed;
+    public function handlerWebhook(Request $request): mixed;
 }

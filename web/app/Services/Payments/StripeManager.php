@@ -5,7 +5,11 @@ namespace App\Services\Payments;
 use App\Contracts\PaymentSystemContract;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Stripe\Exception\SignatureVerificationException;
+use Stripe\Exception\UnexpectedValueException;
 use Stripe\Stripe;
+use Stripe\Webhook;
 
 class StripeManager implements PaymentSystemContract
 {
@@ -66,7 +70,7 @@ class StripeManager implements PaymentSystemContract
     {
         try {
             // Create a PaymentIntent with amount and currency
-            $paymentIntent = \Stripe\PaymentIntent::create([
+            $stripeDocument = \Stripe\PaymentIntent::create([
                 'amount' => $inputData->amount,
                 'currency' => mb_strtolower($inputData->currency),
 //                'automatic_payment_methods' => [
@@ -97,7 +101,7 @@ class StripeManager implements PaymentSystemContract
 
             // Update order data
             $payment->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
-            $payment->document_id = $paymentIntent->id;
+            $payment->document_id = $stripeDocument->id;
             $payment->save();
 
             // Return result
@@ -108,9 +112,9 @@ class StripeManager implements PaymentSystemContract
                 'data' => [
                     'gateway' => self::gateway(),
                     'payment_id' => $payment->id,
-                    'session_id' => $paymentIntent->id,
+                    'session_id' => $stripeDocument->id,
                     'public_key' => config('payments.stripe.public_key'),
-                    'clientSecret' => $paymentIntent->client_secret,
+                    'clientSecret' => $stripeDocument->client_secret,
                 ]
             ];
         } catch (\Exception $e) {
@@ -184,110 +188,98 @@ class StripeManager implements PaymentSystemContract
      *
      * @return array
      */
-    public function handlerWebhookInvoice(Request $request): array
+    public function handlerWebhook(Request $request): array
     {
-        $payload = @file_get_contents('php://input');
-
         $event = null;
+        $payload = $request->getContent();
 
-        try {
-            $event = \Stripe\Webhook::constructEvent(
-                $payload,
-                $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? null,
-                config('payments.stripe.webhook_secret')
-            );
-        } catch (\UnexpectedValueException $e) {
-            // Invalid payload
-            \Log::error("Invalid payload: " . $payload);
-            return [
-                'type' => 'danger',
-                'message' => 'Unexpected value error'
-            ];
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
-            // Invalid signature
-            \Log::error("Invalid signature: " . $payload);
-            if (env("APP_DEBUG", 0)) {
-                $event = (object)[
-                    "type" => $request["type"],
-                    "data" => (object)[
-                        "object" => (object)[
-                            "metadata" => (object)[
-                                "payment_order" => $request["data"]["object"]["metadata"]["payment_order"],
-                                "check_code" => $request["data"]["object"]["metadata"]["check_code"],
-                            ],
-                            "payment_status" => $request["data"]["object"]["payment_status"],
-                        ]
-                    ]
-                ];
-            } else return [
-                'type' => 'danger',
-                'message' => 'Signature check error'
-            ];
+        if (env("APP_DEBUG", 0)) {
+            Log::info($request->headers);
+            Log::info($payload);
         }
 
-        \Log::info($request);
+        try {
+            $event = Webhook::constructEvent(
+                $payload,
+                ($_SERVER['HTTP_STRIPE_SIGNATURE'] ?? null),
+                config('payments.stripe.webhook_secret')
+            );
+        } catch (UnexpectedValueException $e) {
+            // Invalid payload
+            $result = [
+                'type' => 'danger',
+                'message' => "Stripe Webhook: Invalid payload: " . $e->getMessage(),
+                'payload' => $payload
+            ];
+
+            if (env("APP_DEBUG", 0)) {
+                Log::error($result);
+            }
+
+            return $result;
+        } catch (SignatureVerificationException $e) {
+            // Invalid signature
+            $result = [
+                'type' => 'danger',
+                'message' => "Stripe Webhook: Invalid signature: " . $e->getMessage(),
+                'payload' => $payload
+            ];
+
+            if (env("APP_DEBUG", 0)) {
+                Log::error($result);
+            }
+
+            return $result;
+        }
+
+        if (env("APP_DEBUG", 0)) {
+            Log::info('### START EVENT OBJECT ###');
+            Log::info($event);
+            Log::info('### FINISH EVENT OBJECT ###');
+        }
 
         // Handle the event
         switch ($event->type) {
             case 'checkout.session.completed':
             case 'checkout.session.async_payment_succeeded':
             case 'checkout.session.async_payment_failed':
-                $paymentIntent = $event->data->object; // contains a StripePaymentIntent
-                break;
-            default:
-                \Log::error("Unexpected event type: " . $payload);
+
+            case 'payment_intent.amount_capturable_updated':
+            case 'payment_intent.canceled':
+            case 'payment_intent.created':
+            case 'payment_intent.payment_failed':
+            case 'payment_intent.processing':
+            case 'payment_intent.requires_action':
+            case 'payment_intent.succeeded':
+                // Read contains a StripePaymentIntent
+                $stripeDocument = $event->data->object;
+
+                if (env("APP_DEBUG", 0)) {
+                    Log::info($stripeDocument);
+                }
+
+                // Return result
                 return [
-                    'type' => 'danger',
-                    'message' => 'Unexpected event type'
+                    'type' => 'success',
+                    'stripeDocument' => $stripeDocument
+//                    'payment_id' => $payment->id,
+//                    'service' => $payment->service,
+//                    'amount' => $payment->amount,
+//                    'currency' => $payment->currency,
+//                    'user_id' => $payment->user_id,
+//                    'payment_completed' => (self::STATUS_ORDER_SUCCEEDED === $payment->status),
                 ];
+
+            default:
+                $result = [
+                    'type' => 'info',
+                    'message' => 'Stripe Webhook: Received unsupported event type ' . $event->type,
+                    'payload' => $payload
+                ];
+
+                Log::info($result);
+
+                return $result;
         }
-
-        // Get invoice data
-        $orderData = $paymentIntent->metadata;
-        if (!$orderData || !is_object($orderData)) {
-            return [
-                'type' => 'danger',
-                'message' => 'No order data'
-            ];
-        }
-
-        http_response_code(200);
-
-        // Find order
-        $payment = Payment::where('id', $orderData->payment_order)
-            ->where('check_code', $orderData->check_code)
-            ->first();
-
-        if (!$payment) {
-            \Log::error("Order not found: " . $payload);
-            return [
-                'type' => 'danger',
-                'message' => 'Order not found'
-            ];
-        }
-
-        $status = 'STATUS_ORDER_' . mb_strtoupper($paymentIntent->payment_status);
-        if (!defined("self::{$status}")) {
-            \Log::error("Status error: " . $payload);
-            return [
-                'type' => 'danger',
-                'message' => 'Status error: ' . mb_strtoupper($paymentIntent->payment_status)
-            ];
-        }
-
-        $payment->status = intval(constant("self::{$status}"));
-        // $payment->payload = $request;
-        $payment->save();
-
-        // Return result
-        return [
-            'status' => 'success',
-            'payment_id' => $payment->id,
-            'service' => $payment->service,
-            'amount' => $payment->amount,
-            'currency' => $payment->currency,
-            'user_id' => $payment->user_id,
-            'payment_completed' => (self::STATUS_ORDER_SUCCEEDED === $payment->status),
-        ];
     }
 }

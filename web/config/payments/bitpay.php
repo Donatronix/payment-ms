@@ -9,7 +9,7 @@ return [
         'payroll' => env('BITPAY_API_TOKEN_PAYROLL', null)
     ],
     'private_key' => [
-        'path' => dirname(__FILE__) . DIRECTORY_SEPARATOR . 'bitpay-test.key',
+        'path' => storage_path('keys/bitpay.key'),
         'password' => env('BITPAY_MASTER_PASSWORD', null),
     ],
     'webhook_url' => env('PAYMENTS_WEBHOOK_URL', 'https://sumra.net/payment/'),

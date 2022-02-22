@@ -50,9 +50,14 @@ RUN rm -rf /var/www/html/.idea
 RUN find /var/www/html/storage/framework/ -type f -name "*.php" -delete
 RUN rm -rf -R /var/www/html/storage/logs/*.log
 RUN rm -rf /var/www/html/.editorconfig
+RUN rm -rf /var/www/html/.env
 RUN rm -rf /var/www/html/.env.example
 RUN rm -rf /var/www/html/.gitignore
 RUN rm -rf /var/www/html/.styleci.yml
+
+## Update env
+RUN cp -f .env.production .env
+RUN rm -rf /var/www/html/.env.production
 
 ## Composer packages install & update
 RUN composer -v install

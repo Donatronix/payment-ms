@@ -41,11 +41,11 @@ $router->group([
     });
 
     /**
-     * BitPay webhooks
+     * Payments webhooks
      */
     $router->group([
         'prefix' => 'webhooks'
     ], function () use ($router) {
-        $router->post('{gateway}/invoices', 'WebhookController@handlerWebhookInvoice');
+        $router->post('{gateway}/invoices', 'WebhookController@handlerWebhook');
     });
 });

@@ -30,6 +30,7 @@ class LogPaymentWebhookError extends Model
      */
     protected $fillable = [
         'gateway',
+        'message',
         'payload'
     ];
 

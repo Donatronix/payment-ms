@@ -58,6 +58,7 @@ class BitpayManager implements PaymentSystemContract
                 ),
                 config('payments.bitpay.private_key.password')
             );
+
         } catch (BitPayException $e) {
             throw new Exception($e->getMessage());
         }
@@ -91,6 +92,43 @@ class BitpayManager implements PaymentSystemContract
      * @return array
      */
     public function createInvoice(Payment $payment, object $inputData): array
+    {
+        try {
+            // Set invoice detail
+            $invoice = new Invoice($inputData->amount, $inputData->currency);
+
+            $invoice->setOrderId($payment->id);
+
+            $invoice->setFullNotifications(true);
+            $invoice->setExtendedNotifications(true);
+            $invoice->setNotificationURL(config('payments.bitpay.webhook_url') . '/bitpay/invoices');
+            $invoice->setRedirectURL(config('payments.bitpay.redirect_url'));
+            $invoice->setPosData(json_encode(['code' => $payment->check_code]));
+            $invoice->setItemDesc("Charge Balance for Sumra User");
+
+            // Send data to bitpay and get created invoice
+            $chargeObj = $this->gateway->createInvoice($invoice);
+
+            // Update payment transaction data
+            $payment->status = self::STATUS_INVOICE_NEW;
+            $payment->document_id = $chargeObj->getId();
+            $payment->save();
+
+            return [
+                'type' => 'success',
+                'gateway' => self::gateway(),
+                'payment_id' => $payment->id,
+                'invoice_url' => $chargeObj->getURL()
+            ];
+        } catch (Exception $e) {
+            return [
+                'type' => 'danger',
+                'message' => sprintf("Unable to create an invoice. Error: %s \n", $e->getMessage())
+            ];
+        }
+    }
+
+    public function charge(Payment $payment, object $inputData): mixed
     {
         try {
             // Set invoice detail
@@ -130,7 +168,7 @@ class BitpayManager implements PaymentSystemContract
      *
      * @return array|string[]
      */
-    public function handlerWebhookInvoice(Request $request): array
+    public function handlerWebhook(Request $request): array
     {
         \Log::info($request);
         // Check event property
@@ -151,6 +189,7 @@ class BitpayManager implements PaymentSystemContract
         }
 
         $paymentData['posData'] = json_decode($paymentData['posData']);
+
         // Find payment transaction
         $payment = Payment::where('type', Payment::TYPE_INVOICE)
             ->where('id', $paymentData['orderId'])
@@ -167,6 +206,7 @@ class BitpayManager implements PaymentSystemContract
         }
 
         $payment->status = $request->event['code'];
+
        // $payment->payload = $paymentData;
         $payment->save();
 
@@ -180,11 +220,5 @@ class BitpayManager implements PaymentSystemContract
             'user_id' => $payment->user_id,
             'payment_completed' => (self::STATUS_INVOICE_COMPLETED === $payment->status),
         ];
-    }
-
-
-    public function charge(Payment $payment, object $inputData): mixed
-    {
-        // TODO: Implement charge() method.
     }
 }

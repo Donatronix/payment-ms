@@ -158,7 +158,7 @@ class PaypalManager implements PaymentSystemContract
      *
      * @return array
      */
-    public function handlerWebhookInvoice(Request $request): array
+    public function handlerWebhook(Request $request): array
     {
         \Log::info($request);
         // Check sender

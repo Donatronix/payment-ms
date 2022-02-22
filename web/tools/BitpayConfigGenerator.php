@@ -12,13 +12,14 @@ use Symfony\Component\Yaml\Yaml;
 
 $isProd = false; // Set to true if the environment for which the configuration file will be generated is Production.
 
-$privateKeyname = 'bitpay-test.key'; // Add here the name for your Private key
+$privateKeyname = 'bitpay.key'; // Add here the name for your Private key
 
 $generateMerchantToken = true; // Set to true to generate a token for the Merchant facade
 $generatePayrollToken = true; // Set to true to generate a token for the Payroll facade (Request to Support if you need it)
 
-//$yourMasterPassword = "A6Zaq4nVkH1iVgcR4pNA94rFTwraRQu9YqcnY7pHHNhS";
-$yourMasterPassword = env('BITPAY_MASTER_PASSWORD');
+$yourMasterPassword = "A6Zaq4nVkH1iVgcR4pNA94rFTwraRQu9YqcnY7pHHNhS";
+//$yourMasterPassword = env('BITPAY_MASTER_PASSWORD');
+
 
 $generateJSONfile = true; // Set to true to generate the Configuration File in Json format
 $generateYMLfile = false; // Set to true to generate the Configuration File in Yml format
@@ -129,16 +130,12 @@ try {
         echo "\r\n    -> Token: ";
         echo $merchantToken;
         echo "\r\n";
-
-        /** End of request **/
     }
 
     /**
      * Repeat the process for the Payroll facade
      */
-
     if ($generatePayrollToken) {
-
         $facade = 'payroll';
 
         $postData = json_encode(
@@ -196,7 +193,8 @@ echo "\r\nOnce you have this Pairing Code/s approved you can move the generated 
  * Generate Config File
  */
 
-$dir = "/app/config/";
+$dir = "/storage/keys/";
+//$dir = storage_path('keys');
 
 $config = [
     "BitPayConfiguration" => [
@@ -225,7 +223,7 @@ $config = [
 try {
     if ($generateJSONfile) {
         $json_data = json_encode($config, JSON_PRETTY_PRINT);
-        $json_data = preg_replace('/\\\\\/app\\\\\/config\\\\\//','/app/config/',$json_data);
+        $json_data = preg_replace('/\\\\\/app\\\\\/config\\\\\//', '/app/config/', $json_data);
         file_put_contents('BitPay.config.json', $json_data);
     }
 

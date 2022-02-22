@@ -117,6 +117,7 @@ class CoinbaseManager implements PaymentSystemContract
             $payment->document_id = $chargeObj->id;
             $payment->save();
 
+            // Return result
             return [
                 'type' => 'success',
                 'gateway' => self::gateway(),
@@ -136,7 +137,7 @@ class CoinbaseManager implements PaymentSystemContract
      *
      * @return array|string[]
      */
-    public function handlerWebhookInvoice(Request $request): array
+    public function handlerWebhook(Request $request): array
     {
         \Log::info($_SERVER);
         \Log::info(file_get_contents('php://input'));
