@@ -32,9 +32,6 @@ class Kernel extends ConsoleKernel
      *
      * @return string
      */
-    /**
-     * @return string
-     */
     protected function scheduleTimezone(): string
     {
         return 'Europe/London';
