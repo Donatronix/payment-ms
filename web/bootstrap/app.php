@@ -124,7 +124,6 @@ $app->register(\Sumra\SDK\JsonApiServiceProvider::class);
 $app->configure('swagger-lume');
 $app->register(\SwaggerLume\ServiceProvider::class);
 
-
 /**
  * Artisan Commands Lumen Generator
  */
