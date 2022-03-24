@@ -42,14 +42,7 @@ class OpenpaydManager implements PaymentSystemContract
 
     public function __construct()
     {
-        try {
-            //code...
-            $this->openPaydClient = new Client(['base_uri' => config("payments.openpayd.base_url")]);
-
-        } catch (Exception $e) {
-
-            throw new Exception($e->getMessage());
-        }
+   
     }
 
     public function getAccessToken()
