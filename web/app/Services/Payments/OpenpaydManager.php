@@ -42,13 +42,16 @@ class OpenpaydManager implements PaymentSystemContract
 
     public function __construct()
     {
-   
+     
     }
 
     public function getAccessToken()
     {
 
         try {
+
+            $this->openPaydClient = new Client(['base_uri' => config("payments.openpayd.base_url")]);
+
             $payload = [
                 "form_params" => [
                     "username" => config("payments.openpayd.username"),
