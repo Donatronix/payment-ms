@@ -153,7 +153,7 @@ class OpenpaydManager implements PaymentSystemContract
             $payment = Payment::where('type', Payment::TYPE_INVOICE)
             ->where('id', $webhookPayload["metadata"]['orderId'])
             ->where('document_id', $webhookPayload["metadata"]['documentId'])
-            ->where('check_code', $webhookPayload['check_code'])
+            ->where('check_code', $webhookPayload["metadata"]['check_code'])
             ->where('gateway', self::gateway())
             ->first();
 
