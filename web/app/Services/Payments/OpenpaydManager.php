@@ -51,14 +51,25 @@ class OpenpaydManager implements PaymentSystemContract
         try {
 
             $this->openPaydClient = new Client(['base_uri' => config("payments.openpayd.base_url")]);
+            
+            $username = config("payments.openpayd.username");
+            $password = config("payments.openpayd.password");
+            $salt = $username.":".$password;
+
+            $code = base64_encode($salt);
 
             $payload = [
                 "form_params" => [
-                    "username" => config("payments.openpayd.username"),
-                    "password" => config("payments.openpayd.password"),
+                    "username" => $username,
+                    "password" => $password
                 ],
+
+                "headers" => [
+                    "Authorization" => "Basic ".$code,
+                ]
             ];
-            $response = $this->openPaydClient->post("/oauth/token?grant_type=client_credentials", $payload);
+
+            $response = $this->openPaydClient->post("oauth/token?grant_type=client_credentials", $payload);
 
             return $response;
 
