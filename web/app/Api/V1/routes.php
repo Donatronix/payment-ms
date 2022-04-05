@@ -23,21 +23,22 @@ $router->group([
          * Payment systems list
          */
         $router->get('payment-systems', 'PaymentSystemController');
+    });
 
-        /**
-         * ADMIN PANEL
-         */
-        $router->group([
-            'prefix' => 'admin',
-            'namespace' => 'Admin',
-            'middleware' => 'checkAdmin'
-        ], function ($router) {
-            // Wallets Admin
-            $router->get('/payments', 'PaymentController@index');
-            $router->get('/payments/lost', 'PaymentController@lost');
-            $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
-
-        });
+    /**
+     * ADMIN PANEL
+     */
+    $router->group([
+        'prefix' => 'admin',
+        'namespace' => 'Admin',
+        'middleware' => [
+            'checkUser',
+            'checkAdmin'
+        ]
+    ], function ($router) {
+        $router->get('/payments', 'PaymentController@index');
+        $router->get('/payments/lost', 'PaymentController@lost');
+        $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
     });
 
     /**
@@ -45,8 +46,7 @@ $router->group([
      */
     $router->group([
         'prefix' => 'webhooks'
-    ], function () use ($router) {
+    ], function ($router) {
         $router->post('{gateway}/invoices', 'WebhookController@handlerWebhook');
     });
 });
-

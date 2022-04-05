@@ -89,7 +89,7 @@ $app->routeMiddleware([
 | Register Service Providers
 |--------------------------------------------------------------------------
 |
-| Here we will register all the application's service providers which
+| Here we will register all of the application's service providers which
 | are used to bind services into the container. Service providers are
 | totally optional, so you are not required to uncomment this line.
 |
@@ -135,7 +135,7 @@ $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 |--------------------------------------------------------------------------
 |
 | Next we will include the routes file so that they can all be added to
-| the application. This will provide all the URLs the application
+| the application. This will provide all of the URLs the application
 | can respond to, as well as the controllers that may handle them.
 |
 */

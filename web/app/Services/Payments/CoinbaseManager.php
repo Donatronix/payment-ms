@@ -188,7 +188,7 @@ class CoinbaseManager implements PaymentSystemContract
         }
 
         // Find payment transaction
-        $payment = Payment::where('type', Payment::TYPE_INVOICE)
+        $payment = Payment::where('type', Payment::TYPE_PAYIN)
             ->where('id', $paymentData["metadata"]['payment_id'])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["metadata"]['code'])

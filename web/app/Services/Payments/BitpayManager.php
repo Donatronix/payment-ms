@@ -191,7 +191,7 @@ class BitpayManager implements PaymentSystemContract
         $paymentData['posData'] = json_decode($paymentData['posData']);
 
         // Find payment transaction
-        $payment = Payment::where('type', Payment::TYPE_INVOICE)
+        $payment = Payment::where('type', Payment::TYPE_PAYIN)
             ->where('id', $paymentData['orderId'])
             ->where('document_id', $paymentData['id'])
             ->where('check_code', $paymentData['posData']->code)

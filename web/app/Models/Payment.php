@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
-use Sumra\SDK\Traits\OwnerTrait;
-use Sumra\SDK\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Sumra\SDK\Traits\OwnerTrait;
+use Sumra\SDK\Traits\UuidTrait;
 
+/**
+ *
+ * Transaction object example
+ * https://apidocs.openpayd.com/reference/transaction-object
+ */
 class Payment extends Model
 {
     use HasFactory;
@@ -17,10 +22,15 @@ class Payment extends Model
     use SoftDeletes;
 
     /**
-     * Type of order
+     * Type of the Transaction
      */
-    const TYPE_INVOICE = 1;
-    const TYPE_PAYOUTS = 2;
+    const TYPE_PAYIN = 1;
+    const TYPE_PAYOUT = 2;
+    const TYPE_TRANSFER = 3;
+    const TYPE_ADJUSTMENT = 4;
+    const TYPE_RETURN_IN = 5;
+    const TYPE_RETURN_OUT = 6;
+    const TYPE_FEE = 7;
 
     /**
      * The attributes that should be cast.

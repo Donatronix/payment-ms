@@ -179,7 +179,7 @@ class PaypalManager implements PaymentSystemContract
         }
 
         // Find payment transaction
-        $payment = Payment::where('type', Payment::TYPE_INVOICE)
+        $payment = Payment::where('type', Payment::TYPE_PAYIN)
             ->where('id', $paymentData["purchase_units"][0]["invoice_id"])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["purchase_units"][0]["custom_id"])

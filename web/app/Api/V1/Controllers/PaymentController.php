@@ -127,11 +127,11 @@ class PaymentController extends Controller
             ], 400);
         }
 
-        // dd($system);
+        //dd($system);
 
         // Create internal order
         $payment = PaymentModel::create([
-            'type' => PaymentModel::TYPE_INVOICE,
+            'type' => PaymentModel::TYPE_PAYIN,
             'gateway' => $request->get('gateway'),
             'amount' => $request->get('amount'),
             'currency' => mb_strtoupper($request->get('currency')),
