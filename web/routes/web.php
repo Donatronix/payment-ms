@@ -8,7 +8,7 @@
 |--------------------------------------------------------------------------
 */
 
-$router->get('/', function ($router) {
+$router->get('/', function () use ($router) {
     return $router->app->version();
 });
 

@@ -36,7 +36,7 @@ push)
   ;;
 start)
   echo ""
-  echo -e "${B}${GREEN}### GENERATE DOCKER-COMPOSE ###${NC}"
+  echo -e "${B}${GREEN}1. ### GENERATE DOCKER-COMPOSE ###${NC}"
   echo -e "${CYAN}Deploy Name: $DEPLOY_NAME${NC}"
   echo -e "${CYAN}Branch: $BRANCH${NC}"
   echo -e "${CYAN}Rev: $REVISION${NC}"
@@ -45,7 +45,7 @@ start)
   sed -i"" "s~{{DEPLOY_NAME}}~$DEPLOY_NAME~" docker-compose.yaml
   sed -i"" "s~{{DOCKER_IMAGE}}~$DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION~" docker-compose.yaml
 
-  echo -e "${B}${GREEN}### RUN DOCKER CONTAINER ###${NC}"
+  echo -e "${B}${GREEN}2. ### RUN DOCKER CONTAINER ###${NC}"
   docker-compose stop
   docker-compose up -d
   ;;
