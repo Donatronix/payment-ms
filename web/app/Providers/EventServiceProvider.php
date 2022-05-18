@@ -21,7 +21,7 @@ class EventServiceProvider extends ServiceProvider
             RechargeBalanceTransactionListener::class,
         ],
         'LoanPayment' => [
-            LoanPaymentListener::class,
+            'App\Listener\LoanPaymentListener',
         ],
     ];
 
