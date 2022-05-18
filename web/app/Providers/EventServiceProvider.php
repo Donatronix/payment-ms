@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Laravel\Lumen\Providers\EventServiceProvider as ServiceProvider;
 use App\Listeners\RechargeBalanceTransactionListener;
+use App\Listeners\LoanPaymentListener;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -18,6 +19,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         'rechargeBalanceTransaction' => [
             RechargeBalanceTransactionListener::class,
+        ],
+        'LoanPayment' => [
+            LoanPaymentListener::class,
         ],
     ];
 
