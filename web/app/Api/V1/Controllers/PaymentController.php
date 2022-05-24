@@ -87,10 +87,6 @@ class PaymentController extends Controller
      */
     public function charge(Request $request): JsonResponse
     {
-        \PubSub::transaction(function () {})->publish("LoanPayment", [
-            'replay_to' => "PaymentGatewaysMS",
-        ], "DasaInstantCreditLineMS");
-        return true;
         // Validate input
         try {
             $this->validate($request, [
