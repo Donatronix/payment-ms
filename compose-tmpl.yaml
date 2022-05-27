@@ -12,7 +12,6 @@ services:
       - '18100:443'
     environment:
       - WEB_DOCUMENT_ROOT=/var/www/html/public
-#      - WEB_ALIAS_DOMAIN=api.sumrameet.com
       - PHP_DISMOD=apcu,calendar,exif,gd,imagick,imap,ioncube,mongodb,ldap,pcntl,pdo_pgsql,pgsql,shmop,soap,sysvmsg,sysvsem,sysvshm,vips
       - PHP_DISPLAY_ERRORS=1
       - LOG_STDERR=/var/log/vhost-error.log
