@@ -6,12 +6,13 @@
     "private": true,
     "require": {
         "php": "^8.0",
+        "ext-gmp": "*",
+        "ext-json": "*",
         "bitpay/sdk": "~6",
         "coinbase/coinbase-commerce": "~1",
-        "ext-json": "*",
-        "ext-gmp": "*",
         "laravel/lumen-framework": "~8",
         "paypal/paypal-checkout-sdk": "~1",
+        "safecharge-international/safecharge-php": "^2.1",
         "stripe/stripe-php": "~7",
         "sumra/sdk": "*"
     },
