@@ -1,29 +1,16 @@
-# README #
+all of our microservices are started as follows
 
-This README would normally document whatever steps are necessary to get your application up and running.
+1 do git clone
 
-### What is this repository for? ###
+2. go to the web folder and copy .env.example to .env
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+3. go to ../
 
-### How do I get set up? ###
+4. run ./deploy.sh build
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+5. cd web & run composer i
 
-### Contribution guidelines ###
+6. cd ../ & run ./deploy.sh start
 
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+go to browser
+http://localhost:{port}/v1/docs
