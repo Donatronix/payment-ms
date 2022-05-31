@@ -1,0 +1,428 @@
+openapi: 3.0.0
+info:
+  title: 'Payment Gateways API Microservice'
+  description: 'Payment Gateways API Microservice, Version v1'
+  contact:
+    name: 'Support Team'
+    email: support@ultainfinity.com
+  version: v1
+servers:
+  -
+    url: 'http://localhost:8100/v1'
+    description: 'Payment Gateways API Microservice, Version v1'
+paths:
+  /admin/payments:
+    get:
+      tags:
+        - 'Admin / Payments'
+      summary: 'Display Payments list'
+      description: 'Display list of all patment orders'
+      operationId: 1b2c89bb92681ab2d13efe37908a995f
+      parameters:
+        -
+          name: limit
+          in: query
+          description: 'count ot orders in return'
+          required: false
+          schema:
+            type: integer
+            default: 20
+        -
+          name: page
+          in: query
+          description: 'page of list'
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    post:
+      tags:
+        - 'Admin / Payments'
+      summary: 'Method for proof of payment by payment order'
+      description: 'Method for proof of payment by payment order'
+      operationId: 50be77f03d54266b7d186615280efa97
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  /admin/payments/lost:
+    get:
+      tags:
+        - 'Admin / Payments'
+      summary: 'Display invoice list not finished'
+      description: 'Display list of all patment orders'
+      operationId: f38978919109b6cf9aa1f3a916de01ea
+      parameters:
+        -
+          name: limit
+          in: query
+          description: 'count at orders in return'
+          required: false
+          schema:
+            type: integer
+            default: 20
+        -
+          name: page
+          in: query
+          description: 'page of list, 1 - first page'
+          required: false
+          schema:
+            type: integer
+            default: 1
+        -
+          name: gateway
+          in: query
+          description: 'filter by gateway'
+          required: false
+          schema:
+            type: string
+            default: ''
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  /admin/settings/stripe:
+    get:
+      tags:
+        - 'Admin / Settings / Stripe'
+      summary: 'Display list of all stripe payment gateway settings'
+      description: 'Display list of all stripe payment gateway settings'
+      operationId: ddaf3483484392fb26b5c3a0b1aeb964
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    post:
+      tags:
+        - 'Admin / Settings / Stripe'
+      summary: 'Method to add new stripe payment gateway settings'
+      description: 'method to add new stripe payment gateway settings'
+      operationId: abf1c0ed1f77d1b38e208f39d0d4a284
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                gateway_name:
+                  description: 'Name of the payment gateway'
+                  type: string
+                  default: stripe
+                webhook_secret:
+                  description: 'The web hook secret'
+                  type: string
+                public_key:
+                  description: 'Publick key'
+                  type: string
+                secret_key:
+                  description: 'Secret key'
+                  type: string
+                status:
+                  description: 'The currently in use settings'
+                  type: integer
+                  default: 1
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  '/admin/settings/{id}/stripe':
+    get:
+      tags:
+        - 'Admin / Settings / Stripe'
+      summary: 'Display stripe payment gateway settings details'
+      description: 'show stripe payment gateway settings details'
+      operationId: 745328ce8a7a454d37b9d98ddf77f0c8
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    put:
+      tags:
+        - 'Admin / Settings / Stripe'
+      summary: 'Method to update stripe payment gateway settings'
+      description: 'method to update stripe payment gateway settings'
+      operationId: db9541a1e78666182dffbcc5bb5c0f52
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+                gateway_name:
+                  description: 'Name of the payment gateway'
+                  type: string
+                  default: stripe
+                webhook_secret:
+                  description: 'The web hook secret'
+                  type: string
+                public_key:
+                  description: 'Publick key'
+                  type: string
+                secret_key:
+                  description: 'Secret key'
+                  type: string
+                status:
+                  description: 'The currently in use settings'
+                  type: integer
+                  default: 1
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    delete:
+      tags:
+        - 'Admin / Settings / Stripe'
+      summary: 'Method to delete stripe payment gateway settings'
+      description: 'method to delete stripe payment gateway settings'
+      operationId: 70cbdf2b34a83efd9fed92502cccba09
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  /payments/charge:
+    post:
+      tags:
+        - Payments
+      summary: 'Make payment and charge wallet balance or invoice'
+      description: 'Make payment and charge wallet balance or invoice'
+      operationId: 576db5189fef552c041f1696c0303952
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                gateway:
+                  description: 'Payment gateway'
+                  type: string
+                  default: bitpay
+                amount:
+                  description: 'The amount of money replenished to the balance'
+                  type: integer
+                  default: 1000
+                currency:
+                  description: 'Currency of balance'
+                  type: string
+                  default: GBP
+                service:
+                  description: 'Target service: '
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  '/payments/{id}':
+    get:
+      tags:
+        - Payments
+      summary: 'Get detail info about payment transaction'
+      description: 'Get detail info about payment transaction'
+      operationId: f544d55b7f000c8f444cc28872a25fc6
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'Payment transaction ID'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Data of payment transaction'
+        '404':
+          description: 'Payment transaction not found'
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  /payment-systems:
+    get:
+      tags:
+        - 'Payment Systems'
+      description: 'List of payment systems'
+      operationId: 2bcc90bfd1fbe6862aa4a37a5186d7b1
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  '/webhooks/{gateway}/invoices':
+    post:
+      tags:
+        - Webhooks
+      summary: 'Invoices webhook'
+      description: 'Webhooks Notifications about invoices'
+      operationId: 4e10edbf20caba7acafbf8a30c3ce410
+      parameters:
+        -
+          name: gateway
+          in: path
+          description: 'Payment gateway'
+          required: true
+          schema:
+            type: string
+            default: bitpay
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+components:
+  securitySchemes:
+    default:
+      type: oauth2
+      description: 'Auth Scheme'
+      flows:
+        implicit:
+          authorizationUrl: 'https://sumraid.com/oauth2'
+          scopes:
+            ManagerRead: 'Manager can read'
+            User: 'User access'
+            ManagerWrite: 'Manager can write'

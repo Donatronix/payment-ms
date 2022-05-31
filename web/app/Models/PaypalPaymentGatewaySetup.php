@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
 
-class StripePaymentGatewaySetup extends Model
+class PaypalPaymentGatewaySetup extends Model
 {
     use HasFactory;
     use OwnerTrait;
@@ -23,10 +24,13 @@ class StripePaymentGatewaySetup extends Model
      * @var array
      */
     protected $fillable = [
-        'gateway_name',
-        'webhook_secret',
-        'public_key',
-        'secret_key',
+        'mode',
+        'notify_url',
+        'currency',
+        'sandbox_client_id',
+        'sandbox_client_secret',
+        'live_client_id',
+        'live_client_secret',
         'status',
     ];
 
@@ -36,6 +40,4 @@ class StripePaymentGatewaySetup extends Model
      * @var array
      */
     protected $hidden = [];
-
-
 }

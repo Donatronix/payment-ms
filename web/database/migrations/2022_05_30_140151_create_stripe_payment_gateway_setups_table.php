@@ -19,7 +19,7 @@ class CreateStripePaymentGatewaySetupsTable extends Migration
             $table->string('webhook_secret')->nullable();
             $table->string('public_key')->nullable();
             $table->string('secret_key')->nullable();
-            $table->string('status')->default(1);
+            $table->integer('status')->default(1);
             $table->timestamps();
         });
     }
