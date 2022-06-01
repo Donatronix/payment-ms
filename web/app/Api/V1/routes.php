@@ -39,6 +39,12 @@ $router->group([
         $router->get('/payments', 'PaymentController@index');
         $router->get('/payments/lost', 'PaymentController@lost');
         $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
+        //stripe
+        $router->get('/settings/stripe',          'StripePaymentGatewaySetupController@index');
+        $router->get('/settings/{id}/stripe',     'StripePaymentGatewaySetupController@show');
+        $router->post('/settings/stripe',         'StripePaymentGatewaySetupController@store');
+        $router->put('/settings/{id}/stripe',     'StripePaymentGatewaySetupController@update');
+        $router->delete('/settings/{id}/stripe',  'StripePaymentGatewaySetupController@destroy');
     });
 
     /**

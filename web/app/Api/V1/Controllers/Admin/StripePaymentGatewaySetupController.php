@@ -3,8 +3,9 @@
 namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\StripePaymentGatewaySetup;
+use App\Models\StripePaymentGatewaySetup as StripePaymentGatewayModel;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Class StripePaymentGatewaySetupController
@@ -51,18 +52,16 @@ class StripePaymentGatewaySetupController extends Controller
      */
     public function index()
     {
-            $data               = array();
-            $data['message']    = "Unable to get payment gateway settings";
-            $data['success']    = false;
-            $data['gateway']    = [];
+            $resp['data']    = [];
             try {
-                $data['message'] = "Success";
-                $data['success'] = true;
-                $data['gateway'] = StripePaymentGatewaySetup::orderBy('created_at', 'Desc')->where('status', 1)->get();
-                return response()->json($data, 200);
+                $resp['message']    = "List of all payment gateway settings";
+                $resp['title']      = "Stripe Payment gateway setting";
+                $resp['type']       = "Success";
+                $resp['data']       = StripePaymentGatewayModel::orderBy('created_at', 'Desc')->get();
+                return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
-                        'success' => false,
+                        'type'  => 'danger',
                         'error' => $e->getMessage()
                     ], 400);
             }
@@ -105,18 +104,16 @@ class StripePaymentGatewaySetupController extends Controller
      */
     public function show($id)
     {
-            $data               = array();
-            $data['message']    = "Unable to get payment gateway settings";
-            $data['success']    = false;
-            $data['gateway']    = [];
+            $resp['data']    = [];
             try {
-                $data['message'] = "Success";
-                $data['success'] = true;
-                $data['gateway'] = StripePaymentGatewaySetup::where('id', $id)->where('status', 1)->first();
-                return response()->json($data, 200);
+                $resp['message']  = "Payment gateway setting details";
+                $resp['title']    = "Stripe Payment gateway settings";
+                $resp['type']     = "success";
+                $resp['data']     = StripePaymentGatewayModel::findOrFail($id);
+                return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
-                        'success' => false,
+                        'type'  => 'danger',
                         'error' => $e->getMessage()
                     ], 400);
             }
@@ -194,39 +191,42 @@ class StripePaymentGatewaySetupController extends Controller
 
     public function store(Request $request)
     {
-        $saved              = null;
-        $data               = array();
-        $data['message']    = "Unable to add payment gateway settings";
-        $data['success']    = false;
-        $data['gateway']    = [];
+        $saved            = null;
+        $resp['data']     = [];
 
-         // Validate input
-         $this->validate($request, [
-            'webhook_secret' => 'required|string',
-            'public_key'     => 'required|string',
-            'secret_key'     => 'required|string',
-        ]);
-        try {
-            $saved = StripePaymentGatewaySetup::create(
-            [
-                'gateway_name'      => $request['gateway_name'],
-                'webhook_secret'    => $request['webhook_secret'],
-                'public_key'        => $request['public_key'],
-                'secret_key'        => $request['secret_key'],
-                'status'            => $request['status'],
+         // Validate inputs
+         try {
+            $this->validate($request, [
+                'webhook_secret' => 'required|string',
+                'public_key'     => 'required|string',
+                'secret_key'     => 'required|string',
             ]);
+        } catch (ValidationException $e) {
+            return response()->jsonApi([
+                'type'      => 'warning',
+                'title'     => 'Stripe payement gateway details',
+                'message'   => 'Validation error',
+                'data'      => $e->getMessage() // $validation->errors()->toJson()
+            ], 400);
+        }
+        try {
+            $saved =  StripePaymentGatewayModel::create($request->all());
             if($saved)
             {
-                $data['message'] = "Success";
-                $data['success'] = true;
-                $data['gateway'] = StripePaymentGatewaySetup::where('status', 1)->first();
-                return response()->json($data, 200);
+                $resp['message'] = "New payment gateway setting was created";
+                $resp['title']   = "Stripe Payment gateway settings";
+                $resp['type']    = "success";
+                $resp['data']    = StripePaymentGatewayModel::where('id', $saved->id)->first();
+                return response()->json($resp, 200);
             }else{
-                return response()->json($data, 400);
+                $resp['message']  = "Unable to create payment gateway settings";
+                $resp['title']    = "Stripe Payment gateway settings";
+                $resp['type']     = "warning";
+                return response()->json($resp, 400);
             }
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
+                'type'  => 'danger',
                 'error' => $e->getMessage()
             ], 400);
         }
@@ -309,32 +309,42 @@ class StripePaymentGatewaySetupController extends Controller
     public function update($id, Request $request)
     {
         $saved              = null;
-        $data               = array();
-        $data['message']    = "Unable to update payment gateway settings";
-        $data['success']    = false;
-        $data['gateway']    = [];
-
-         // Validate inputs
-         $this->validate($request, [
-            'webhook_secret' => 'required|string',
-            'public_key'     => 'required|string',
-            'secret_key'     => 'required|string',
-        ]);
+        $resp['data']       = [];
+        // Validate inputs
         try {
-            $gatewaySettings = StripePaymentGatewaySetup::findOrFail($id);
+            $this->validate($request, [
+                'webhook_secret' => 'required|string',
+                'public_key'     => 'required|string',
+                'secret_key'     => 'required|string',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->jsonApi([
+                'type'      => 'warning',
+                'title'     => 'Stripe payement gateway details',
+                'message'   => "Validation error",
+                'data'      => $e->getMessage() // $validation->errors()->toJson()
+            ], 400);
+        }
+        try {
+            $gatewaySettings = StripePaymentGatewayModel::findOrFail($id);
             $saved =  $gatewaySettings->update($request->all());
             if($saved)
             {
-                $data['message'] = "Success";
-                $data['success'] = true;
-                $data['gateway'] = StripePaymentGatewaySetup::where('status', 1)->first();
-                return response()->json($data, 200);
+                $resp['message'] = "Successfully updated";
+                $resp['title']   = "Stripe Payment gateway settings";
+                $resp['type']    = "success";
+                $resp['data']    = StripePaymentGatewayModel::findOrFail($id);
+                return response()->json($resp, 200);
             }else{
-                return response()->json($data, 400);
+                $resp['message']    = "Unable to update payment gateway settings";
+                $resp['title']      = "Stripe Payment gateway settings";
+                $resp['type']       = "warning";
+                $resp['data']       = [];
+                return response()->json($resp, 400);
             }
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
+                'type'  => 'danger',
                 'error' => $e->getMessage()
             ], 400);
         }
@@ -386,27 +396,30 @@ class StripePaymentGatewaySetupController extends Controller
      * @throws \Illuminate\Validation\ValidationException
      */
 
-    public function delete($id)
+    public function destroy($id)
     {
         $saved              = null;
-        $data               = array();
-        $data['message']    = "Unable to delete payment gateway settings";
-        $data['success']    = false;
-        $data['gateway']    = [];
+        $resp['data']       = [];
 
         try {
-            $deleted =  StripePaymentGatewaySetup::findOrFail($id)->delete();
+            $deleted =  StripePaymentGatewayModel::findOrFail($id)->delete();
             if($deleted)
             {
-                $data['message'] = "Success";
-                $data['success'] = true;
-                return response()->json($data, 200);
+                $resp['message'] = "Payment gateway settings was deleted";
+                $resp['title']   = "Stripe Payment gateway settings";
+                $resp['type']    = "success";
+                $resp['data']    = StripePaymentGatewayModel::all();
+                return response()->json($resp, 200);
             }else{
-                return response()->json($data, 400);
+                $resp['message']    = "Unable to delete payment gateway settings";
+                $resp['title']      = "Stripe Payment gateway settings";
+                $resp['type']       = "warning";
+                $resp['data']       = [];
+                return response()->json($resp, 400);
             }
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
+                'type'  => 'danger',
                 'error' => $e->getMessage()
             ], 400);
         }
