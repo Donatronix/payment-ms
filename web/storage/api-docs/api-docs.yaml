@@ -118,6 +118,174 @@ paths:
         security-types:
           - oauth2
         optional: 'false'
+  /admin/settings/stripe:
+    get:
+      tags:
+        - 'Admin / Settings / Stripe'
+      summary: 'Display list of all stripe payment gateway settings'
+      description: 'Display list of all stripe payment gateway settings'
+      operationId: ddaf3483484392fb26b5c3a0b1aeb964
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    post:
+      tags:
+        - 'Admin / Settings / Stripe'
+      summary: 'Method to add new stripe payment gateway settings'
+      description: 'method to add new stripe payment gateway settings'
+      operationId: abf1c0ed1f77d1b38e208f39d0d4a284
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                gateway_name:
+                  description: 'Name of the payment gateway'
+                  type: string
+                  default: stripe
+                webhook_secret:
+                  description: 'The web hook secret'
+                  type: string
+                public_key:
+                  description: 'Publick key'
+                  type: string
+                secret_key:
+                  description: 'Secret key'
+                  type: string
+                status:
+                  description: 'The currently in use settings'
+                  type: integer
+                  default: 1
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  '/admin/settings/{id}/stripe':
+    get:
+      tags:
+        - 'Admin / Settings / Stripe'
+      summary: 'Display stripe payment gateway settings details'
+      description: 'show stripe payment gateway settings details'
+      operationId: 745328ce8a7a454d37b9d98ddf77f0c8
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    put:
+      tags:
+        - 'Admin / Settings / Stripe'
+      summary: 'Method to update stripe payment gateway settings'
+      description: 'method to update stripe payment gateway settings'
+      operationId: db9541a1e78666182dffbcc5bb5c0f52
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+                gateway_name:
+                  description: 'Name of the payment gateway'
+                  type: string
+                  default: stripe
+                webhook_secret:
+                  description: 'The web hook secret'
+                  type: string
+                public_key:
+                  description: 'Publick key'
+                  type: string
+                secret_key:
+                  description: 'Secret key'
+                  type: string
+                status:
+                  description: 'The currently in use settings'
+                  type: integer
+                  default: 1
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    delete:
+      tags:
+        - 'Admin / Settings / Stripe'
+      summary: 'Method to delete stripe payment gateway settings'
+      description: 'method to delete stripe payment gateway settings'
+      operationId: 70cbdf2b34a83efd9fed92502cccba09
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
   /payments/charge:
     post:
       tags:
