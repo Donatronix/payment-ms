@@ -11,6 +11,45 @@ servers:
     url: 'http://localhost:8100/v1'
     description: 'Payment Gateways API Microservice, Version v1'
 paths:
+  /admin/settings/openpayd:
+    get:
+      tags:
+        - 'Admin / Settings / openpayd'
+      summary: 'Display list of all openpayd payment gateway settings'
+      description: 'Display list of all openpayd payment gateway settings'
+      operationId: aeb1897f0f6b013dc1a0a49b3ce33f5e
+      parameters:
+        -
+          name: limit
+          in: query
+          description: 'Count of orders / currencies pair in response'
+          required: false
+          schema:
+            type: integer
+            default: 20
+        -
+          name: page
+          in: query
+          description: 'Page of list'
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
   /admin/payments:
     get:
       tags:
@@ -118,6 +157,209 @@ paths:
         security-types:
           - oauth2
         optional: 'false'
+  /admin/settings/paypal:
+    get:
+      tags:
+        - 'Admin / Settings / Paypal'
+      summary: 'Display list of all paypal payment gateway settings'
+      description: 'Display list of all paypal payment gateway settings'
+      operationId: f9fa7801a2ecefb67eaa5d9d3f73935c
+      parameters:
+        -
+          name: limit
+          in: query
+          description: 'Count of orders / currencies pair in response'
+          required: false
+          schema:
+            type: integer
+            default: 20
+        -
+          name: page
+          in: query
+          description: 'Page of list'
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    post:
+      tags:
+        - 'Admin / Settings / Paypal'
+      summary: 'Method to add new paypal payment gateway settings'
+      description: 'method to add new paypal payment gateway settings'
+      operationId: 72db382bad2555a17550f324fea54828
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                mode:
+                  description: 'payment mode'
+                  type: string
+                notify_url:
+                  description: 'Payment notify url'
+                  type: string
+                currency:
+                  description: 'payment currency type'
+                  type: string
+                  default: GBP
+                sandbox_client_id:
+                  description: 'payment sandbox client ID'
+                  type: string
+                sandbox_client_secret:
+                  description: 'payment sandbox client secret'
+                  type: string
+                live_client_id:
+                  description: 'payment live client ID'
+                  type: string
+                live_client_secret:
+                  description: 'payment live client secret'
+                  type: string
+                status:
+                  description: 'Currently in use settings'
+                  type: integer
+                  default: 1
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  '/admin/settings/{id}/paypal':
+    get:
+      tags:
+        - 'Admin / Settings / Paypal'
+      summary: 'Display paypal payment gateway settings details'
+      description: 'show paypal payment gateway settings details'
+      operationId: 38e1c410bf2daea3756b1238ec38060f
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    put:
+      tags:
+        - 'Admin / Settings / Paypal'
+      summary: 'Method to update paypal payment gateway settings'
+      description: 'method to update paypal payment gateway settings'
+      operationId: 4f02bdacff480f8be6fb3d6139fea904
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+                mode:
+                  description: 'payment mode'
+                  type: string
+                notify_url:
+                  description: 'Payment notify url'
+                  type: string
+                currency:
+                  description: 'payment currency type'
+                  type: string
+                  default: GBP
+                sandbox_client_id:
+                  description: 'payment sandbox client ID'
+                  type: string
+                sandbox_client_secret:
+                  description: 'payment sandbox client secret'
+                  type: string
+                live_client_id:
+                  description: 'payment live client ID'
+                  type: string
+                live_client_secret:
+                  description: 'payment live client secret'
+                  type: string
+                status:
+                  description: 'Currently in use settings'
+                  type: integer
+                  default: 1
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    delete:
+      tags:
+        - 'Admin / Settings / Paypal'
+      summary: 'Method to delete paypal payment gateway settings'
+      description: 'method to delete paypal payment gateway settings'
+      operationId: 55b902a0239847de387b2188352e9189
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
   /admin/settings/stripe:
     get:
       tags:
@@ -125,6 +367,23 @@ paths:
       summary: 'Display list of all stripe payment gateway settings'
       description: 'Display list of all stripe payment gateway settings'
       operationId: ddaf3483484392fb26b5c3a0b1aeb964
+      parameters:
+        -
+          name: limit
+          in: query
+          description: 'Count of orders / currencies pair in response'
+          required: false
+          schema:
+            type: integer
+            default: 20
+        -
+          name: page
+          in: query
+          description: 'Page of list'
+          required: false
+          schema:
+            type: integer
+            default: 1
       responses:
         '200':
           description: Success
@@ -166,7 +425,7 @@ paths:
                   description: 'Secret key'
                   type: string
                 status:
-                  description: 'The currently in use settings'
+                  description: 'Currently in use settings'
                   type: integer
                   default: 1
               type: object
@@ -260,7 +519,7 @@ paths:
         - 'Admin / Settings / Stripe'
       summary: 'Method to delete stripe payment gateway settings'
       description: 'method to delete stripe payment gateway settings'
-      operationId: 70cbdf2b34a83efd9fed92502cccba09
+      operationId: 53806c25509dd0679cdb609c4c421acf
       requestBody:
         required: true
         content:

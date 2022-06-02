@@ -45,6 +45,14 @@ $router->group([
         $router->post('/settings/stripe',         'StripePaymentGatewaySetupController@store');
         $router->put('/settings/{id}/stripe',     'StripePaymentGatewaySetupController@update');
         $router->delete('/settings/{id}/stripe',  'StripePaymentGatewaySetupController@destroy');
+        //Paypal
+        $router->get('/settings/paypal',          'PaypalPaymentGatewaySetupController@index');
+        $router->get('/settings/{id}/paypal',     'PaypalPaymentGatewaySetupController@show');
+        $router->post('/settings/paypal',         'PaypalPaymentGatewaySetupController@store');
+        $router->put('/settings/{id}/paypal',     'PaypalPaymentGatewaySetupController@update');
+        $router->delete('/settings/{id}/paypal',  'PaypalPaymentGatewaySetupController@destroy');
+        //Openpayd
+
     });
 
     /**

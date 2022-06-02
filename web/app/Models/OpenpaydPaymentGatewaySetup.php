@@ -9,7 +9,7 @@ use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
 
-class PaypalPaymentGatewaySetup extends Model
+class OpenpaydPaymentGatewaySetup extends Model
 {
     use HasFactory;
     use OwnerTrait;
@@ -23,19 +23,10 @@ class PaypalPaymentGatewaySetup extends Model
      * @var array
      */
     protected $fillable = [
-        'mode',
-        'notify_url',
-        'currency',
-        'sandbox_client_id',
-        'sandbox_client_secret',
-        'live_client_id',
-        'live_client_secret',
-        'sandbox_api_url',
-        'live_api_url',
-        'payment_action',
-        'locale',
-        'validate_ssl',
-        'app_id',
+        'username',
+        'password',
+        'url',
+        'public_key_path',
         'status',
     ];
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\StripePaymentGatewaySetup as StripePaymentGatewayModel;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Class StripePaymentGatewaySetupController
@@ -40,6 +41,26 @@ class StripePaymentGatewaySetupController extends Controller
      *             "optional": "false"
      *         }
      *     },
+     * *     @OA\Parameter(
+     *         name="limit",
+     *         description="Count of orders / currencies pair in response",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(
+     *              type="integer",
+     *              default=20,
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         description="Page of list",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(
+     *              type="integer",
+     *              default=1,
+     *         )
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Success",
@@ -50,19 +71,21 @@ class StripePaymentGatewaySetupController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
             $resp['data']    = [];
             try {
                 $resp['message']    = "List of all payment gateway settings";
-                $resp['title']      = "Stripe Payment gateway setting";
+                $resp['title']      = "Display Stripe Payment gateway setting";
                 $resp['type']       = "Success";
-                $resp['data']       = StripePaymentGatewayModel::orderBy('created_at', 'Desc')->get();
+                $resp['data']       = StripePaymentGatewayModel::orderBy('created_at', 'Desc')
+                                    ->paginate($request->get('limit', 20));
                 return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
                         'type'  => 'danger',
-                        'error' => $e->getMessage()
+                        'title'  => 'Display Stripe payment gateway settings',
+                        'message' => $e->getMessage()
                     ], 400);
             }
     }
@@ -114,7 +137,8 @@ class StripePaymentGatewaySetupController extends Controller
             } catch (\Exception $e) {
                     return response()->json([
                         'type'  => 'danger',
-                        'error' => $e->getMessage()
+                        'title'     => 'Stripe payement gateway Details',
+                        'message' => $e->getMessage()
                     ], 400);
             }
     }
@@ -173,7 +197,7 @@ class StripePaymentGatewaySetupController extends Controller
      *             @OA\Property(
      *                 property="status",
      *                 type="integer",
-     *                 description="The currently in use settings",
+     *                 description="Currently in use settings",
      *                 default= 1,
      *             )
      *         )
@@ -213,7 +237,7 @@ class StripePaymentGatewaySetupController extends Controller
             $saved =  StripePaymentGatewayModel::create($request->all());
             if($saved)
             {
-                $resp['message'] = "New payment gateway setting was created";
+                $resp['message'] = "New payment gateway setting was added";
                 $resp['title']   = "Stripe Payment gateway settings";
                 $resp['type']    = "success";
                 $resp['data']    = StripePaymentGatewayModel::where('id', $saved->id)->first();
@@ -226,8 +250,9 @@ class StripePaymentGatewaySetupController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                'type'  => 'danger',
-                'error' => $e->getMessage()
+                'type'      => 'danger',
+                'title'     => 'Failed to add new Stripe payement gateway settings',
+                'message'   => $e->getMessage()
             ], 400);
         }
     }
@@ -344,8 +369,9 @@ class StripePaymentGatewaySetupController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                'type'  => 'danger',
-                'error' => $e->getMessage()
+                'type'      => 'danger',
+                'title'     => 'Update Stripe payement gateway details',
+                'message'   => $e->getMessage()
             ], 400);
         }
     }
@@ -419,8 +445,9 @@ class StripePaymentGatewaySetupController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                'type'  => 'danger',
-                'error' => $e->getMessage()
+                'type'      => 'danger',
+                'title'     => 'Delete Stripe payement gateway details',
+                'message'   => $e->getMessage()
             ], 400);
         }
     }
