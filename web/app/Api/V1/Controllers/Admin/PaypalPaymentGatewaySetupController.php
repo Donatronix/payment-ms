@@ -121,7 +121,7 @@ class PaypalPaymentGatewaySetupController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  $id
      *
      * @return \Illuminate\Http\JsonResponse
      */

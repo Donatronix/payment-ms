@@ -14,7 +14,7 @@ paths:
   /admin/settings/openpayd:
     get:
       tags:
-        - 'Admin / Settings / openpayd'
+        - 'Admin / Settings / Openpayd'
       summary: 'Display list of all openpayd payment gateway settings'
       description: 'Display list of all openpayd payment gateway settings'
       operationId: aeb1897f0f6b013dc1a0a49b3ce33f5e
@@ -35,6 +35,150 @@ paths:
           schema:
             type: integer
             default: 1
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    post:
+      tags:
+        - 'Admin / Settings / Openpayd'
+      summary: 'Method to add new openpayd payment gateway settings'
+      description: 'method to add new openpayd payment gateway settings'
+      operationId: 23ee93a474eecf74132223a1787a70cc
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                username:
+                  description: 'Openpayd payment username'
+                  type: string
+                password:
+                  description: 'Openpayd payment password'
+                  type: string
+                url:
+                  description: 'Openpayd payment url'
+                  type: string
+                public_key_path:
+                  description: 'Openpayd payment public key path'
+                  type: string
+                status:
+                  description: 'Currently in use settings'
+                  type: integer
+                  default: 1
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  '/admin/settings/{id}/openpayd':
+    get:
+      tags:
+        - 'Admin / Settings / Openpayd'
+      summary: 'Display openpayd payment gateway settings details'
+      description: 'show openpayd payment gateway settings details'
+      operationId: b2954403c9eca8cadf3982cb7cc53919
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    put:
+      tags:
+        - 'Admin / Settings / Openpayd'
+      summary: 'Method to update openpayd payment gateway settings'
+      description: 'method to update openpayd payment gateway settings'
+      operationId: db9162477a7e2f84558b917b8f83870e
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+                username:
+                  description: 'Openpayd payment username'
+                  type: string
+                password:
+                  description: 'Openpayd payment password'
+                  type: string
+                url:
+                  description: 'Openpayd payment url'
+                  type: string
+                public_key_path:
+                  description: 'Openpayd payment public key path'
+                  type: string
+                status:
+                  description: 'Currently in use settings'
+                  type: integer
+                  default: 1
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    delete:
+      tags:
+        - 'Admin / Settings / Openpayd'
+      summary: 'Method to delete openpayd payment gateway settings'
+      description: 'method to delete openpayd payment gateway settings'
+      operationId: a20a247d5dd858d7ae59137c5a882bb7
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+              type: object
       responses:
         '200':
           description: Success

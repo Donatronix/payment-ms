@@ -25,7 +25,7 @@ class PaymentGatewaySettings
                     return $default;
                 }
             } catch (\Throwable $e) {
-                return false;
+                return null;
             }
     }
 
@@ -43,7 +43,7 @@ class PaymentGatewaySettings
                     return $default;
                 }
             } catch (\Throwable $e) {
-                return false;
+                return null;
             }
     }
 
@@ -61,7 +61,7 @@ class PaymentGatewaySettings
                 return $default;
             }
         } catch (\Throwable $e) {
-            return false;
+            return null;
         }
     }
 
