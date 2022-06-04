@@ -3,28 +3,28 @@
 namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\StripePaymentGatewaySetup as StripePaymentGatewayModel;
+use App\Models\OpenpaydPaymentGatewaySetup as OpenpaydPaymentGatewayModel;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 /**
- * Class StripePaymentGatewaySetupController
+ * Class OpenpaydPaymentGatewaySetupController
  *
  * @package App\Api\V1\Controllers
  */
 
-class StripePaymentGatewaySetupController extends Controller
+class OpenpaydPaymentGatewaySetupController extends Controller
 {
 
 
      /**
-     * Display list of all stripe payment gateway settings
+     * Display list of all openpayd payment gateway settings
      *
      * @OA\Get(
-     *     path="/admin/settings/stripe",
-     *     description="Display list of all stripe payment gateway settings",
-     *     tags={"Admin / Settings / Stripe"},
+     *     path="/admin/settings/openpayd",
+     *     description="Display list of all openpayd payment gateway settings",
+     *     tags={"Admin / Settings / Openpayd"},
      *
      *     security={{
      *         "default": {
@@ -76,29 +76,27 @@ class StripePaymentGatewaySetupController extends Controller
             $resp['data']    = [];
             try {
                 $resp['message']    = "List of all payment gateway settings";
-                $resp['title']      = "Display Stripe Payment gateway setting";
+                $resp['title']      = "Display Openpayd Payment gateway settings";
                 $resp['type']       = "Success";
-                $resp['data']       = StripePaymentGatewayModel::orderBy('created_at', 'Desc')
+                $resp['data']       = OpenpaydPaymentGatewayModel::orderBy('created_at', 'Desc')
                                     ->paginate($request->get('limit', 20));
                 return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
                         'type'  => 'danger',
-                        'title'  => 'Display Stripe payment gateway settings',
+                        'title'  => 'List Openpayd payment gateway settings',
                         'message' => $e->getMessage()
                     ], 400);
             }
     }
 
-
-
-     /**
-     * Display stripe payment gateway settings details
+    /**
+     * Display openpayd payment gateway settings details
      *
      * @OA\Get(
-     *     path="/admin/settings/{id}/stripe",
-     *     description="show stripe payment gateway settings details",
-     *     tags={"Admin / Settings / Stripe"},
+     *     path="/admin/settings/{id}/openpayd",
+     *     description="show openpayd payment gateway settings details",
+     *     tags={"Admin / Settings / Openpayd"},
      *
      *     security={{
      *         "default": {
@@ -121,7 +119,7 @@ class StripePaymentGatewaySetupController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param    $id
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -130,15 +128,15 @@ class StripePaymentGatewaySetupController extends Controller
             $resp['data']    = [];
             try {
                 $resp['message']  = "Payment gateway setting details";
-                $resp['title']    = "Stripe Payment gateway settings";
+                $resp['title']    = "Openpayd Payment gateway settings";
                 $resp['type']     = "success";
-                $resp['data']     = StripePaymentGatewayModel::findOrFail($id);
+                $resp['data']     = OpenpaydPaymentGatewayModel::findOrFail($id);
                 return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
-                        'type'  => 'danger',
-                        'title'     => 'Stripe payement gateway Details',
-                        'message' => $e->getMessage()
+                        'type'      => 'danger',
+                        'title'     => 'Openpayd payement gateway Details',
+                        'message'   => $e->getMessage()
                     ], 400);
             }
     }
@@ -146,12 +144,12 @@ class StripePaymentGatewaySetupController extends Controller
 
 
     /**
-     * Method to add new stripe payment gateway settings
+     * Method to add new openpayd payment gateway settings
      *
      * @OA\Post(
-     *     path="/admin/settings/stripe",
-     *     description="method to add new stripe payment gateway settings",
-     *     tags={"Admin / Settings / Stripe"},
+     *     path="/admin/settings/openpayd",
+     *     description="method to add new openpayd payment gateway settings",
+     *     tags={"Admin / Settings / Openpayd"},
      *
      *     security={{
      *         "default": {
@@ -173,26 +171,24 @@ class StripePaymentGatewaySetupController extends Controller
      *
      *         @OA\JsonContent(
      *             @OA\Property(
-     *                 property="gateway_name",
+     *                 property="username",
      *                 type="string",
-     *                 description="Name of the payment gateway",
-     *                 default="stripe",
-     *
+     *                 description="Openpayd payment username",
      *             ),
      *             @OA\Property(
-     *                 property="webhook_secret",
+     *                 property="password",
      *                 type="string",
-     *                 description="The web hook secret",
+     *                 description="Openpayd payment password",
      *             ),
      *             @OA\Property(
-     *                 property="public_key",
+     *                 property="url",
      *                 type="string",
-     *                 description="Publick key",
+     *                 description="Openpayd payment url",
      *             ),
      *             @OA\Property(
-     *                 property="secret_key",
+     *                 property="public_key_path",
      *                 type="string",
-     *                 description="Secret key"
+     *                 description="Openpayd payment public key path"
      *             ),
      *             @OA\Property(
      *                 property="status",
@@ -221,37 +217,38 @@ class StripePaymentGatewaySetupController extends Controller
          // Validate inputs
          try {
             $this->validate($request, [
-                'webhook_secret' => 'required|string',
-                'public_key'     => 'required|string',
-                'secret_key'     => 'required|string',
+                'username'          => 'required|string',
+                'password'          => 'required|string',
+                'public_key_path'   => 'required|string',
+                'url'               => 'required|string',
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
                 'type'      => 'warning',
-                'title'     => 'Stripe payement gateway details',
+                'title'     => 'Openpayd payement gateway details',
                 'message'   => 'Validation error',
-                'data'      => $e->getMessage() // $validation->errors()->toJson()
+                'data'      => $e->getMessage()
             ], 400);
         }
         try {
-            $saved =  StripePaymentGatewayModel::create($request->all());
+            $saved =  OpenpaydPaymentGatewayModel::create($request->all());
             if($saved)
             {
                 $resp['message'] = "New payment gateway setting was added";
-                $resp['title']   = "Stripe Payment gateway settings";
+                $resp['title']   = "Openpayd Payment gateway settings";
                 $resp['type']    = "success";
-                $resp['data']    = StripePaymentGatewayModel::where('id', $saved->id)->first();
+                $resp['data']    = OpenpaydPaymentGatewayModel::where('id', $saved->id)->first();
                 return response()->json($resp, 200);
             }else{
                 $resp['message']  = "Unable to create payment gateway settings";
-                $resp['title']    = "Stripe Payment gateway settings";
+                $resp['title']    = "Openpayd Payment gateway settings";
                 $resp['type']     = "warning";
                 return response()->json($resp, 400);
             }
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Failed to add new Stripe payement gateway settings',
+                'title'     => 'Failed to add new openpayd payement gateway settings',
                 'message'   => $e->getMessage()
             ], 400);
         }
@@ -259,12 +256,12 @@ class StripePaymentGatewaySetupController extends Controller
 
 
     /**
-     * Method to update stripe payment gateway settings
+     * Method to update openpayd payment gateway settings
      *
      * @OA\Put(
-     *     path="/admin/settings/{id}/stripe",
-     *     description="method to update stripe payment gateway settings",
-     *     tags={"Admin / Settings / Stripe"},
+     *     path="/admin/settings/{id}/openpayd",
+     *     description="method to update openpayd payment gateway settings",
+     *     tags={"Admin / Settings / Openpayd"},
      *
      *     security={{
      *         "default": {
@@ -290,31 +287,30 @@ class StripePaymentGatewaySetupController extends Controller
      *                 type="string",
      *                 description="primary key to the record",
      *             ),
-     *             @OA\Property(
-     *                 property="gateway_name",
+     *            @OA\Property(
+     *                 property="username",
      *                 type="string",
-     *                 description="Name of the payment gateway",
-     *                 default="stripe",
+     *                 description="Openpayd payment username",
      *             ),
      *             @OA\Property(
-     *                 property="webhook_secret",
+     *                 property="password",
      *                 type="string",
-     *                 description="The web hook secret",
+     *                 description="Openpayd payment password",
      *             ),
      *             @OA\Property(
-     *                 property="public_key",
+     *                 property="url",
      *                 type="string",
-     *                 description="Publick key",
+     *                 description="Openpayd payment url",
      *             ),
      *             @OA\Property(
-     *                 property="secret_key",
+     *                 property="public_key_path",
      *                 type="string",
-     *                 description="Secret key"
+     *                 description="Openpayd payment public key path"
      *             ),
      *             @OA\Property(
      *                 property="status",
      *                 type="integer",
-     *                 description="The currently in use settings",
+     *                 description="Currently in use settings",
      *                 default= 1,
      *             )
      *         )
@@ -338,31 +334,32 @@ class StripePaymentGatewaySetupController extends Controller
         // Validate inputs
         try {
             $this->validate($request, [
-                'webhook_secret' => 'required|string',
-                'public_key'     => 'required|string',
-                'secret_key'     => 'required|string',
+                'username'          => 'required|string',
+                'password'          => 'required|string',
+                'public_key_path'   => 'required|string',
+                'url'               => 'required|string',
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
                 'type'      => 'warning',
-                'title'     => 'Stripe payement gateway details',
-                'message'   => "Validation error",
-                'data'      => $e->getMessage() // $validation->errors()->toJson()
+                'title'     => 'Openpayd payement gateway details',
+                'message'   => 'Validation error',
+                'data'      => $e->getMessage()
             ], 400);
         }
         try {
-            $gatewaySettings = StripePaymentGatewayModel::findOrFail($id);
+            $gatewaySettings = OpenpaydPaymentGatewayModel::findOrFail($id);
             $saved =  $gatewaySettings->update($request->all());
             if($saved)
             {
                 $resp['message'] = "Successfully updated";
-                $resp['title']   = "Stripe Payment gateway settings";
+                $resp['title']   = "Update openpayd Payment gateway settings";
                 $resp['type']    = "success";
-                $resp['data']    = StripePaymentGatewayModel::findOrFail($id);
+                $resp['data']    = OpenpaydPaymentGatewayModel::findOrFail($id);
                 return response()->json($resp, 200);
             }else{
                 $resp['message']    = "Unable to update payment gateway settings";
-                $resp['title']      = "Stripe Payment gateway settings";
+                $resp['title']      = "Unable to openpayd Payment gateway settings";
                 $resp['type']       = "warning";
                 $resp['data']       = [];
                 return response()->json($resp, 400);
@@ -370,7 +367,7 @@ class StripePaymentGatewaySetupController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Update Stripe payement gateway details',
+                'title'     => 'Failed to update openpayd payement gateway details',
                 'message'   => $e->getMessage()
             ], 400);
         }
@@ -378,12 +375,12 @@ class StripePaymentGatewaySetupController extends Controller
 
 
      /**
-     * Method to delete stripe payment gateway settings
+     * Method to delete openpayd payment gateway settings
      *
      * @OA\Delete(
-     *     path="/admin/settings/{id}/stripe",
-     *     description="method to delete stripe payment gateway settings",
-     *     tags={"Admin / Settings / Stripe"},
+     *     path="/admin/settings/{id}/openpayd",
+     *     description="method to delete openpayd payment gateway settings",
+     *     tags={"Admin / Settings / Openpayd"},
      *
      *     security={{
      *         "default": {
@@ -428,17 +425,17 @@ class StripePaymentGatewaySetupController extends Controller
         $resp['data']       = [];
 
         try {
-            $deleted =  StripePaymentGatewayModel::findOrFail($id)->delete();
+            $deleted =  OpenpaydPaymentGatewayModel::findOrFail($id)->delete();
             if($deleted)
             {
                 $resp['message'] = "Payment gateway settings was deleted";
-                $resp['title']   = "Stripe Payment gateway settings";
+                $resp['title']   = "Openpayd Payment gateway settings";
                 $resp['type']    = "success";
-                $resp['data']    = StripePaymentGatewayModel::all();
+                $resp['data']    = OpenpaydPaymentGatewayModel::all();
                 return response()->json($resp, 200);
             }else{
                 $resp['message']    = "Unable to delete payment gateway settings";
-                $resp['title']      = "Stripe Payment gateway settings";
+                $resp['title']      = "Openpayd Payment gateway settings";
                 $resp['type']       = "warning";
                 $resp['data']       = [];
                 return response()->json($resp, 400);
@@ -446,11 +443,10 @@ class StripePaymentGatewaySetupController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Delete Stripe payement gateway details',
+                'title'     => 'Delete openpayd payement gateway details',
                 'message'   => $e->getMessage()
             ], 400);
         }
     }
 
-
-}
+}//end class

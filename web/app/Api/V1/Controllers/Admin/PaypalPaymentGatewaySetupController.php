@@ -3,28 +3,28 @@
 namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\StripePaymentGatewaySetup as StripePaymentGatewayModel;
+use App\Models\PaypalPaymentGatewaySetup as PaypalPaymentGatewayModel;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 /**
- * Class StripePaymentGatewaySetupController
+ * Class PaypalPaymentGatewaySetupController
  *
  * @package App\Api\V1\Controllers
  */
 
-class StripePaymentGatewaySetupController extends Controller
+class PaypalPaymentGatewaySetupController extends Controller
 {
 
 
      /**
-     * Display list of all stripe payment gateway settings
+     * Display list of all paypal payment gateway settings
      *
      * @OA\Get(
-     *     path="/admin/settings/stripe",
-     *     description="Display list of all stripe payment gateway settings",
-     *     tags={"Admin / Settings / Stripe"},
+     *     path="/admin/settings/paypal",
+     *     description="Display list of all paypal payment gateway settings",
+     *     tags={"Admin / Settings / Paypal"},
      *
      *     security={{
      *         "default": {
@@ -76,15 +76,15 @@ class StripePaymentGatewaySetupController extends Controller
             $resp['data']    = [];
             try {
                 $resp['message']    = "List of all payment gateway settings";
-                $resp['title']      = "Display Stripe Payment gateway setting";
+                $resp['title']      = "Display Paypal Payment gateway settings";
                 $resp['type']       = "Success";
-                $resp['data']       = StripePaymentGatewayModel::orderBy('created_at', 'Desc')
+                $resp['data']       = PaypalPaymentGatewayModel::orderBy('created_at', 'Desc')
                                     ->paginate($request->get('limit', 20));
                 return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
                         'type'  => 'danger',
-                        'title'  => 'Display Stripe payment gateway settings',
+                        'title'  => 'List paypal payment gateway settings',
                         'message' => $e->getMessage()
                     ], 400);
             }
@@ -93,12 +93,12 @@ class StripePaymentGatewaySetupController extends Controller
 
 
      /**
-     * Display stripe payment gateway settings details
+     * Display paypal payment gateway settings details
      *
      * @OA\Get(
-     *     path="/admin/settings/{id}/stripe",
-     *     description="show stripe payment gateway settings details",
-     *     tags={"Admin / Settings / Stripe"},
+     *     path="/admin/settings/{id}/paypal",
+     *     description="show paypal payment gateway settings details",
+     *     tags={"Admin / Settings / Paypal"},
      *
      *     security={{
      *         "default": {
@@ -121,7 +121,7 @@ class StripePaymentGatewaySetupController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  $id
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -130,15 +130,15 @@ class StripePaymentGatewaySetupController extends Controller
             $resp['data']    = [];
             try {
                 $resp['message']  = "Payment gateway setting details";
-                $resp['title']    = "Stripe Payment gateway settings";
+                $resp['title']    = "paypal Payment gateway settings";
                 $resp['type']     = "success";
-                $resp['data']     = StripePaymentGatewayModel::findOrFail($id);
+                $resp['data']     = PaypalPaymentGatewayModel::findOrFail($id);
                 return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
-                        'type'  => 'danger',
-                        'title'     => 'Stripe payement gateway Details',
-                        'message' => $e->getMessage()
+                        'type'      => 'danger',
+                        'title'     => 'Paypal payement gateway Details',
+                        'message'   => $e->getMessage()
                     ], 400);
             }
     }
@@ -146,12 +146,12 @@ class StripePaymentGatewaySetupController extends Controller
 
 
     /**
-     * Method to add new stripe payment gateway settings
+     * Method to add new paypal payment gateway settings
      *
      * @OA\Post(
-     *     path="/admin/settings/stripe",
-     *     description="method to add new stripe payment gateway settings",
-     *     tags={"Admin / Settings / Stripe"},
+     *     path="/admin/settings/paypal",
+     *     description="method to add new paypal payment gateway settings",
+     *     tags={"Admin / Settings / Paypal"},
      *
      *     security={{
      *         "default": {
@@ -173,26 +173,40 @@ class StripePaymentGatewaySetupController extends Controller
      *
      *         @OA\JsonContent(
      *             @OA\Property(
-     *                 property="gateway_name",
+     *                 property="mode",
      *                 type="string",
-     *                 description="Name of the payment gateway",
-     *                 default="stripe",
-     *
+     *                 description="payment mode",
      *             ),
      *             @OA\Property(
-     *                 property="webhook_secret",
+     *                 property="notify_url",
      *                 type="string",
-     *                 description="The web hook secret",
+     *                 description="Payment notify url",
      *             ),
      *             @OA\Property(
-     *                 property="public_key",
+     *                 property="currency",
      *                 type="string",
-     *                 description="Publick key",
+     *                 description="payment currency type",
+     *                 default= "GBP",
      *             ),
      *             @OA\Property(
-     *                 property="secret_key",
+     *                 property="sandbox_client_id",
      *                 type="string",
-     *                 description="Secret key"
+     *                 description="payment sandbox client ID"
+     *             ),
+     *             @OA\Property(
+     *                 property="sandbox_client_secret",
+     *                 type="string",
+     *                 description="payment sandbox client secret"
+     *             ),
+     *             @OA\Property(
+     *                 property="live_client_id",
+     *                 type="string",
+     *                 description="payment live client ID"
+     *             ),
+     *             @OA\Property(
+     *                 property="live_client_secret",
+     *                 type="string",
+     *                 description="payment live client secret"
      *             ),
      *             @OA\Property(
      *                 property="status",
@@ -221,37 +235,42 @@ class StripePaymentGatewaySetupController extends Controller
          // Validate inputs
          try {
             $this->validate($request, [
-                'webhook_secret' => 'required|string',
-                'public_key'     => 'required|string',
-                'secret_key'     => 'required|string',
+                'mode'                  => 'required|string',
+                'notify_url'            => 'required|string',
+                //'currency'              => 'required|string',
+                //'sandbox_client_id'     => 'required|string',
+                //'sandbox_client_secret' => 'required|string',
+                'live_client_id'        => 'required|string',
+                'live_client_secret'    => 'required|string',
+                //'status'                => 'required|string',
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
                 'type'      => 'warning',
-                'title'     => 'Stripe payement gateway details',
+                'title'     => 'paypal payement gateway details',
                 'message'   => 'Validation error',
                 'data'      => $e->getMessage() // $validation->errors()->toJson()
             ], 400);
         }
         try {
-            $saved =  StripePaymentGatewayModel::create($request->all());
+            $saved =  PaypalPaymentGatewayModel::create($request->all());
             if($saved)
             {
                 $resp['message'] = "New payment gateway setting was added";
-                $resp['title']   = "Stripe Payment gateway settings";
+                $resp['title']   = "paypal Payment gateway settings";
                 $resp['type']    = "success";
-                $resp['data']    = StripePaymentGatewayModel::where('id', $saved->id)->first();
+                $resp['data']    = PaypalPaymentGatewayModel::where('id', $saved->id)->first();
                 return response()->json($resp, 200);
             }else{
                 $resp['message']  = "Unable to create payment gateway settings";
-                $resp['title']    = "Stripe Payment gateway settings";
+                $resp['title']    = "paypal Payment gateway settings";
                 $resp['type']     = "warning";
                 return response()->json($resp, 400);
             }
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Failed to add new Stripe payement gateway settings',
+                'title'     => 'Failed to add new paypal payement gateway settings',
                 'message'   => $e->getMessage()
             ], 400);
         }
@@ -259,12 +278,12 @@ class StripePaymentGatewaySetupController extends Controller
 
 
     /**
-     * Method to update stripe payment gateway settings
+     * Method to update paypal payment gateway settings
      *
      * @OA\Put(
-     *     path="/admin/settings/{id}/stripe",
-     *     description="method to update stripe payment gateway settings",
-     *     tags={"Admin / Settings / Stripe"},
+     *     path="/admin/settings/{id}/paypal",
+     *     description="method to update paypal payment gateway settings",
+     *     tags={"Admin / Settings / Paypal"},
      *
      *     security={{
      *         "default": {
@@ -291,30 +310,45 @@ class StripePaymentGatewaySetupController extends Controller
      *                 description="primary key to the record",
      *             ),
      *             @OA\Property(
-     *                 property="gateway_name",
+     *                 property="mode",
      *                 type="string",
-     *                 description="Name of the payment gateway",
-     *                 default="stripe",
+     *                 description="payment mode",
      *             ),
      *             @OA\Property(
-     *                 property="webhook_secret",
+     *                 property="notify_url",
      *                 type="string",
-     *                 description="The web hook secret",
+     *                 description="Payment notify url",
      *             ),
      *             @OA\Property(
-     *                 property="public_key",
+     *                 property="currency",
      *                 type="string",
-     *                 description="Publick key",
+     *                 description="payment currency type",
+     *                 default= "GBP",
      *             ),
      *             @OA\Property(
-     *                 property="secret_key",
+     *                 property="sandbox_client_id",
      *                 type="string",
-     *                 description="Secret key"
+     *                 description="payment sandbox client ID"
+     *             ),
+     *             @OA\Property(
+     *                 property="sandbox_client_secret",
+     *                 type="string",
+     *                 description="payment sandbox client secret"
+     *             ),
+     *             @OA\Property(
+     *                 property="live_client_id",
+     *                 type="string",
+     *                 description="payment live client ID"
+     *             ),
+     *             @OA\Property(
+     *                 property="live_client_secret",
+     *                 type="string",
+     *                 description="payment live client secret"
      *             ),
      *             @OA\Property(
      *                 property="status",
      *                 type="integer",
-     *                 description="The currently in use settings",
+     *                 description="Currently in use settings",
      *                 default= 1,
      *             )
      *         )
@@ -338,31 +372,33 @@ class StripePaymentGatewaySetupController extends Controller
         // Validate inputs
         try {
             $this->validate($request, [
-                'webhook_secret' => 'required|string',
-                'public_key'     => 'required|string',
-                'secret_key'     => 'required|string',
+                'mode'                  => 'required|string',
+                'notify_url'            => 'required|string',
+                'live_client_id'        => 'required|string',
+                'live_client_secret'    => 'required|string',
+                'sandbox_api_url'       => 'required|string',
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
                 'type'      => 'warning',
-                'title'     => 'Stripe payement gateway details',
-                'message'   => "Validation error",
-                'data'      => $e->getMessage() // $validation->errors()->toJson()
+                'title'     => 'paypal payement gateway details',
+                'message'   => 'Validation error',
+                'data'      => $e->getMessage()
             ], 400);
         }
         try {
-            $gatewaySettings = StripePaymentGatewayModel::findOrFail($id);
+            $gatewaySettings = PaypalPaymentGatewayModel::findOrFail($id);
             $saved =  $gatewaySettings->update($request->all());
             if($saved)
             {
                 $resp['message'] = "Successfully updated";
-                $resp['title']   = "Stripe Payment gateway settings";
+                $resp['title']   = "Update paypal Payment gateway settings";
                 $resp['type']    = "success";
-                $resp['data']    = StripePaymentGatewayModel::findOrFail($id);
+                $resp['data']    = PaypalPaymentGatewayModel::findOrFail($id);
                 return response()->json($resp, 200);
             }else{
                 $resp['message']    = "Unable to update payment gateway settings";
-                $resp['title']      = "Stripe Payment gateway settings";
+                $resp['title']      = "Unable to paypal Payment gateway settings";
                 $resp['type']       = "warning";
                 $resp['data']       = [];
                 return response()->json($resp, 400);
@@ -370,7 +406,7 @@ class StripePaymentGatewaySetupController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Update Stripe payement gateway details',
+                'title'     => 'Failed to update paypal payement gateway details',
                 'message'   => $e->getMessage()
             ], 400);
         }
@@ -378,12 +414,12 @@ class StripePaymentGatewaySetupController extends Controller
 
 
      /**
-     * Method to delete stripe payment gateway settings
+     * Method to delete paypal payment gateway settings
      *
      * @OA\Delete(
-     *     path="/admin/settings/{id}/stripe",
-     *     description="method to delete stripe payment gateway settings",
-     *     tags={"Admin / Settings / Stripe"},
+     *     path="/admin/settings/{id}/paypal",
+     *     description="method to delete paypal payment gateway settings",
+     *     tags={"Admin / Settings / Paypal"},
      *
      *     security={{
      *         "default": {
@@ -428,17 +464,17 @@ class StripePaymentGatewaySetupController extends Controller
         $resp['data']       = [];
 
         try {
-            $deleted =  StripePaymentGatewayModel::findOrFail($id)->delete();
+            $deleted =  PaypalPaymentGatewayModel::findOrFail($id)->delete();
             if($deleted)
             {
                 $resp['message'] = "Payment gateway settings was deleted";
-                $resp['title']   = "Stripe Payment gateway settings";
+                $resp['title']   = "paypal Payment gateway settings";
                 $resp['type']    = "success";
-                $resp['data']    = StripePaymentGatewayModel::all();
+                $resp['data']    = PaypalPaymentGatewayModel::all();
                 return response()->json($resp, 200);
             }else{
                 $resp['message']    = "Unable to delete payment gateway settings";
-                $resp['title']      = "Stripe Payment gateway settings";
+                $resp['title']      = "paypal Payment gateway settings";
                 $resp['type']       = "warning";
                 $resp['data']       = [];
                 return response()->json($resp, 400);
@@ -446,7 +482,7 @@ class StripePaymentGatewaySetupController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Delete Stripe payement gateway details',
+                'title'     => 'Delete paypal payement gateway details',
                 'message'   => $e->getMessage()
             ], 400);
         }
