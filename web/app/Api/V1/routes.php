@@ -52,6 +52,17 @@ $router->group([
         $router->put('/settings/{id}/paypal',     'PaypalPaymentGatewaySetupController@update');
         $router->delete('/settings/{id}/paypal',  'PaypalPaymentGatewaySetupController@destroy');
         //Openpayd
+        $router->get('/settings/openpayd',          'OpenpaydPaymentGatewaySetupController@index');
+        $router->get('/settings/{id}/openpayd',     'OpenpaydPaymentGatewaySetupController@show');
+        $router->post('/settings/openpayd',         'OpenpaydPaymentGatewaySetupController@store');
+        $router->put('/settings/{id}/openpayd',     'OpenpaydPaymentGatewaySetupController@update');
+        $router->delete('/settings/{id}/openpayd',  'OpenpaydPaymentGatewaySetupController@destroy');
+        //CoinBase
+        $router->get('/settings/coinbase',          'CoinBasePaymentGatewaySetupController@index');
+        $router->get('/settings/{id}/coinbase',     'CoinBasePaymentGatewaySetupController@show');
+        $router->post('/settings/coinbase',         'CoinBasePaymentGatewaySetupController@store');
+        $router->put('/settings/{id}/coinbase',     'CoinBasePaymentGatewaySetupController@update');
+        $router->delete('/settings/{id}/coinbase',  'CoinBasePaymentGatewaySetupController@destroy');
 
     });
 

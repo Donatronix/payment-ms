@@ -11,6 +11,189 @@ servers:
     url: 'http://localhost:8100/v1'
     description: 'Payment Gateways API Microservice, Version v1'
 paths:
+  /admin/settings/coinbase:
+    get:
+      tags:
+        - 'Admin / Settings / Coinbase'
+      summary: 'Display list of all coinbase payment gateway settings'
+      description: 'Display list of all coinbase payment gateway settings'
+      operationId: 18b8b3b883320b4f1ec767a9c4151031
+      parameters:
+        -
+          name: limit
+          in: query
+          description: 'Count of orders in response'
+          required: false
+          schema:
+            type: integer
+            default: 20
+        -
+          name: page
+          in: query
+          description: 'Page of list'
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    post:
+      tags:
+        - 'Admin / Settings / Coinbase'
+      summary: 'Method to add new coinbase payment gateway settings'
+      description: 'method to add new coinbase payment gateway settings'
+      operationId: de1360a2a99637223342bd12f7660edf
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                api_key:
+                  description: 'Coinbase API key'
+                  type: string
+                webhook_key:
+                  description: 'Coinbase webhook key'
+                  type: string
+                redirect_url:
+                  description: 'Coinbase redirect URL'
+                  type: string
+                cancel_url:
+                  description: 'Coinbase cancel url'
+                  type: string
+                status:
+                  description: 'Currently in use settings'
+                  type: integer
+                  default: 1
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  '/admin/settings/{id}/coinbase':
+    get:
+      tags:
+        - 'Admin / Settings / Coinbase'
+      summary: 'Display coinbase payment gateway settings details'
+      description: 'show coinbase payment gateway settings details'
+      operationId: 67bb328b4dd8fe2f7c8e6e095444922a
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    put:
+      tags:
+        - 'Admin / Settings / Coinbase'
+      summary: 'Method to update coinbase payment gateway settings'
+      description: 'method to update coinbase payment gateway settings'
+      operationId: 5a9bae2866c6cac559faddcf4f648479
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+                api_key:
+                  description: 'Coinbase API key'
+                  type: string
+                webhook_key:
+                  description: 'Coinbase webhook key'
+                  type: string
+                redirect_url:
+                  description: 'Coinbase redirect URL'
+                  type: string
+                cancel_url:
+                  description: 'Coinbase cancel url'
+                  type: string
+                status:
+                  description: 'Currently in use settings'
+                  type: integer
+                  default: 1
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    delete:
+      tags:
+        - 'Admin / Settings / Coinbase'
+      summary: 'Method to delete coinbase payment gateway settings'
+      description: 'method to delete coinbase payment gateway settings'
+      operationId: 3d5c54bd6903c6573b1deb7297f6113a
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
   /admin/settings/openpayd:
     get:
       tags:
@@ -22,7 +205,7 @@ paths:
         -
           name: limit
           in: query
-          description: 'Count of orders / currencies pair in response'
+          description: 'Count of orders in response'
           required: false
           schema:
             type: integer
@@ -312,7 +495,7 @@ paths:
         -
           name: limit
           in: query
-          description: 'Count of orders / currencies pair in response'
+          description: 'Count of orders in response'
           required: false
           schema:
             type: integer
@@ -515,7 +698,7 @@ paths:
         -
           name: limit
           in: query
-          description: 'Count of orders / currencies pair in response'
+          description: 'Count of orders in response'
           required: false
           schema:
             type: integer

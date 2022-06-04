@@ -5,6 +5,8 @@ namespace App\Helpers;
 use App\Models\StripePaymentGatewaySetup;
 use App\Models\PaypalPaymentGatewaySetup;
 use App\Models\OpenpaydPaymentGatewaySetup;
+use App\Models\CoinBasePaymentGatewaySetup;
+
 
 
 
@@ -65,6 +67,23 @@ class PaymentGatewaySettings
         }
     }
 
+    //Get Coinbase Gateway settings
+    public static function coinbase_settings($getSetting = null, $default = null, $status = 1)
+    {
+        try {
+            $status     = (is_int($status) ? $status : 1);
+            $getSetting = strtolower($getSetting);
+            if($getSetting)
+            {
+                $getValue = CoinBasePaymentGatewaySetup::where('status', $status)->value($getSetting);
+                return ($getValue ? $getValue : $default);
+            }else{
+                return $default;
+            }
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
 
 
 }

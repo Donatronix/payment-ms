@@ -43,7 +43,7 @@ class OpenpaydPaymentGatewaySetupController extends Controller
      *     },
      * *     @OA\Parameter(
      *         name="limit",
-     *         description="Count of orders / currencies pair in response",
+     *         description="Count of orders in response",
      *         in="query",
      *         required=false,
      *         @OA\Schema(

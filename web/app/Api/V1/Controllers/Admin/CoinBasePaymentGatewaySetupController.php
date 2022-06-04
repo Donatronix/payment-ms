@@ -3,28 +3,28 @@
 namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PaypalPaymentGatewaySetup as PaypalPaymentGatewayModel;
+use App\Models\CoinBasePaymentGatewaySetup as CoinBasePaymentGatewayModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Class PaypalPaymentGatewaySetupController
+ * Class CoinBasePaymentGatewaySetupController
  *
  * @package App\Api\V1\Controllers
  */
 
-class PaypalPaymentGatewaySetupController extends Controller
+class CoinBasePaymentGatewaySetupController extends Controller
 {
 
 
      /**
-     * Display list of all paypal payment gateway settings
+     * Display list of all coinbase payment gateway settings
      *
      * @OA\Get(
-     *     path="/admin/settings/paypal",
-     *     description="Display list of all paypal payment gateway settings",
-     *     tags={"Admin / Settings / Paypal"},
+     *     path="/admin/settings/coinbase",
+     *     description="Display list of all coinbase payment gateway settings",
+     *     tags={"Admin / Settings / Coinbase"},
      *
      *     security={{
      *         "default": {
@@ -75,30 +75,28 @@ class PaypalPaymentGatewaySetupController extends Controller
     {
             $resp['data']    = [];
             try {
-                $resp['message']    = "List of all payment gateway settings";
-                $resp['title']      = "Display Paypal Payment gateway settings";
+                $resp['message']    = "List of all coinbase payment gateway settings";
+                $resp['title']      = "Display coinbase Payment gateway settings";
                 $resp['type']       = "Success";
-                $resp['data']       = PaypalPaymentGatewayModel::orderBy('created_at', 'Desc')
+                $resp['data']       = CoinBasePaymentGatewayModel::orderBy('created_at', 'Desc')
                                     ->paginate($request->get('limit', 20));
                 return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
                         'type'  => 'danger',
-                        'title'  => 'List paypal payment gateway settings',
+                        'title'  => 'List coinbase payment gateway settings',
                         'message' => $e->getMessage()
                     ], 400);
             }
     }
 
-
-
-     /**
-     * Display paypal payment gateway settings details
+    /**
+     * Display coinbase payment gateway settings details
      *
      * @OA\Get(
-     *     path="/admin/settings/{id}/paypal",
-     *     description="show paypal payment gateway settings details",
-     *     tags={"Admin / Settings / Paypal"},
+     *     path="/admin/settings/{id}/coinbase",
+     *     description="show coinbase payment gateway settings details",
+     *     tags={"Admin / Settings / Coinbase"},
      *
      *     security={{
      *         "default": {
@@ -121,7 +119,7 @@ class PaypalPaymentGatewaySetupController extends Controller
      *     )
      * )
      *
-     * @param  $id
+     * @param    $id
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -130,14 +128,14 @@ class PaypalPaymentGatewaySetupController extends Controller
             $resp['data']    = [];
             try {
                 $resp['message']  = "Payment gateway setting details";
-                $resp['title']    = "paypal Payment gateway settings";
+                $resp['title']    = "Coinbase Payment gateway settings";
                 $resp['type']     = "success";
-                $resp['data']     = PaypalPaymentGatewayModel::findOrFail($id);
+                $resp['data']     = CoinBasePaymentGatewayModel::findOrFail($id);
                 return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
                         'type'      => 'danger',
-                        'title'     => 'Paypal payement gateway Details',
+                        'title'     => 'Coinbase payement gateway Details',
                         'message'   => $e->getMessage()
                     ], 400);
             }
@@ -146,12 +144,12 @@ class PaypalPaymentGatewaySetupController extends Controller
 
 
     /**
-     * Method to add new paypal payment gateway settings
+     * Method to add new coinbase payment gateway settings
      *
      * @OA\Post(
-     *     path="/admin/settings/paypal",
-     *     description="method to add new paypal payment gateway settings",
-     *     tags={"Admin / Settings / Paypal"},
+     *     path="/admin/settings/coinbase",
+     *     description="method to add new coinbase payment gateway settings",
+     *     tags={"Admin / Settings / Coinbase"},
      *
      *     security={{
      *         "default": {
@@ -173,40 +171,24 @@ class PaypalPaymentGatewaySetupController extends Controller
      *
      *         @OA\JsonContent(
      *             @OA\Property(
-     *                 property="mode",
+     *                 property="api_key",
      *                 type="string",
-     *                 description="payment mode",
+     *                 description="Coinbase API key",
      *             ),
      *             @OA\Property(
-     *                 property="notify_url",
+     *                 property="webhook_key",
      *                 type="string",
-     *                 description="Payment notify url",
+     *                 description="Coinbase webhook key",
      *             ),
      *             @OA\Property(
-     *                 property="currency",
+     *                 property="redirect_url",
      *                 type="string",
-     *                 description="payment currency type",
-     *                 default= "GBP",
+     *                 description="Coinbase redirect URL",
      *             ),
      *             @OA\Property(
-     *                 property="sandbox_client_id",
+     *                 property="cancel_url",
      *                 type="string",
-     *                 description="payment sandbox client ID"
-     *             ),
-     *             @OA\Property(
-     *                 property="sandbox_client_secret",
-     *                 type="string",
-     *                 description="payment sandbox client secret"
-     *             ),
-     *             @OA\Property(
-     *                 property="live_client_id",
-     *                 type="string",
-     *                 description="payment live client ID"
-     *             ),
-     *             @OA\Property(
-     *                 property="live_client_secret",
-     *                 type="string",
-     *                 description="payment live client secret"
+     *                 description="Coinbase cancel url"
      *             ),
      *             @OA\Property(
      *                 property="status",
@@ -235,42 +217,38 @@ class PaypalPaymentGatewaySetupController extends Controller
          // Validate inputs
          try {
             $this->validate($request, [
-                'mode'                  => 'required|string',
-                'notify_url'            => 'required|string',
-                //'currency'              => 'required|string',
-                //'sandbox_client_id'     => 'required|string',
-                //'sandbox_client_secret' => 'required|string',
-                'live_client_id'        => 'required|string',
-                'live_client_secret'    => 'required|string',
-                //'status'                => 'required|string',
+                'api_key'          => 'required|string',
+                'webhook_key'      => 'required|string',
+                'redirect_url'     => 'required|string',
+                'cancel_url'       => 'required|string',
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
                 'type'      => 'warning',
-                'title'     => 'paypal payement gateway details',
+                'title'     => 'Coinbase payement gateway details',
                 'message'   => 'Validation error',
-                'data'      => $e->getMessage() // $validation->errors()->toJson()
+                'data'      => $e->getMessage()
             ], 400);
         }
         try {
-            $saved =  PaypalPaymentGatewayModel::create($request->all());
+            $saved =  CoinBasePaymentGatewayModel::create($request->all());
             if($saved)
             {
                 $resp['message'] = "New payment gateway setting was added";
-                $resp['title']   = "paypal Payment gateway settings";
+                $resp['title']   = "Coinbase Payment gateway settings";
                 $resp['type']    = "success";
-                $resp['data']    = PaypalPaymentGatewayModel::where('id', $saved->id)->first();
+                $resp['data']    = CoinBasePaymentGatewayModel::where('id', $saved->id)->first();
                 return response()->json($resp, 200);
             }else{
                 $resp['message']  = "Unable to create payment gateway settings";
-                $resp['title']    = "paypal Payment gateway settings";
+                $resp['title']    = "Coinbase Payment gateway settings";
                 $resp['type']     = "warning";
                 return response()->json($resp, 400);
             }
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Failed to add new paypal payement gateway settings',
+                'title'     => 'Failed to add new coinbase payement gateway settings',
                 'message'   => $e->getMessage()
             ], 400);
         }
@@ -278,12 +256,12 @@ class PaypalPaymentGatewaySetupController extends Controller
 
 
     /**
-     * Method to update paypal payment gateway settings
+     * Method to update coinbase payment gateway settings
      *
      * @OA\Put(
-     *     path="/admin/settings/{id}/paypal",
-     *     description="method to update paypal payment gateway settings",
-     *     tags={"Admin / Settings / Paypal"},
+     *     path="/admin/settings/{id}/coinbase",
+     *     description="method to update coinbase payment gateway settings",
+     *     tags={"Admin / Settings / Coinbase"},
      *
      *     security={{
      *         "default": {
@@ -309,41 +287,25 @@ class PaypalPaymentGatewaySetupController extends Controller
      *                 type="string",
      *                 description="primary key to the record",
      *             ),
-     *             @OA\Property(
-     *                 property="mode",
+     *            @OA\Property(
+     *                 property="api_key",
      *                 type="string",
-     *                 description="payment mode",
+     *                 description="Coinbase API key",
      *             ),
      *             @OA\Property(
-     *                 property="notify_url",
+     *                 property="webhook_key",
      *                 type="string",
-     *                 description="Payment notify url",
+     *                 description="Coinbase webhook key",
      *             ),
      *             @OA\Property(
-     *                 property="currency",
+     *                 property="redirect_url",
      *                 type="string",
-     *                 description="payment currency type",
-     *                 default= "GBP",
+     *                 description="Coinbase redirect URL",
      *             ),
      *             @OA\Property(
-     *                 property="sandbox_client_id",
+     *                 property="cancel_url",
      *                 type="string",
-     *                 description="payment sandbox client ID"
-     *             ),
-     *             @OA\Property(
-     *                 property="sandbox_client_secret",
-     *                 type="string",
-     *                 description="payment sandbox client secret"
-     *             ),
-     *             @OA\Property(
-     *                 property="live_client_id",
-     *                 type="string",
-     *                 description="payment live client ID"
-     *             ),
-     *             @OA\Property(
-     *                 property="live_client_secret",
-     *                 type="string",
-     *                 description="payment live client secret"
+     *                 description="Coinbase cancel url"
      *             ),
      *             @OA\Property(
      *                 property="status",
@@ -372,33 +334,32 @@ class PaypalPaymentGatewaySetupController extends Controller
         // Validate inputs
         try {
             $this->validate($request, [
-                'mode'                  => 'required|string',
-                'notify_url'            => 'required|string',
-                'live_client_id'        => 'required|string',
-                'live_client_secret'    => 'required|string',
-                'sandbox_api_url'       => 'required|string',
+                'api_key'          => 'required|string',
+                'webhook_key'      => 'required|string',
+                'redirect_url'     => 'required|string',
+                'cancel_url'       => 'required|string',
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
                 'type'      => 'warning',
-                'title'     => 'paypal payement gateway details',
+                'title'     => 'Coinbase payement gateway details',
                 'message'   => 'Validation error',
                 'data'      => $e->getMessage()
             ], 400);
         }
         try {
-            $gatewaySettings = PaypalPaymentGatewayModel::findOrFail($id);
+            $gatewaySettings = CoinBasePaymentGatewayModel::findOrFail($id);
             $saved =  $gatewaySettings->update($request->all());
             if($saved)
             {
                 $resp['message'] = "Successfully updated";
-                $resp['title']   = "Update paypal Payment gateway settings";
+                $resp['title']   = "Update coinbase Payment gateway settings";
                 $resp['type']    = "success";
-                $resp['data']    = PaypalPaymentGatewayModel::findOrFail($id);
+                $resp['data']    = CoinBasePaymentGatewayModel::findOrFail($id);
                 return response()->json($resp, 200);
             }else{
                 $resp['message']    = "Unable to update payment gateway settings";
-                $resp['title']      = "Unable to paypal Payment gateway settings";
+                $resp['title']      = "Unable to coinbase Payment gateway settings";
                 $resp['type']       = "warning";
                 $resp['data']       = [];
                 return response()->json($resp, 400);
@@ -406,7 +367,7 @@ class PaypalPaymentGatewaySetupController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Failed to update paypal payement gateway details',
+                'title'     => 'Failed to update coinbase payement gateway details',
                 'message'   => $e->getMessage()
             ], 400);
         }
@@ -414,12 +375,12 @@ class PaypalPaymentGatewaySetupController extends Controller
 
 
      /**
-     * Method to delete paypal payment gateway settings
+     * Method to delete coinbase payment gateway settings
      *
      * @OA\Delete(
-     *     path="/admin/settings/{id}/paypal",
-     *     description="method to delete paypal payment gateway settings",
-     *     tags={"Admin / Settings / Paypal"},
+     *     path="/admin/settings/{id}/coinbase",
+     *     description="method to delete coinbase payment gateway settings",
+     *     tags={"Admin / Settings / Coinbase"},
      *
      *     security={{
      *         "default": {
@@ -464,17 +425,17 @@ class PaypalPaymentGatewaySetupController extends Controller
         $resp['data']       = [];
 
         try {
-            $deleted =  PaypalPaymentGatewayModel::findOrFail($id)->delete();
+            $deleted =  CoinBasePaymentGatewayModel::findOrFail($id)->delete();
             if($deleted)
             {
                 $resp['message'] = "Payment gateway settings was deleted";
-                $resp['title']   = "paypal Payment gateway settings";
+                $resp['title']   = "Coinbase Payment gateway settings";
                 $resp['type']    = "success";
-                $resp['data']    = PaypalPaymentGatewayModel::all();
+                $resp['data']    = CoinBasePaymentGatewayModel::all();
                 return response()->json($resp, 200);
             }else{
                 $resp['message']    = "Unable to delete payment gateway settings";
-                $resp['title']      = "paypal Payment gateway settings";
+                $resp['title']      = "Coinbase Payment gateway settings";
                 $resp['type']       = "warning";
                 $resp['data']       = [];
                 return response()->json($resp, 400);
@@ -482,11 +443,10 @@ class PaypalPaymentGatewaySetupController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Delete paypal payement gateway details',
+                'title'     => 'Delete coinbase payement gateway details',
                 'message'   => $e->getMessage()
             ], 400);
         }
     }
 
-
-}
+}//end class
