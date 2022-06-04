@@ -14,10 +14,11 @@ class Payment
      */
     public static function getInstance($gateway)
     {
-        try{
+        try {
             $class = '\App\Services\Payments\\' . Str::ucfirst($gateway) . 'Manager';
             $reflector = new \ReflectionClass($class);
-        } catch(\Exception $e){
+        }
+        catch(\Exception $e) {
             throw $e;
         }
 

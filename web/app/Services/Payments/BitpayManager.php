@@ -59,7 +59,8 @@ class BitpayManager implements PaymentSystemContract
                 config('payments.bitpay.private_key.password')
             );
 
-        } catch (BitPayException $e) {
+        }
+        catch (BitPayException $e) {
             throw new Exception($e->getMessage());
         }
     }
@@ -120,7 +121,8 @@ class BitpayManager implements PaymentSystemContract
                 'payment_id' => $payment->id,
                 'invoice_url' => $chargeObj->getURL()
             ];
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
             return [
                 'type' => 'danger',
                 'message' => sprintf("Unable to create an invoice. Error: %s \n", $e->getMessage())

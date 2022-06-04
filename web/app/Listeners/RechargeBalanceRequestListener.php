@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Models\LogPaymentRequest;
 use App\Models\LogPaymentRequestError;
 use App\Services\Payment;
+use App\Models\Payment as PayModel;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
@@ -39,14 +40,13 @@ class RechargeBalanceRequestListener
      */
     public function handle(array $inputData)
     {
-        // Validate input
         $validation = Validator::make($inputData, [
             'gateway' => 'string|required',
             'amount' => 'integer|required',
-            'currency.id' => 'integer|required',
+            'currency' => 'string|required',
             'replay_to' => 'string|required',
-            'order_id' => 'integer|required',
-            'user_id' => 'integer|required',
+            'order_id' => 'string|required',
+            'user_id' => 'string|required',
         ]);
 
         if ($validation->fails()) {
@@ -56,35 +56,47 @@ class RechargeBalanceRequestListener
                 'message' => $validation->errors()
             ], $inputData['replay_to']);
 
-            exit;
+            exit();
         }
 
-        // Write log
+        // Payment Log
         try {
             LogPaymentRequest::create([
                 'gateway' => $inputData['gateway'],
                 'service' => $inputData['replay_to'],
                 'payload' => $inputData
             ]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             Log::info('Log of invoice failed: ' . $e->getMessage());
         }
 
         // Init manager
-        try{
-            $system = Payment::getInstance($inputData['gateway']);
-        } catch(\Exception $e){
+        try {
+            $payment = PayModel::create([
+                'type' => PayModel::TYPE_PAYIN,
+                'amount' => $inputData['amount'],
+                'gateway' => $inputData['gateway'],
+                'user_id' => $inputData['user_id'],
+                'service' => $inputData['replay_to'],
+                'currency' => $inputData['currency'],
+                'payload' => $inputData
+            ]);
+
+            $paymentGateway = Payment::getInstance($inputData['gateway']);
+        }
+        catch(\Exception $e) {
             \PubSub::transaction(function () {})->publish(self::RECEIVER_LISTENER, [
                 'status' => 'error',
                 'order_id' => $inputData['order_id'],
                 'message' => $e->getMessage(),
             ], $inputData['replay_to']);
 
-            exit;
+            exit();
         }
 
         // Create invoice
-        $result = $system->createInvoice($inputData);
+        $result = $paymentGateway->createInvoice($payment, (object) $inputData);
 
         // Return response
         if ($result['type'] === 'error') {
