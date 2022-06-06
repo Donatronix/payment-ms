@@ -1,7 +1,7 @@
 <?php
 use App\Helpers\PaymentGatewaySettings;
 /**
- * Helper function stripe_settings()
+ * Helper function manage_settings()
  * It  takes three (3) Parameters:
  *  - parameter 1: string (key type) e.g gateway_name, webhook_secret, public_key, secret_key
  *  - parameter 2: string (Default value) e.g null
@@ -9,7 +9,7 @@ use App\Helpers\PaymentGatewaySettings;
  *
  */
 return [
-    'webhook_secret'    => PaymentGatewaySettings::stripe_settings('WEBHOOK_SECRET', null, 1), //env('STRIPE_WEBHOOK_SECRET', null),
-    'public_key'        => PaymentGatewaySettings::stripe_settings('PUBLIC_KEY', null, 1), //env('STRIPE_PUBLIC_KEY', null),
-    'secret_key'        => PaymentGatewaySettings::stripe_settings('SECRET_KEY', null, 1), //env('STRIPE_SECRET_KEY', null)
+    'webhook_secret'    => PaymentGatewaySettings::manage_settings('STRIPE_WEBHOOK_SECRET', null, 1), //env('STRIPE_WEBHOOK_SECRET', null),
+    'public_key'        => PaymentGatewaySettings::manage_settings('STRIPE_PUBLIC_KEY', null, 1), //env('STRIPE_PUBLIC_KEY', null),
+    'secret_key'        => PaymentGatewaySettings::manage_settings('STRIPE_SECRET_KEY', null, 1), //env('STRIPE_SECRET_KEY', null)
 ];

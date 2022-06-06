@@ -39,30 +39,12 @@ $router->group([
         $router->get('/payments', 'PaymentController@index');
         $router->get('/payments/lost', 'PaymentController@lost');
         $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
-        //stripe
-        $router->get('/settings/stripe',          'StripePaymentGatewaySetupController@index');
-        $router->get('/settings/{id}/stripe',     'StripePaymentGatewaySetupController@show');
-        $router->post('/settings/stripe',         'StripePaymentGatewaySetupController@store');
-        $router->put('/settings/{id}/stripe',     'StripePaymentGatewaySetupController@update');
-        $router->delete('/settings/{id}/stripe',  'StripePaymentGatewaySetupController@destroy');
-        //Paypal
-        $router->get('/settings/paypal',          'PaypalPaymentGatewaySetupController@index');
-        $router->get('/settings/{id}/paypal',     'PaypalPaymentGatewaySetupController@show');
-        $router->post('/settings/paypal',         'PaypalPaymentGatewaySetupController@store');
-        $router->put('/settings/{id}/paypal',     'PaypalPaymentGatewaySetupController@update');
-        $router->delete('/settings/{id}/paypal',  'PaypalPaymentGatewaySetupController@destroy');
-        //Openpayd
-        $router->get('/settings/openpayd',          'OpenpaydPaymentGatewaySetupController@index');
-        $router->get('/settings/{id}/openpayd',     'OpenpaydPaymentGatewaySetupController@show');
-        $router->post('/settings/openpayd',         'OpenpaydPaymentGatewaySetupController@store');
-        $router->put('/settings/{id}/openpayd',     'OpenpaydPaymentGatewaySetupController@update');
-        $router->delete('/settings/{id}/openpayd',  'OpenpaydPaymentGatewaySetupController@destroy');
-        //CoinBase
-        $router->get('/settings/coinbase',          'CoinBasePaymentGatewaySetupController@index');
-        $router->get('/settings/{id}/coinbase',     'CoinBasePaymentGatewaySetupController@show');
-        $router->post('/settings/coinbase',         'CoinBasePaymentGatewaySetupController@store');
-        $router->put('/settings/{id}/coinbase',     'CoinBasePaymentGatewaySetupController@update');
-        $router->delete('/settings/{id}/coinbase',  'CoinBasePaymentGatewaySetupController@destroy');
+        //Manage all payment gateway settings
+        $router->get('/gateway/settings',          'ManageAllPaymentGatewayController@index');
+        $router->get('/gateway/{id}/settings',     'ManageAllPaymentGatewayController@show');
+        $router->post('/gateway/settings',         'ManageAllPaymentGatewayController@store');
+        $router->put('/gateway/{id}/settings',     'ManageAllPaymentGatewayController@update');
+        $router->delete('/gateway/{id}/settings',  'ManageAllPaymentGatewayController@destroy');
 
     });
 
