@@ -17,7 +17,6 @@ use Illuminate\Http\JsonResponse;
 class ManageAllPaymentGatewayController extends Controller
 {
 
-
      /**
      * Display list of all payment gateway settings
      *
@@ -125,7 +124,7 @@ class ManageAllPaymentGatewayController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show($id)
+    public function show($id): JsonResponse
     {
             $resp['data']    = [];
             try {
@@ -136,13 +135,12 @@ class ManageAllPaymentGatewayController extends Controller
                 return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
-                        'type'  => 'danger',
+                        'type'      => 'danger',
                         'title'     => 'Payement gateway Details',
-                        'message' => $e->getMessage()
+                        'message'   => $e->getMessage()
                     ], 400);
             }
     }
-
 
 
     /**
@@ -180,53 +178,53 @@ class ManageAllPaymentGatewayController extends Controller
      *             @OA\Property(
      *                 property="stripe_webhook_secret",
      *                 type="string",
-     *                 description="The web hook secret",
+     *                 description="The stripe webhook secret",
      *             ),
      *             @OA\Property(
      *                 property="stripe_public_key",
      *                 type="string",
-     *                 description="Publick key",
+     *                 description="Stripe Publick key",
      *             ),
      *             @OA\Property(
      *                 property="stripe_secret_key",
      *                 type="string",
-     *                 description="Secret key"
+     *                 description="Stripe Secret key"
      *             ),
      *              @OA\Property(
      *                 property="paypal_mode",
      *                 type="string",
-     *                 description="payment mode",
+     *                 description="Paypal payment mode",
      *             ),
      *             @OA\Property(
      *                 property="paypal_notify_url",
      *                 type="string",
-     *                 description="Payment notify url",
+     *                 description="Paypal Payment notify url",
      *             ),
      *             @OA\Property(
      *                 property="paypal_currency",
      *                 type="string",
-     *                 description="payment currency type",
+     *                 description="Paypal payment currency type",
      *                 default= "USD",
      *             ),
      *             @OA\Property(
      *                 property="paypal_sandbox_client_id",
      *                 type="string",
-     *                 description="payment sandbox client ID"
+     *                 description="Paypal payment sandbox client ID"
      *             ),
      *             @OA\Property(
      *                 property="paypal_sandbox_client_secret",
      *                 type="string",
-     *                 description="payment sandbox client secret"
+     *                 description="Paypal payment sandbox client secret"
      *             ),
      *             @OA\Property(
      *                 property="paypal_live_client_id",
      *                 type="string",
-     *                 description="paypal_payment live client ID"
+     *                 description="Paypal paypal_payment live client ID"
      *             ),
      *             @OA\Property(
      *                 property="paypal_live_client_secret",
      *                 type="string",
-     *                 description="payment live client secret"
+     *                 description="Paypal payment live client secret"
      *             ),
      *              @OA\Property(
      *                 property="openpayd_username",
@@ -271,37 +269,37 @@ class ManageAllPaymentGatewayController extends Controller
      *             @OA\Property(
      *                 property="bitpay_environment",
      *                 type="string",
-     *                 description="bitpay environment"
+     *                 description="Bitpay environment"
      *             ),
      *             @OA\Property(
      *                 property="bitpay_api_token_merchant",
      *                 type="string",
-     *                 description="bitpay api token merchant"
+     *                 description="Bitpay api token merchant"
      *             ),
      *             @OA\Property(
      *                 property="bitpay_api_token_payroll",
      *                 type="string",
-     *                 description="bitpay api token payroll"
+     *                 description="Bitpay api token payroll"
      *             ),
      *              @OA\Property(
      *                 property="bitpay_key_path",
      *                 type="string",
-     *                 description="bitpay key path"
+     *                 description="Bitpay key path"
      *             ),
      *             @OA\Property(
      *                 property="bitpay_private_key_password",
      *                 type="string",
-     *                 description="bitpay private key password"
+     *                 description="Bitpay private key password"
      *             ),
      *             @OA\Property(
      *                 property="bitpay_payment_webhook_url",
      *                 type="string",
-     *                 description="bitpay payment webhook url"
+     *                 description="Bitpay payment webhook url"
      *             ),
      *             @OA\Property(
      *                 property="bitpay_redirect_url",
      *                 type="string",
-     *                 description="bitpay redirect url"
+     *                 description="Bitpay redirect url"
      *             ),
      *             @OA\Property(
      *                 property="status",
@@ -404,53 +402,53 @@ class ManageAllPaymentGatewayController extends Controller
      *             @OA\Property(
      *                 property="stripe_webhook_secret",
      *                 type="string",
-     *                 description="The web hook secret",
+     *                 description="The stripe webhook secret",
      *             ),
      *             @OA\Property(
      *                 property="stripe_public_key",
      *                 type="string",
-     *                 description="Publick key",
+     *                 description="Stripe Publick key",
      *             ),
      *             @OA\Property(
      *                 property="stripe_secret_key",
      *                 type="string",
-     *                 description="Secret key"
+     *                 description="Stripe Secret key"
      *             ),
      *              @OA\Property(
      *                 property="paypal_mode",
      *                 type="string",
-     *                 description="payment mode",
+     *                 description="Paypal payment mode",
      *             ),
      *             @OA\Property(
      *                 property="paypal_notify_url",
      *                 type="string",
-     *                 description="Payment notify url",
+     *                 description="Paypal Payment notify url",
      *             ),
      *             @OA\Property(
      *                 property="paypal_currency",
      *                 type="string",
-     *                 description="payment currency type",
+     *                 description="Paypal payment currency type",
      *                 default= "USD",
      *             ),
      *             @OA\Property(
      *                 property="paypal_sandbox_client_id",
      *                 type="string",
-     *                 description="payment sandbox client ID"
+     *                 description="Paypal payment sandbox client ID"
      *             ),
      *             @OA\Property(
      *                 property="paypal_sandbox_client_secret",
      *                 type="string",
-     *                 description="payment sandbox client secret"
+     *                 description="Paypal payment sandbox client secret"
      *             ),
      *             @OA\Property(
      *                 property="paypal_live_client_id",
      *                 type="string",
-     *                 description="paypal_payment live client ID"
+     *                 description="Paypal paypal_payment live client ID"
      *             ),
      *             @OA\Property(
      *                 property="paypal_live_client_secret",
      *                 type="string",
-     *                 description="payment live client secret"
+     *                 description="Paypal payment live client secret"
      *             ),
      *              @OA\Property(
      *                 property="openpayd_username",
@@ -495,37 +493,37 @@ class ManageAllPaymentGatewayController extends Controller
      *             @OA\Property(
      *                 property="bitpay_environment",
      *                 type="string",
-     *                 description="bitpay environment"
+     *                 description="Bitpay environment"
      *             ),
      *             @OA\Property(
      *                 property="bitpay_api_token_merchant",
      *                 type="string",
-     *                 description="bitpay api token merchant"
+     *                 description="Bitpay api token merchant"
      *             ),
      *             @OA\Property(
      *                 property="bitpay_api_token_payroll",
      *                 type="string",
-     *                 description="bitpay api token payroll"
+     *                 description="Bitpay api token payroll"
      *             ),
      *              @OA\Property(
      *                 property="bitpay_key_path",
      *                 type="string",
-     *                 description="bitpay key path"
+     *                 description="Bitpay key path"
      *             ),
      *             @OA\Property(
      *                 property="bitpay_private_key_password",
      *                 type="string",
-     *                 description="bitpay private key password"
+     *                 description="Bitpay private key password"
      *             ),
      *             @OA\Property(
      *                 property="bitpay_payment_webhook_url",
      *                 type="string",
-     *                 description="bitpay payment webhook url"
+     *                 description="Bitpay payment webhook url"
      *             ),
      *             @OA\Property(
      *                 property="bitpay_redirect_url",
      *                 type="string",
-     *                 description="bitpay redirect url"
+     *                 description="Bitpay redirect url"
      *             ),
      *             @OA\Property(
      *                 property="status",

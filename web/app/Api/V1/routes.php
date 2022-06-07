@@ -39,6 +39,7 @@ $router->group([
         $router->get('/payments', 'PaymentController@index');
         $router->get('/payments/lost', 'PaymentController@lost');
         $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
+
         //Manage all payment gateway settings
         $router->get('/gateway/settings',          'ManageAllPaymentGatewayController@index');
         $router->get('/gateway/{id}/settings',     'ManageAllPaymentGatewayController@show');

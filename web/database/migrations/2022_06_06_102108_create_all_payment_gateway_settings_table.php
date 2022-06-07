@@ -15,7 +15,7 @@ class CreateAllPaymentGatewaySettingsTable extends Migration
     {
         Schema::create('all_payment_gateway_settings', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('payment_gateway_name')->nullable();
+            $table->string('payment_gateway_name');
 
             $table->string('bitpay_bitpay_environment')->nullable();
             $table->string('bitpay_api_token_merchant')->nullable();

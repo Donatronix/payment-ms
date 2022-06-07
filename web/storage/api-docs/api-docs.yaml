@@ -66,35 +66,35 @@ paths:
                   description: 'Name of the payment gateway'
                   type: string
                 stripe_webhook_secret:
-                  description: 'The web hook secret'
+                  description: 'The stripe webhook secret'
                   type: string
                 stripe_public_key:
-                  description: 'Publick key'
+                  description: 'Stripe Publick key'
                   type: string
                 stripe_secret_key:
-                  description: 'Secret key'
+                  description: 'Stripe Secret key'
                   type: string
                 paypal_mode:
-                  description: 'payment mode'
+                  description: 'Paypal payment mode'
                   type: string
                 paypal_notify_url:
-                  description: 'Payment notify url'
+                  description: 'Paypal Payment notify url'
                   type: string
                 paypal_currency:
-                  description: 'payment currency type'
+                  description: 'Paypal payment currency type'
                   type: string
                   default: USD
                 paypal_sandbox_client_id:
-                  description: 'payment sandbox client ID'
+                  description: 'Paypal payment sandbox client ID'
                   type: string
                 paypal_sandbox_client_secret:
-                  description: 'payment sandbox client secret'
+                  description: 'Paypal payment sandbox client secret'
                   type: string
                 paypal_live_client_id:
-                  description: 'paypal_payment live client ID'
+                  description: 'Paypal paypal_payment live client ID'
                   type: string
                 paypal_live_client_secret:
-                  description: 'payment live client secret'
+                  description: 'Paypal payment live client secret'
                   type: string
                 openpayd_username:
                   description: 'Openpayd payment username'
@@ -121,25 +121,25 @@ paths:
                   description: 'Coinbase cancel url'
                   type: string
                 bitpay_environment:
-                  description: 'bitpay environment'
+                  description: 'Bitpay environment'
                   type: string
                 bitpay_api_token_merchant:
-                  description: 'bitpay api token merchant'
+                  description: 'Bitpay api token merchant'
                   type: string
                 bitpay_api_token_payroll:
-                  description: 'bitpay api token payroll'
+                  description: 'Bitpay api token payroll'
                   type: string
                 bitpay_key_path:
-                  description: 'bitpay key path'
+                  description: 'Bitpay key path'
                   type: string
                 bitpay_private_key_password:
-                  description: 'bitpay private key password'
+                  description: 'Bitpay private key password'
                   type: string
                 bitpay_payment_webhook_url:
-                  description: 'bitpay payment webhook url'
+                  description: 'Bitpay payment webhook url'
                   type: string
                 bitpay_redirect_url:
-                  description: 'bitpay redirect url'
+                  description: 'Bitpay redirect url'
                   type: string
                 status:
                   description: 'Currently in use settings'
@@ -202,35 +202,35 @@ paths:
                   description: 'Name of the payment gateway'
                   type: string
                 stripe_webhook_secret:
-                  description: 'The web hook secret'
+                  description: 'The stripe webhook secret'
                   type: string
                 stripe_public_key:
-                  description: 'Publick key'
+                  description: 'Stripe Publick key'
                   type: string
                 stripe_secret_key:
-                  description: 'Secret key'
+                  description: 'Stripe Secret key'
                   type: string
                 paypal_mode:
-                  description: 'payment mode'
+                  description: 'Paypal payment mode'
                   type: string
                 paypal_notify_url:
-                  description: 'Payment notify url'
+                  description: 'Paypal Payment notify url'
                   type: string
                 paypal_currency:
-                  description: 'payment currency type'
+                  description: 'Paypal payment currency type'
                   type: string
                   default: USD
                 paypal_sandbox_client_id:
-                  description: 'payment sandbox client ID'
+                  description: 'Paypal payment sandbox client ID'
                   type: string
                 paypal_sandbox_client_secret:
-                  description: 'payment sandbox client secret'
+                  description: 'Paypal payment sandbox client secret'
                   type: string
                 paypal_live_client_id:
-                  description: 'paypal_payment live client ID'
+                  description: 'Paypal paypal_payment live client ID'
                   type: string
                 paypal_live_client_secret:
-                  description: 'payment live client secret'
+                  description: 'Paypal payment live client secret'
                   type: string
                 openpayd_username:
                   description: 'Openpayd payment username'
@@ -257,25 +257,25 @@ paths:
                   description: 'Coinbase cancel url'
                   type: string
                 bitpay_environment:
-                  description: 'bitpay environment'
+                  description: 'Bitpay environment'
                   type: string
                 bitpay_api_token_merchant:
-                  description: 'bitpay api token merchant'
+                  description: 'Bitpay api token merchant'
                   type: string
                 bitpay_api_token_payroll:
-                  description: 'bitpay api token payroll'
+                  description: 'Bitpay api token payroll'
                   type: string
                 bitpay_key_path:
-                  description: 'bitpay key path'
+                  description: 'Bitpay key path'
                   type: string
                 bitpay_private_key_password:
-                  description: 'bitpay private key password'
+                  description: 'Bitpay private key password'
                   type: string
                 bitpay_payment_webhook_url:
-                  description: 'bitpay payment webhook url'
+                  description: 'Bitpay payment webhook url'
                   type: string
                 bitpay_redirect_url:
-                  description: 'bitpay redirect url'
+                  description: 'Bitpay redirect url'
                   type: string
                 status:
                   description: 'Currently in use settings'
