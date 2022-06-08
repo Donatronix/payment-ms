@@ -10,9 +10,8 @@ use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
 /**
- *
- * Transaction object example
- * https://apidocs.openpayd.com/reference/transaction-object
+ * Class Payment
+ * @package App\Models
  */
 class Payment extends Model
 {
