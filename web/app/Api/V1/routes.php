@@ -40,12 +40,15 @@ $router->group([
         $router->get('/payments/lost', 'PaymentController@lost');
         $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
 
-        //Manage all payment gateway settings
-        $router->get('/gateway/settings',          'ManageAllPaymentGatewayController@index');
-        $router->get('/gateway/{id}/settings',     'ManageAllPaymentGatewayController@show');
-        $router->post('/gateway/settings',         'ManageAllPaymentGatewayController@store');
-        $router->put('/gateway/{id}/settings',     'ManageAllPaymentGatewayController@update');
-        $router->delete('/gateway/{id}/settings',  'ManageAllPaymentGatewayController@destroy');
+        //Manage all payment system
+        $router->get('/admin/payment-system',          'PaymentSystemController@index');
+        $router->get('/admin/{id}/payment-system',     'PaymentSystemController@show');
+        $router->post('/admin/payment-system',         'PaymentSystemController@store');
+        $router->put('/admin/{id}/payment-system',     'PaymentSystemController@update');
+        $router->delete('/admin/{id}/payment-system',  'PaymentSystemController@destroy');
+        //Manage all payment setting
+        $router->get('/admin/payment-setting',          'PaymentSettingController@index');
+        $router->post('/admin/payment-setting',         'PaymentSettingController@index');
 
     });
 

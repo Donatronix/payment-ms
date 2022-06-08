@@ -2,7 +2,8 @@
 
 namespace App\Helpers;
 
-use App\Models\AllPaymentGatewaySettings as ManageSettingsModel;
+use App\Models\PaymentSystem as PaymentSystemModel;
+use App\Models\PaymentSettings as PaymentSettingsModel;
 
 
 
@@ -10,14 +11,14 @@ class PaymentGatewaySettings
 {
 
     //Get Payment Gateway settings manager
-    public static function manage_settings($getSetting = null, $default = null, $status = 1)
+    public static function manage_settings($getKey = null, $default = null, $status = 1)
     {
         try {
             $status     = (is_int($status) ? $status : 1);
-            $getSetting = strtolower($getSetting);
-            if($getSetting)
+            $getKey = strtolower($getKey);
+            if($getKey)
             {
-                $getValue = ManageSettingsModel::where('status', $status)->value($getSetting);
+                $getValue = PaymentSettingsModel::where('setting_key', $getKey)->value('setting_value');
                 return ($getValue ? $getValue : $default);
             }else{
                 return $default;

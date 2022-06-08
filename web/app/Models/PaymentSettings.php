@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
-class PaymentSystem extends Model
+class PaymentSettings extends Model
 {
     use HasFactory;
     use OwnerTrait;
@@ -22,10 +22,9 @@ class PaymentSystem extends Model
      */
 
     protected $fillable = [
-        'name',
-        'gateway',
-        'description',
-        'new_status'
+        'setting_key',
+        'setting_value',
+        'payment_system_id',
     ];
 
     /**
@@ -37,11 +36,11 @@ class PaymentSystem extends Model
 
 
     /**
-     * Get the payment settings for the payment system
+     * Get the payment system that owns the settings.
      */
-    public function paymentsettings()
-    {
-        return $this->hasMany('App\PaymentSettings');
-    }
 
+    public function paymentsystem()
+    {
+        return $this->belongsTo(PaymentSystem::class);
+    }
 }

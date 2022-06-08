@@ -11,323 +11,6 @@ servers:
     url: 'http://localhost:8100/v1'
     description: 'Payment Gateways API Microservice, Version v1'
 paths:
-  /admin/gateway/settings:
-    get:
-      tags:
-        - 'Admin / Gateway / Settings'
-      summary: 'Display list of all payment gateway settings'
-      description: 'Display list of all payment gateway settings'
-      operationId: a22b533f3ef482c3d084e47ce36b9cc0
-      parameters:
-        -
-          name: limit
-          in: query
-          description: 'Count of orders in response'
-          required: false
-          schema:
-            type: integer
-            default: 20
-        -
-          name: page
-          in: query
-          description: 'Page of list'
-          required: false
-          schema:
-            type: integer
-            default: 1
-      responses:
-        '200':
-          description: Success
-      security:
-        -
-          default:
-            - ManagerRead
-            - User
-            - ManagerWrite
-      x-auth-type: 'Application & Application User'
-      x-throttling-tier: Unlimited
-      x-wso2-application-security:
-        security-types:
-          - oauth2
-        optional: 'false'
-    post:
-      tags:
-        - 'Admin / Gateway / Settings'
-      summary: 'Method to add new payment gateway settings'
-      description: 'method to add new payment gateway settings'
-      operationId: c25bad6eeb9a44214e89f75ae7cd8925
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                payment_gateway_name:
-                  description: 'Name of the payment gateway'
-                  type: string
-                stripe_webhook_secret:
-                  description: 'The stripe webhook secret'
-                  type: string
-                stripe_public_key:
-                  description: 'Stripe Publick key'
-                  type: string
-                stripe_secret_key:
-                  description: 'Stripe Secret key'
-                  type: string
-                paypal_mode:
-                  description: 'Paypal payment mode'
-                  type: string
-                paypal_notify_url:
-                  description: 'Paypal Payment notify url'
-                  type: string
-                paypal_currency:
-                  description: 'Paypal payment currency type'
-                  type: string
-                  default: USD
-                paypal_sandbox_client_id:
-                  description: 'Paypal payment sandbox client ID'
-                  type: string
-                paypal_sandbox_client_secret:
-                  description: 'Paypal payment sandbox client secret'
-                  type: string
-                paypal_live_client_id:
-                  description: 'Paypal paypal_payment live client ID'
-                  type: string
-                paypal_live_client_secret:
-                  description: 'Paypal payment live client secret'
-                  type: string
-                openpayd_username:
-                  description: 'Openpayd payment username'
-                  type: string
-                openpayd_password:
-                  description: 'Openpayd payment password'
-                  type: string
-                openpayd_url:
-                  description: 'Openpayd payment url'
-                  type: string
-                openpayd_public_key_path:
-                  description: 'Openpayd payment public key path'
-                  type: string
-                coinbase_api_key:
-                  description: 'Coinbase API key'
-                  type: string
-                coinbase_webhook_key:
-                  description: 'Coinbase webhook key'
-                  type: string
-                coinbase_redirect_url:
-                  description: 'Coinbase redirect URL'
-                  type: string
-                coinbase_cancel_url:
-                  description: 'Coinbase cancel url'
-                  type: string
-                bitpay_environment:
-                  description: 'Bitpay environment'
-                  type: string
-                bitpay_api_token_merchant:
-                  description: 'Bitpay api token merchant'
-                  type: string
-                bitpay_api_token_payroll:
-                  description: 'Bitpay api token payroll'
-                  type: string
-                bitpay_key_path:
-                  description: 'Bitpay key path'
-                  type: string
-                bitpay_private_key_password:
-                  description: 'Bitpay private key password'
-                  type: string
-                bitpay_payment_webhook_url:
-                  description: 'Bitpay payment webhook url'
-                  type: string
-                bitpay_redirect_url:
-                  description: 'Bitpay redirect url'
-                  type: string
-                status:
-                  description: 'Currently in use settings'
-                  type: integer
-                  default: 1
-              type: object
-      responses:
-        '200':
-          description: Success
-      security:
-        -
-          default:
-            - ManagerRead
-            - User
-            - ManagerWrite
-      x-auth-type: 'Application & Application User'
-      x-throttling-tier: Unlimited
-      x-wso2-application-security:
-        security-types:
-          - oauth2
-        optional: 'false'
-  '/admin/gateway/{id}/settings':
-    get:
-      tags:
-        - 'Admin / Gateway / Settings'
-      summary: 'Display all payment gateway settings details'
-      description: 'show all payment gateway settings details'
-      operationId: e3a2cc1546e3c93389601ed8a55f241a
-      responses:
-        '200':
-          description: Success
-      security:
-        -
-          default:
-            - ManagerRead
-            - User
-            - ManagerWrite
-      x-auth-type: 'Application & Application User'
-      x-throttling-tier: Unlimited
-      x-wso2-application-security:
-        security-types:
-          - oauth2
-        optional: 'false'
-    put:
-      tags:
-        - 'Admin / Gateway / Settings'
-      summary: 'Method to update payment gateway settings'
-      description: 'method to update payment gateway settings'
-      operationId: e502548f1e1e082e95b7f5118750b9fe
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                id:
-                  description: 'primary key to the record'
-                  type: string
-                payment_gateway_name:
-                  description: 'Name of the payment gateway'
-                  type: string
-                stripe_webhook_secret:
-                  description: 'The stripe webhook secret'
-                  type: string
-                stripe_public_key:
-                  description: 'Stripe Publick key'
-                  type: string
-                stripe_secret_key:
-                  description: 'Stripe Secret key'
-                  type: string
-                paypal_mode:
-                  description: 'Paypal payment mode'
-                  type: string
-                paypal_notify_url:
-                  description: 'Paypal Payment notify url'
-                  type: string
-                paypal_currency:
-                  description: 'Paypal payment currency type'
-                  type: string
-                  default: USD
-                paypal_sandbox_client_id:
-                  description: 'Paypal payment sandbox client ID'
-                  type: string
-                paypal_sandbox_client_secret:
-                  description: 'Paypal payment sandbox client secret'
-                  type: string
-                paypal_live_client_id:
-                  description: 'Paypal paypal_payment live client ID'
-                  type: string
-                paypal_live_client_secret:
-                  description: 'Paypal payment live client secret'
-                  type: string
-                openpayd_username:
-                  description: 'Openpayd payment username'
-                  type: string
-                openpayd_password:
-                  description: 'Openpayd payment password'
-                  type: string
-                openpayd_url:
-                  description: 'Openpayd payment url'
-                  type: string
-                openpayd_public_key_path:
-                  description: 'Openpayd payment public key path'
-                  type: string
-                coinbase_api_key:
-                  description: 'Coinbase API key'
-                  type: string
-                coinbase_webhook_key:
-                  description: 'Coinbase webhook key'
-                  type: string
-                coinbase_redirect_url:
-                  description: 'Coinbase redirect URL'
-                  type: string
-                coinbase_cancel_url:
-                  description: 'Coinbase cancel url'
-                  type: string
-                bitpay_environment:
-                  description: 'Bitpay environment'
-                  type: string
-                bitpay_api_token_merchant:
-                  description: 'Bitpay api token merchant'
-                  type: string
-                bitpay_api_token_payroll:
-                  description: 'Bitpay api token payroll'
-                  type: string
-                bitpay_key_path:
-                  description: 'Bitpay key path'
-                  type: string
-                bitpay_private_key_password:
-                  description: 'Bitpay private key password'
-                  type: string
-                bitpay_payment_webhook_url:
-                  description: 'Bitpay payment webhook url'
-                  type: string
-                bitpay_redirect_url:
-                  description: 'Bitpay redirect url'
-                  type: string
-                status:
-                  description: 'Currently in use settings'
-                  type: integer
-                  default: 1
-              type: object
-      responses:
-        '200':
-          description: Success
-      security:
-        -
-          default:
-            - ManagerRead
-            - User
-            - ManagerWrite
-      x-auth-type: 'Application & Application User'
-      x-throttling-tier: Unlimited
-      x-wso2-application-security:
-        security-types:
-          - oauth2
-        optional: 'false'
-    delete:
-      tags:
-        - 'Admin / Gateway / Settings'
-      summary: 'Method to delete payment gateway settings'
-      description: 'method to delete payment gateway settings'
-      operationId: 249e0b973fb054a80c3b474f4d6e9bd6
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                id:
-                  description: 'primary key to the record'
-                  type: string
-              type: object
-      responses:
-        '200':
-          description: Success
-      security:
-        -
-          default:
-            - ManagerRead
-            - User
-            - ManagerWrite
-      x-auth-type: 'Application & Application User'
-      x-throttling-tier: Unlimited
-      x-wso2-application-security:
-        security-types:
-          - oauth2
-        optional: 'false'
   /admin/payments:
     get:
       tags:
@@ -420,6 +103,267 @@ paths:
           schema:
             type: string
             default: ''
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  /admin/payment-setting:
+    get:
+      tags:
+        - 'Admin / Payment-Setting'
+      summary: 'Display list of all payment setting'
+      description: 'Display list of all payment settings'
+      operationId: d26bae4c31b7d8e9067b3ad6e5628af3
+      parameters:
+        -
+          name: limit
+          in: query
+          description: 'Count of orders in response'
+          required: false
+          schema:
+            type: integer
+            default: 20
+        -
+          name: page
+          in: query
+          description: 'Page of list'
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    post:
+      tags:
+        - 'Admin / Payment-Setting'
+      summary: 'Method to add new payment setting'
+      description: 'method to add new payment setting'
+      operationId: 94a48e87dcdc60b418803ca69eefe6dc
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                payment_system_id:
+                  description: 'payment system id'
+                  type: string
+                setting_key:
+                  description: 'payment setting key'
+                  type: string
+                setting_value:
+                  description: 'payment setting value'
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  /admin/payment-system:
+    get:
+      tags:
+        - 'Admin / Payment-System'
+      summary: 'Display list of all payment system'
+      description: 'Display list of all payment gateway settings'
+      operationId: 10e1b21d7640a333265c70d27fc6e9d4
+      parameters:
+        -
+          name: limit
+          in: query
+          description: 'Count of orders in response'
+          required: false
+          schema:
+            type: integer
+            default: 20
+        -
+          name: page
+          in: query
+          description: 'Page of list'
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    post:
+      tags:
+        - 'Admin / Payment-System'
+      summary: 'Method to add new payment system'
+      description: 'method to add new payment system'
+      operationId: f4cd0f0c1be80beedbc21c8ce1cd18da
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: 'Name of the payment system'
+                  type: string
+                gateway:
+                  description: 'The payment system gateway'
+                  type: string
+                description:
+                  description: 'details of the payment system'
+                  type: string
+                new_status:
+                  description: 'Currently in use settings'
+                  type: integer
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+  '/admin/{id}/payment-system':
+    get:
+      tags:
+        - 'Admin / Payment-System'
+      summary: 'Display payment system details'
+      description: 'show payment system details'
+      operationId: 6ce8fe6ba19a457507a1ab492bf18623
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    put:
+      tags:
+        - 'Admin / Payment-System'
+      summary: 'Method to update payment System'
+      description: 'method to update payment system'
+      operationId: 5bc074f41873b1f465db7453a6bfb40d
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'primary key to the record'
+                  type: string
+                name:
+                  description: 'Name of the payment system'
+                  type: string
+                gateway:
+                  description: 'The payment system gateway'
+                  type: string
+                description:
+                  description: 'details of the payment system'
+                  type: string
+                new_status:
+                  description: 'Currently in use settings'
+                  type: integer
+              type: object
+      responses:
+        '200':
+          description: Success
+      security:
+        -
+          default:
+            - ManagerRead
+            - User
+            - ManagerWrite
+      x-auth-type: 'Application & Application User'
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: 'false'
+    delete:
+      tags:
+        - 'Admin / Payment-System'
+      summary: 'Method to delete payment system'
+      description: 'method to delete payment gateway settings'
+      operationId: fe110cd177a7906b682da2354192f88a
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  description: 'payment system id'
+                  type: string
+              type: object
       responses:
         '200':
           description: Success

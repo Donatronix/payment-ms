@@ -9,7 +9,7 @@ use App\Helpers\PaymentGatewaySettings;
  *
  */
 return [
-    'webhook_secret'    => PaymentGatewaySettings::manage_settings('STRIPE_WEBHOOK_SECRET', null, 1), //env('STRIPE_WEBHOOK_SECRET', null),
-    'public_key'        => PaymentGatewaySettings::manage_settings('STRIPE_PUBLIC_KEY', null, 1), //env('STRIPE_PUBLIC_KEY', null),
-    'secret_key'        => PaymentGatewaySettings::manage_settings('STRIPE_SECRET_KEY', null, 1), //env('STRIPE_SECRET_KEY', null)
+    'webhook_secret'    => PaymentGatewaySettings::manage_settings('STRIPE_WEBHOOK_SECRET', null), //env('STRIPE_WEBHOOK_SECRET', null),
+    'public_key'        => PaymentGatewaySettings::manage_settings('STRIPE_PUBLIC_KEY', null), //env('STRIPE_PUBLIC_KEY', null),
+    'secret_key'        => PaymentGatewaySettings::manage_settings('STRIPE_SECRET_KEY', null), //env('STRIPE_SECRET_KEY', null)
 ];
