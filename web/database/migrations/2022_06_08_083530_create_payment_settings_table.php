@@ -16,8 +16,10 @@ class CreatePaymentSettingsTable extends Migration
         Schema::create('payment_settings', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('setting_key');
-            $table->string('setting_value');
+            $table->string('setting_value')->nullable();
             $table->string('payment_system_id');
+
+            $table->softDeletes();
             $table->timestamps();
             $table->foreign('payment_system_id')->references('id')->on('payment_systems')->onDelete('cascade');
         });

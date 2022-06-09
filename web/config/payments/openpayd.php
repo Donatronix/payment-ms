@@ -11,9 +11,9 @@ use App\Helpers\PaymentGatewaySettings;
 
 return [
 
-    'username'          => PaymentGatewaySettings::manage_settings('OPENPAYD_USERNAME', 'USERNAME'), //env("OPENPAYD_USERNAME","USERNAME"),
-    "password"          => PaymentGatewaySettings::manage_settings('OPENPAYD_PASSWORD', 'PASSWORD'), //env("OPENPAYD_PASSWORD", "PASSWORD"),
-    "url"               => PaymentGatewaySettings::manage_settings('OPENPAYD_URL', 'https://sandbox.openpayd.com/api/'), //env("OPENPAYD_URL", "https://sandbox.openpayd.com/api/"),
-    "public_key_path"   => storage_path(PaymentGatewaySettings::manage_settings('OPENPAYD_PUBLIC_KEY_PATH', 'keys/openpayd.key')), //storage_path('keys/openpayd.key')
+    'username'          => env("OPENPAYD_USERNAME","USERNAME"), //PaymentGatewaySettings::manage_settings('OPENPAYD_USERNAME', 'USERNAME'),
+    "password"          => env("OPENPAYD_PASSWORD", "PASSWORD"), //PaymentGatewaySettings::manage_settings('OPENPAYD_PASSWORD', 'PASSWORD'),
+    "url"               => env("OPENPAYD_URL", "https://sandbox.openpayd.com/api/"), //PaymentGatewaySettings::manage_settings('OPENPAYD_URL', 'https://sandbox.openpayd.com/api/'),
+    "public_key_path"   => storage_path('keys/openpayd.key'), //storage_path(PaymentGatewaySettings::manage_settings('OPENPAYD_PUBLIC_KEY_PATH', 'keys/openpayd.key')),
 
 ];

@@ -7,11 +7,11 @@ use App\Models\Payment;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-
+use App\Helpers\PaymentGatewaySettings as PaymentSetting;
 
 
 class OpenpaydManager implements PaymentSystemContract
-{   
+{
 
     // https://apidocs.openpayd.com/docs/transaction-status-updated-webhook#transaction-types
 
@@ -42,7 +42,7 @@ class OpenpaydManager implements PaymentSystemContract
 
     public function __construct()
     {
-     
+
     }
 
     public function getAccessToken()
@@ -50,10 +50,10 @@ class OpenpaydManager implements PaymentSystemContract
 
         try {
 
-            $this->openPaydClient = new Client(['base_uri' => config("payments.openpayd.base_url")]);
-            
-            $username = config("payments.openpayd.username");
-            $password = config("payments.openpayd.password");
+            $this->openPaydClient = new Client(['base_uri' => PaymentSetting::settings('openpayd_url')]);
+
+            $username = PaymentSetting::settings('openpayd_username');
+            $password = PaymentSetting::settings('openpayd_password');
             $salt = $username.":".$password;
 
             $code = base64_encode($salt);
@@ -136,7 +136,7 @@ class OpenpaydManager implements PaymentSystemContract
      */
     public function handlerWebhook(Request $request): array
     {
-       
+
         $signature = $request->header("signature");
         $payload = $request->get("payload",null);
 
@@ -147,16 +147,16 @@ class OpenpaydManager implements PaymentSystemContract
                  "message" => "Openpayd: Invalid signature"
              ];
         }
-        
+
         $webhookPayload = json_decode($payload);
-        
+
         $transactionStatus = strtoupper($webhookPayload["status"]);
         $transactionType = strtoupper($webhookPayload["type"]);
 
         if($transactionType == self::TRANSACTION_TYPE_PAYIN){
-                
+
             //  retrieve payment and update status
-            // TODO find a way to access webhook metadata. 
+            // TODO find a way to access webhook metadata.
             $payment = Payment::where('type', Payment::TYPE_INVOICE)
             ->where('id', $webhookPayload["metadata"]['orderId'])
             ->where('document_id', $webhookPayload["metadata"]['documentId'])
@@ -170,12 +170,12 @@ class OpenpaydManager implements PaymentSystemContract
                     'message' => 'Payment transaction not found in Payment Microservice database'
                 ];
             }
-    
+
             $payment->status = $transactionStatus;
-    
+
            // $payment->payload = $paymentData;
             $payment->save();
-    
+
             // Return result
             return [
                 'status' => 'success',
@@ -202,10 +202,10 @@ class OpenpaydManager implements PaymentSystemContract
 
     private function isValidSignature($signature,$data): bool
     {
-         $pubKeyPath = config("payments.openpayd.public_key_path");
-         
+         $pubKeyPath = PaymentSetting::settings('openpayd_public_key_path');
+
          if ($signature == hash_hmac_file('sha256', $data, $pubKeyPath)){
-              
+
             return true;
          }
 

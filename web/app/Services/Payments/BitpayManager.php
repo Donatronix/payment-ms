@@ -10,6 +10,7 @@ use BitPaySDK\Model\Invoice\Invoice;
 use BitPaySDK\Tokens;
 use Exception;
 use Illuminate\Http\Request;
+use App\Helpers\PaymentGatewaySettings as PaymentSetting;
 
 class BitpayManager implements PaymentSystemContract
 {
@@ -50,15 +51,14 @@ class BitpayManager implements PaymentSystemContract
         try {
             // Initialize with separate variables and Private Key stored in file.
             $this->gateway = Client::create()->withData(
-                config('payments.bitpay.environment'),
-                config('payments.bitpay.private_key.path'),
+                PaymentSetting::settings('bitpay_environment'),
+                PaymentSetting::settings('bitpay_key_path'),
                 new Tokens(
-                    config('payments.bitpay.api_tokens.merchant'), //merchant
-                    config('payments.bitpay.api_tokens.payroll') //payroll
+                    PaymentSetting::settings('bitpay_api_token_merchant'), //merchant
+                    PaymentSetting::settings('bitpay_api_token_payroll') //payroll
                 ),
-                config('payments.bitpay.private_key.password')
+                PaymentSetting::settings('bitpay_private_key_password')
             );
-
         } catch (BitPayException $e) {
             throw new Exception($e->getMessage());
         }
@@ -101,8 +101,8 @@ class BitpayManager implements PaymentSystemContract
 
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
-            $invoice->setNotificationURL(config('payments.bitpay.webhook_url') . '/bitpay/invoices');
-            $invoice->setRedirectURL(config('payments.bitpay.redirect_url'));
+            $invoice->setNotificationURL(PaymentSetting::settings('bitpay_payment_webhook_url') . '/bitpay/invoices');
+            $invoice->setRedirectURL(PaymentSetting::settings('bitpay_redirect_url'));
             $invoice->setPosData(json_encode(['code' => $payment->check_code]));
             $invoice->setItemDesc("Charge Balance for Sumra User");
 
@@ -136,8 +136,8 @@ class BitpayManager implements PaymentSystemContract
             $invoice->setOrderId($payment->id);
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
-            $invoice->setNotificationURL(config('payments.bitpay.webhook_url') . '/bitpay/invoices');
-            $invoice->setRedirectURL(config('payments.bitpay.redirect_url'));
+            $invoice->setNotificationURL(PaymentSetting::settings('bitpay_payment_webhook_url') . '/bitpay/invoices');
+            $invoice->setRedirectURL(PaymentSetting::settings('bitpay_redirect_url'));
             $invoice->setPosData(json_encode(['code' => $payment->check_code]));
             $invoice->setItemDesc("Charge Balance for Sumra User");
 

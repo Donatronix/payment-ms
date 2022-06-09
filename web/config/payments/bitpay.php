@@ -12,15 +12,15 @@ use App\Helpers\PaymentGatewaySettings;
  */
 
 return [
-    'environment'       => PaymentGatewaySettings::manage_settings('BITPAY_ENVIRONMENT', Env::Test), //env('BITPAY_ENVIRONMENT', Env::Test),
+    'environment'       => env('BITPAY_ENVIRONMENT', Env::Test), //PaymentGatewaySettings::manage_settings('BITPAY_ENVIRONMENT', Env::Test),
     'api_tokens' => [
-        'merchant'      => PaymentGatewaySettings::manage_settings('BITPAY_API_TOKEN_MERCHANT', null), //env('BITPAY_API_TOKEN_MERCHANT', null),
-        'payroll'       => PaymentGatewaySettings::manage_settings('BITPAY_API_TOKEN_PAYROLL', null), //env('BITPAY_API_TOKEN_PAYROLL', null)
+        'merchant'      => env('BITPAY_API_TOKEN_MERCHANT', null), //PaymentGatewaySettings::manage_settings('BITPAY_API_TOKEN_MERCHANT', null),
+        'payroll'       => env('BITPAY_API_TOKEN_PAYROLL', null), //PaymentGatewaySettings::manage_settings('BITPAY_API_TOKEN_PAYROLL', null),
     ],
     'private_key' => [
-        'path'          => storage_path(PaymentGatewaySettings::manage_settings('BITPAY_KEY_PATH', 'keys/bitpay.key')), //storage_path('keys/bitpay.key'),
-        'password'      => PaymentGatewaySettings::manage_settings('BITPAY_PRIVATE_KEY_PASSWORD', null), //env('BITPAY_MASTER_PASSWORD', null),
+        'path'          => storage_path('keys/bitpay.key'), //storage_path(PaymentGatewaySettings::manage_settings('BITPAY_KEY_PATH', 'keys/bitpay.key')),
+        'password'      => env('BITPAY_MASTER_PASSWORD', null), //PaymentGatewaySettings::manage_settings('BITPAY_PRIVATE_KEY_PASSWORD', null),
     ],
-    'webhook_url'       => PaymentGatewaySettings::manage_settings('BITPAY_PAYMENTS_WEBHOOK_URL', 'https://sumra.net/payment/'), //env('PAYMENTS_WEBHOOK_URL', 'https://sumra.net/payment/'),
-    'redirect_url'      => PaymentGatewaySettings::manage_settings('BITPAY_REDIRECT_URL', 'https://sumra.net/'), //env('PAYMENTS_REDIRECT_URL', 'https://sumra.net/')
+    'webhook_url'       => env('PAYMENTS_WEBHOOK_URL', 'https://sumra.net/payment/'), //PaymentGatewaySettings::manage_settings('BITPAY_PAYMENTS_WEBHOOK_URL', 'https://sumra.net/payment/'),
+    'redirect_url'      => env('PAYMENTS_REDIRECT_URL', 'https://sumra.net/'), //PaymentGatewaySettings::manage_settings('BITPAY_REDIRECT_URL', 'https://sumra.net/'),
 ];

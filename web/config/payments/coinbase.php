@@ -10,8 +10,8 @@ use App\Helpers\PaymentGatewaySettings;
  */
 
 return [
-    'api_key'       => PaymentGatewaySettings::manage_settings('COINBASE_API_KEY', null), //env('COINBASE_API_KEY', null),
-    'webhook_key'   => PaymentGatewaySettings::manage_settings('COINBASE_WEBHOOK_KEY', null), //env('COINBASE_WEBHOOK_KEY', null),
-    'redirect_url'  => PaymentGatewaySettings::manage_settings('COINBASE_REDIRECT_URL', 'https://sumra.net/'), //env('PAYMENTS_REDIRECT_URL', 'https://sumra.net/'),
-    'cancel_url'    => PaymentGatewaySettings::manage_settings('COINBASE_CANCEL_url', 'https://sumra.net/'), //env('PAYMENTS_REDIRECT_URL', 'https://sumra.net/')
+    'api_key'       => env('COINBASE_API_KEY', null), //PaymentGatewaySettings::manage_settings('COINBASE_API_KEY', null),
+    'webhook_key'   => env('COINBASE_WEBHOOK_KEY', null), //PaymentGatewaySettings::manage_settings('COINBASE_WEBHOOK_KEY', null),
+    'redirect_url'  => env('PAYMENTS_REDIRECT_URL', 'https://sumra.net/'), //PaymentGatewaySettings::manage_settings('COINBASE_REDIRECT_URL', 'https://sumra.net/'),
+    'cancel_url'    => env('PAYMENTS_REDIRECT_URL', 'https://sumra.net/'), //PaymentGatewaySettings::manage_settings('COINBASE_CANCEL_url', 'https://sumra.net/'),
 ];
