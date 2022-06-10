@@ -1,7 +1,7 @@
 <?php
-use App\Helpers\PaymentGatewaySettings;
+use App\Helpers\PaymentGatewaySettings as PaymentSetting;
 /**
- * Helper function manage_settings()
+ * Helper function settings()
  * It  takes three (3) Parameters:
  *  - parameter 1: string (key/Field type) e.g username, password, url, public_key_path
  *  - parameter 2: string (Default value) e.g null
@@ -11,9 +11,9 @@ use App\Helpers\PaymentGatewaySettings;
 
 return [
 
-    'username'          => env("OPENPAYD_USERNAME","USERNAME"), //PaymentGatewaySettings::manage_settings('OPENPAYD_USERNAME', 'USERNAME'),
-    "password"          => env("OPENPAYD_PASSWORD", "PASSWORD"), //PaymentGatewaySettings::manage_settings('OPENPAYD_PASSWORD', 'PASSWORD'),
-    "url"               => env("OPENPAYD_URL", "https://sandbox.openpayd.com/api/"), //PaymentGatewaySettings::manage_settings('OPENPAYD_URL', 'https://sandbox.openpayd.com/api/'),
-    "public_key_path"   => storage_path('keys/openpayd.key'), //storage_path(PaymentGatewaySettings::manage_settings('OPENPAYD_PUBLIC_KEY_PATH', 'keys/openpayd.key')),
+    'username'          => PaymentSetting::settings('openpayd_username'), //env("OPENPAYD_USERNAME","USERNAME"),
+    "password"          => PaymentSetting::settings('openpayd_password'), //env("OPENPAYD_PASSWORD", "PASSWORD"),
+    "url"               => PaymentSetting::settings('openpayd_url'), //env("OPENPAYD_URL", "https://sandbox.openpayd.com/api/"),
+    "public_key_path"   => storage_path(PaymentSetting::settings('openpayd_public_key_path')), //storage_path('keys/openpayd.key'),
 
 ];

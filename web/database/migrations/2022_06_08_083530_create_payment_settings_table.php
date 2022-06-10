@@ -17,7 +17,7 @@ class CreatePaymentSettingsTable extends Migration
             $table->uuid('id')->primary();
             $table->string('setting_key');
             $table->string('setting_value')->nullable();
-            $table->string('payment_system_id');
+            $table->string('payment_system_id')->nullable();
 
             $table->softDeletes();
             $table->timestamps();

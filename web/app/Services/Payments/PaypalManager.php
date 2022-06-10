@@ -122,8 +122,8 @@ class PaypalManager implements PaymentSystemContract
                     'landing_page' => 'NO_PREFERENCE',
                     'shipping_preference' => 'NO_SHIPPING',
                     'user_action' => 'PAY_NOW',
-                    'return_url' => env('PAYMENTS_REDIRECT_URL'),
-                    'cancel_url' => env('PAYMENTS_REDIRECT_URL'),
+                    'return_url' => PaymentSetting::settings('payments_redirect_url'),
+                    'cancel_url' => PaymentSetting::settings('payments_redirect_url'),
                 ]
             ];
             $chargeObj = $this->gateway->execute($request);

@@ -152,8 +152,8 @@ class StripeManager implements PaymentSystemContract
                     'payment_order' => $payment->id,
                     'check_code' => $payment->check_code,
                 ],
-                'success_url' => env('PAYMENTS_WEBHOOK_URL') . '?success=true',
-                'cancel_url' => env('PAYMENTS_WEBHOOK_URL') . '?canceled=true'
+                'success_url' => PaymentSetting::settings('payments_webhook_url') . '?success=true',
+                'cancel_url' => PaymentSetting::settings('payments_webhook_url') . '?canceled=true'
             ]);
 
             // Update order data
