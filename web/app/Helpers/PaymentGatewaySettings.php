@@ -24,7 +24,7 @@ class PaymentGatewaySettings
                 return $default;
             }
         } catch (\Throwable $e) {
-            return null;
+            return '';
         }
     }
 
