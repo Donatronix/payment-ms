@@ -2,10 +2,10 @@
 
 namespace App\Listeners;
 
-use App\Models\Payment as PaymentModel;
-use App\Services\Payment as PaymentService;
 use App\Models\LogPaymentRequest;
 use App\Models\LogPaymentRequestError;
+use App\Models\Payment as PaymentModel;
+use App\Services\Payment as PaymentService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -36,10 +36,7 @@ class LoanPaymentListener
      */
     public function handle(array $data)
     {
-
-        $request = new \Illuminate\Http\Request($data);
-
-        $validation = Validator::make($request->all(), [
+        $validation = Validator::make($data, [
             'gateway' => 'string|required',
             'amount' => 'integer|required',
             'currency' => 'string|required',
@@ -57,7 +54,7 @@ class LoanPaymentListener
             exit;
         }
 
-        $inputData = (object)$request->all();
+        $inputData = (object)$data;
 
         // Write log
         try {
@@ -81,11 +78,11 @@ class LoanPaymentListener
         // Create internal order
         $payment = PaymentModel::create([
             'type' => PaymentModel::TYPE_PAYIN,
-            'gateway' => $request->get('gateway'),
-            'amount' => $request->get('amount'),
-            'currency' => mb_strtoupper($request->get('currency')),
-            'service' => $request->get('service'),
-            'user_id' => $request->get('user_id'),
+            'gateway' => $inputData->gateway,
+            'amount' => $inputData->amount,
+            'currency' => mb_strtoupper($inputData->currency),
+            'service' => $inputData->service,
+            'user_id' => $inputData->user_id,
         ]);
 
         // Create invoice
@@ -105,7 +102,6 @@ class LoanPaymentListener
             exit;
         } else {
             // Return result
-
             \PubSub::transaction(function () {
             })->publish(self::RECEIVER_LISTENER, [
                 'type' => 'success',
@@ -114,12 +110,12 @@ class LoanPaymentListener
                     "reference_id" => $result["data"]["payment_id"],
                     "loan_id" => $inputData->loan_id,
                     "payment_id" => $inputData->payment_id,
-                    'amount_paid' => $request->get('amount'),
-                    'total_load' => $request->get('total_load'),
-                    'token' => $request->get('token'),
-                    'user_id' => $request->get('user_id'),
+                    'amount_paid' => $inputData->amount,
+                    'total_load' => $inputData->total_load,
+                    'token' => $inputData->token,
+                    'user_id' => $inputData->user_id,
                 ]
-            ], $request['replay_to']);
+            ], $inputData->replay_to);
             exit;
         }
     }
