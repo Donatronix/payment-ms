@@ -3,28 +3,28 @@
 namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\OpenpaydPaymentGatewaySetup as OpenpaydPaymentGatewayModel;
+use App\Models\PaymentSystem as PaymentSystemModel;
+use App\Models\PaymentSettings as PaymentSettingsModel;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\JsonResponse;
 
 /**
- * Class OpenpaydPaymentGatewaySetupController
+ * Class PaymentSystemController
  *
  * @package App\Api\V1\Controllers
  */
 
-class OpenpaydPaymentGatewaySetupController extends Controller
+class PaymentSystemController extends Controller
 {
 
-
      /**
-     * Display list of all openpayd payment gateway settings
+     * Display list of all payment system
      *
      * @OA\Get(
-     *     path="/admin/settings/openpayd",
-     *     description="Display list of all openpayd payment gateway settings",
-     *     tags={"Admin / Settings / Openpayd"},
+     *     path="/admin/payment-system",
+     *     description="Display list of all payment gateway settings",
+     *     tags={"Admin / Payment-System"},
      *
      *     security={{
      *         "default": {
@@ -43,7 +43,7 @@ class OpenpaydPaymentGatewaySetupController extends Controller
      *     },
      * *     @OA\Parameter(
      *         name="limit",
-     *         description="Count of orders / currencies pair in response",
+     *         description="Count of orders in response",
      *         in="query",
      *         required=false,
      *         @OA\Schema(
@@ -73,30 +73,31 @@ class OpenpaydPaymentGatewaySetupController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-            $resp['data']    = [];
-            try {
-                $resp['message']    = "List of all payment gateway settings";
-                $resp['title']      = "Display Openpayd Payment gateway settings";
-                $resp['type']       = "Success";
-                $resp['data']       = OpenpaydPaymentGatewayModel::orderBy('created_at', 'Desc')
-                                    ->paginate($request->get('limit', 20));
-                return response()->json($resp, 200);
-            } catch (\Exception $e) {
-                    return response()->json([
-                        'type'  => 'danger',
-                        'title'  => 'List Openpayd payment gateway settings',
-                        'message' => $e->getMessage()
-                    ], 400);
-            }
+        $resp['data']    = [];
+        try {
+            $resp['message']    = "List of all payment system";
+            $resp['title']      = "Display all payment system";
+            $resp['type']       = "Success";
+            $resp['data']       = PaymentSystemModel::orderBy('name', 'Asc')->with('paymentsettings')
+                                ->paginate($request->get('limit', 20));
+            return response()->json($resp, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'type'  => 'danger',
+                'title'  => 'Display all payment system',
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
-    /**
-     * Display openpayd payment gateway settings details
+
+     /**
+     * Display payment system details
      *
      * @OA\Get(
-     *     path="/admin/settings/{id}/openpayd",
-     *     description="show openpayd payment gateway settings details",
-     *     tags={"Admin / Settings / Openpayd"},
+     *     path="/admin/{id}/payment-system",
+     *     description="show payment system details",
+     *     tags={"Admin / Payment-System"},
      *
      *     security={{
      *         "default": {
@@ -113,43 +114,55 @@ class OpenpaydPaymentGatewaySetupController extends Controller
      *             "optional": "false"
      *         }
      *     },
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *            @OA\Property(
+     *                 property="id",
+     *                 type="string",
+     *                 description="primary key to the record",
+     *             ),
+     *         )
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Success",
      *     )
-     * )
+     *   )
      *
-     * @param    $id
+     *
+     * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show($id)
+    public function show($id): JsonResponse
     {
             $resp['data']    = [];
             try {
-                $resp['message']  = "Payment gateway setting details";
-                $resp['title']    = "Openpayd Payment gateway settings";
+                $resp['message']  = "Payment system details";
+                $resp['title']    = "Payment system details";
                 $resp['type']     = "success";
-                $resp['data']     = OpenpaydPaymentGatewayModel::findOrFail($id);
+                $paymentSystem    = PaymentSystemModel::findOrFail($id);
+                $resp['data']     = $paymentSystem->paymentsettings;
                 return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([
                         'type'      => 'danger',
-                        'title'     => 'Openpayd payement gateway Details',
+                        'title'     => 'Payement system Details',
                         'message'   => $e->getMessage()
                     ], 400);
             }
     }
 
 
-
     /**
-     * Method to add new openpayd payment gateway settings
+     * Method to add new payment system
      *
      * @OA\Post(
-     *     path="/admin/settings/openpayd",
-     *     description="method to add new openpayd payment gateway settings",
-     *     tags={"Admin / Settings / Openpayd"},
+     *     path="/admin/payment-system",
+     *     description="method to add new payment system",
+     *     tags={"Admin / Payment-System"},
      *
      *     security={{
      *         "default": {
@@ -171,30 +184,24 @@ class OpenpaydPaymentGatewaySetupController extends Controller
      *
      *         @OA\JsonContent(
      *             @OA\Property(
-     *                 property="username",
+     *                 property="name",
      *                 type="string",
-     *                 description="Openpayd payment username",
+     *                 description="Name of the payment system",
      *             ),
      *             @OA\Property(
-     *                 property="password",
+     *                 property="gateway",
      *                 type="string",
-     *                 description="Openpayd payment password",
+     *                 description="The payment system gateway",
      *             ),
      *             @OA\Property(
-     *                 property="url",
+     *                 property="description",
      *                 type="string",
-     *                 description="Openpayd payment url",
+     *                 description="details of the payment system",
      *             ),
      *             @OA\Property(
-     *                 property="public_key_path",
-     *                 type="string",
-     *                 description="Openpayd payment public key path"
-     *             ),
-     *             @OA\Property(
-     *                 property="status",
+     *                 property="new_status",
      *                 type="integer",
      *                 description="Currently in use settings",
-     *                 default= 1,
      *             )
      *         )
      *     ),
@@ -211,44 +218,43 @@ class OpenpaydPaymentGatewaySetupController extends Controller
 
     public function store(Request $request)
     {
-        $saved            = null;
+        $is_saved            = null;
         $resp['data']     = [];
-
-         // Validate inputs
+        // Validate inputs
          try {
             $this->validate($request, [
-                'username'          => 'required|string',
-                'password'          => 'required|string',
-                'public_key_path'   => 'required|string',
-                'url'               => 'required|string',
+                'name'          => 'required|string',
+                'gateway'       => 'required|string',
+                'description'   => 'required|string',
+                //'new_status'  => 'required|integer',
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
                 'type'      => 'warning',
-                'title'     => 'Openpayd payement gateway details',
+                'title'     => 'Payement system',
                 'message'   => 'Validation error',
                 'data'      => $e->getMessage()
             ], 400);
         }
         try {
-            $saved =  OpenpaydPaymentGatewayModel::create($request->all());
-            if($saved)
+            $paymentSystem =  PaymentSystemModel::create($request->all());
+            if($paymentSystem)
             {
-                $resp['message'] = "New payment gateway setting was added";
-                $resp['title']   = "Openpayd Payment gateway settings";
+                $resp['message'] = "New payment system was added";
+                $resp['title']   = "Payment system";
                 $resp['type']    = "success";
-                $resp['data']    = OpenpaydPaymentGatewayModel::where('id', $saved->id)->first();
+                $resp['data']    = $paymentSystem;
                 return response()->json($resp, 200);
             }else{
-                $resp['message']  = "Unable to create payment gateway settings";
-                $resp['title']    = "Openpayd Payment gateway settings";
+                $resp['message']  = "Unable to create payment system";
+                $resp['title']    = "Payment system";
                 $resp['type']     = "warning";
                 return response()->json($resp, 400);
             }
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Failed to add new openpayd payement gateway settings',
+                'title'     => 'Failed to add new payement system',
                 'message'   => $e->getMessage()
             ], 400);
         }
@@ -256,12 +262,12 @@ class OpenpaydPaymentGatewaySetupController extends Controller
 
 
     /**
-     * Method to update openpayd payment gateway settings
+     * Method to update payment System
      *
      * @OA\Put(
-     *     path="/admin/settings/{id}/openpayd",
-     *     description="method to update openpayd payment gateway settings",
-     *     tags={"Admin / Settings / Openpayd"},
+     *     path="/admin/{id}/payment-system",
+     *     description="method to update payment system",
+     *     tags={"Admin / Payment-System"},
      *
      *     security={{
      *         "default": {
@@ -288,30 +294,24 @@ class OpenpaydPaymentGatewaySetupController extends Controller
      *                 description="primary key to the record",
      *             ),
      *            @OA\Property(
-     *                 property="username",
+     *                 property="name",
      *                 type="string",
-     *                 description="Openpayd payment username",
+     *                 description="Name of the payment system",
      *             ),
      *             @OA\Property(
-     *                 property="password",
+     *                 property="gateway",
      *                 type="string",
-     *                 description="Openpayd payment password",
+     *                 description="The payment system gateway",
      *             ),
      *             @OA\Property(
-     *                 property="url",
+     *                 property="description",
      *                 type="string",
-     *                 description="Openpayd payment url",
+     *                 description="details of the payment system",
      *             ),
      *             @OA\Property(
-     *                 property="public_key_path",
-     *                 type="string",
-     *                 description="Openpayd payment public key path"
-     *             ),
-     *             @OA\Property(
-     *                 property="status",
+     *                 property="new_status",
      *                 type="integer",
      *                 description="Currently in use settings",
-     *                 default= 1,
      *             )
      *         )
      *     ),
@@ -331,35 +331,35 @@ class OpenpaydPaymentGatewaySetupController extends Controller
     {
         $saved              = null;
         $resp['data']       = [];
-        // Validate inputs
-        try {
+         // Validate inputs
+         try {
             $this->validate($request, [
-                'username'          => 'required|string',
-                'password'          => 'required|string',
-                'public_key_path'   => 'required|string',
-                'url'               => 'required|string',
+                'name'          => 'required|string',
+                'gateway'       => 'required|string',
+                'description'   => 'required|string',
+                //'new_status'  => 'required|integer',
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
                 'type'      => 'warning',
-                'title'     => 'Openpayd payement gateway details',
+                'title'     => 'Payement system',
                 'message'   => 'Validation error',
                 'data'      => $e->getMessage()
             ], 400);
         }
         try {
-            $gatewaySettings = OpenpaydPaymentGatewayModel::findOrFail($id);
-            $saved =  $gatewaySettings->update($request->all());
+            $paymentSystem = PaymentSystemModel::findOrFail($id);
+            $saved =  $paymentSystem->update($request->all());
             if($saved)
             {
                 $resp['message'] = "Successfully updated";
-                $resp['title']   = "Update openpayd Payment gateway settings";
+                $resp['title']   = "Payment system";
                 $resp['type']    = "success";
-                $resp['data']    = OpenpaydPaymentGatewayModel::findOrFail($id);
+                $resp['data']    = PaymentSystemModel::findOrFail($id);
                 return response()->json($resp, 200);
             }else{
-                $resp['message']    = "Unable to update payment gateway settings";
-                $resp['title']      = "Unable to openpayd Payment gateway settings";
+                $resp['message']    = "Unable to update payment system";
+                $resp['title']      = "Payment system";
                 $resp['type']       = "warning";
                 $resp['data']       = [];
                 return response()->json($resp, 400);
@@ -367,7 +367,7 @@ class OpenpaydPaymentGatewaySetupController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Failed to update openpayd payement gateway details',
+                'title'     => 'Update payement system details',
                 'message'   => $e->getMessage()
             ], 400);
         }
@@ -375,12 +375,12 @@ class OpenpaydPaymentGatewaySetupController extends Controller
 
 
      /**
-     * Method to delete openpayd payment gateway settings
+     * Method to delete payment system
      *
      * @OA\Delete(
-     *     path="/admin/settings/{id}/openpayd",
-     *     description="method to delete openpayd payment gateway settings",
-     *     tags={"Admin / Settings / Openpayd"},
+     *     path="/admin/{id}/payment-system",
+     *     description="method to delete payment gateway settings",
+     *     tags={"Admin / Payment-System"},
      *
      *     security={{
      *         "default": {
@@ -404,8 +404,28 @@ class OpenpaydPaymentGatewaySetupController extends Controller
      *             @OA\Property(
      *                 property="id",
      *                 type="string",
-     *                 description="primary key to the record",
+     *                 description="payment system id",
      *             ),
+     *         @OA\Parameter(
+     *          name="limit",
+    *           description="Count of orders in response",
+    *           in="query",
+    *           required=false,
+    *           @OA\Schema(
+    *              type="integer",
+    *              default=20,
+    *           )
+    *        ),
+    *        @OA\Parameter(
+    *           name="page",
+    *           description="Page of list",
+    *           in="query",
+    *           required=false,
+    *           @OA\Schema(
+    *              type="integer",
+    *              default=1,
+    *           )
+    *           ),
      *         )
      *     ),
      *     @OA\Response(
@@ -413,29 +433,30 @@ class OpenpaydPaymentGatewaySetupController extends Controller
      *         description="Success",
      *     )
      * )
-     *
+     * @param \Illuminate\Http\Request $request
      * @param                          $id
      *
      * @throws \Illuminate\Validation\ValidationException
      */
 
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
         $saved              = null;
         $resp['data']       = [];
 
         try {
-            $deleted =  OpenpaydPaymentGatewayModel::findOrFail($id)->delete();
+            $deleted =  PaymentSystemModel::findOrFail($id)->delete();
             if($deleted)
             {
-                $resp['message'] = "Payment gateway settings was deleted";
-                $resp['title']   = "Openpayd Payment gateway settings";
-                $resp['type']    = "success";
-                $resp['data']    = OpenpaydPaymentGatewayModel::all();
+                $resp['message']    = "Payment system was deleted";
+                $resp['title']      = "Payment system";
+                $resp['type']       = "success";
+                $resp['data']       = PaymentSystemModel::orderBy('name', 'Asc')
+                                    ->paginate($request->get('limit', 20));
                 return response()->json($resp, 200);
             }else{
-                $resp['message']    = "Unable to delete payment gateway settings";
-                $resp['title']      = "Openpayd Payment gateway settings";
+                $resp['message']    = "Unable to delete payment system";
+                $resp['title']      = "Payment system";
                 $resp['type']       = "warning";
                 $resp['data']       = [];
                 return response()->json($resp, 400);
@@ -443,10 +464,11 @@ class OpenpaydPaymentGatewaySetupController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'type'      => 'danger',
-                'title'     => 'Delete openpayd payement gateway details',
+                'title'     => 'Delete payement system',
                 'message'   => $e->getMessage()
             ], 400);
         }
     }
 
-}//end class
+
+}

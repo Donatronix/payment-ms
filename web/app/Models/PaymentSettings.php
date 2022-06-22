@@ -8,26 +8,23 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
-
-class OpenpaydPaymentGatewaySetup extends Model
+class PaymentSettings extends Model
 {
     use HasFactory;
     use OwnerTrait;
     use UuidTrait;
     use SoftDeletes;
 
-
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
+
     protected $fillable = [
-        'username',
-        'password',
-        'url',
-        'public_key_path',
-        'status',
+        'setting_key',
+        'setting_value',
+        'payment_system_id',
     ];
 
     /**
@@ -36,4 +33,14 @@ class OpenpaydPaymentGatewaySetup extends Model
      * @var array
      */
     protected $hidden = [];
+
+
+    /**
+     * Get the payment system that owns the settings.
+     */
+
+    public function paymentsystem()
+    {
+        return $this->belongsTo(PaymentSystem::class);
+    }
 }

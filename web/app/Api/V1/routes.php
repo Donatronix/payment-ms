@@ -39,19 +39,16 @@ $router->group([
         $router->get('/payments', 'PaymentController@index');
         $router->get('/payments/lost', 'PaymentController@lost');
         $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
-        //stripe
-        $router->get('/settings/stripe',          'StripePaymentGatewaySetupController@index');
-        $router->get('/settings/{id}/stripe',     'StripePaymentGatewaySetupController@show');
-        $router->post('/settings/stripe',         'StripePaymentGatewaySetupController@store');
-        $router->put('/settings/{id}/stripe',     'StripePaymentGatewaySetupController@update');
-        $router->delete('/settings/{id}/stripe',  'StripePaymentGatewaySetupController@destroy');
-        //Paypal
-        $router->get('/settings/paypal',          'PaypalPaymentGatewaySetupController@index');
-        $router->get('/settings/{id}/paypal',     'PaypalPaymentGatewaySetupController@show');
-        $router->post('/settings/paypal',         'PaypalPaymentGatewaySetupController@store');
-        $router->put('/settings/{id}/paypal',     'PaypalPaymentGatewaySetupController@update');
-        $router->delete('/settings/{id}/paypal',  'PaypalPaymentGatewaySetupController@destroy');
-        //Openpayd
+
+        //Manage all payment system
+        $router->get('/admin/payment-system',          'PaymentSystemController@index');
+        $router->get('/admin/{id}/payment-system',     'PaymentSystemController@show');
+        $router->post('/admin/payment-system',         'PaymentSystemController@store');
+        $router->put('/admin/{id}/payment-system',     'PaymentSystemController@update');
+        $router->delete('/admin/{id}/payment-system',  'PaymentSystemController@destroy');
+        //Manage all payment setting
+        $router->get('/admin/payment-setting',          'PaymentSettingController@index');
+        $router->post('/admin/payment-setting',         'PaymentSettingController@index');
 
     });
 

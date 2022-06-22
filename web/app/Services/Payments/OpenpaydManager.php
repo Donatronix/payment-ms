@@ -7,17 +7,12 @@ use App\Models\Payment;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use App\Helpers\PaymentGatewaySettings as PaymentSetting;
 
-/**
- * Class OpenpaydManager
- *
- * Transaction object example
- * https://apidocs.openpayd.com/reference/transaction-object
- *
- * @package App\Services\Payments
- */
+
 class OpenpaydManager implements PaymentSystemContract
 {
+
     // https://apidocs.openpayd.com/docs/transaction-status-updated-webhook#transaction-types
     // Transaction statuses
 
@@ -47,11 +42,12 @@ class OpenpaydManager implements PaymentSystemContract
     public function getAccessToken()
     {
         try {
-            $this->openPaydClient = new Client(['base_uri' => config("payments.openpayd.base_url")]);
 
-            $username = config("payments.openpayd.username");
-            $password = config("payments.openpayd.password");
-            $salt = $username . ":" . $password;
+            $this->openPaydClient = new Client(['base_uri' => PaymentSetting::settings('openpayd_url')]);
+
+            $username = PaymentSetting::settings('openpayd_username');
+            $password = PaymentSetting::settings('openpayd_password');
+            $salt = $username.":".$password;
 
             $code = base64_encode($salt);
 
@@ -183,9 +179,10 @@ class OpenpaydManager implements PaymentSystemContract
 
     private function isValidSignature($signature, $data): bool
     {
-        $pubKeyPath = config("payments.openpayd.public_key_path");
+         $pubKeyPath = PaymentSetting::settings('openpayd_public_key_path');
 
-        if ($signature == hash_hmac_file('sha256', $data, $pubKeyPath)) {
+         if ($signature == hash_hmac_file('sha256', $data, $pubKeyPath)){
+
             return true;
         }
 

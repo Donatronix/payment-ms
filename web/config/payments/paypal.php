@@ -1,7 +1,7 @@
 <?php
-use App\Helpers\PaymentGatewaySettings;
+use App\Helpers\PaymentGatewaySettings as PaymentSetting;
 /**
- * Helper function paypal_settings()
+ * Helper function settings()
  * It  takes three (3) Parameters:
  *  - parameter 1: string (key/Field type) e.g sandboc_client_id, sandboc_client_secret, api_url, etc
  *  - parameter 2: string (Default value) e.g null
@@ -10,23 +10,23 @@ use App\Helpers\PaymentGatewaySettings;
  */
 
 return [
-    'mode' => PaymentGatewaySettings::paypal_settings('MODE', 1), //env('PAYPAL_MODE', 'sandbox'), // Can only be 'sandbox' Or 'live'. If empty or invalid, 'live' will be used.
+    'mode' => PaymentSetting::settings('paypal_mode'), //env('PAYPAL_MODE', 'sandbox'),
     'sandbox' => [
-        'client_id'     => PaymentGatewaySettings::paypal_settings('SANDBOX_CLIENT_ID', null, 1), //env('PAYPAL_SANDBOX_CLIENT_ID', ''),
-        'client_secret' => PaymentGatewaySettings::paypal_settings('SANDBOX_CLIENT_SECRET', null, 1), //env('PAYPAL_SANDBOX_CLIENT_SECRET', ''),
-        'api_url'       => PaymentGatewaySettings::paypal_settings('API_URL', 'https://api-m.sandbox.paypal.com', 1), //env('PAYPAL_SANDBOX_API_URL', 'https://api-m.sandbox.paypal.com'),
-        'app_id'        => PaymentGatewaySettings::paypal_settings('APP_ID', 'APP-80W284485P519543T', 1), //'APP-80W284485P519543T',
+        'client_id'     => PaymentSetting::settings('paypal_sandbox_client_id'), //env('PAYPAL_SANDBOX_CLIENT_ID', ''),
+        'client_secret' => PaymentSetting::settings('paypal_sandbox_client_secret'), //env('PAYPAL_SANDBOX_CLIENT_SECRET', ''),
+        'api_url'       => PaymentSetting::settings('paypal_sandbox_api_url'), //env('PAYPAL_SANDBOX_API_URL', 'https://api-m.sandbox.paypal.com'),
+        'app_id'        => PaymentSetting::settings('paypal_sandbox_app_id'), //'APP-80W284485P519543T',
     ],
     'live' => [
-        'client_id'     => PaymentGatewaySettings::paypal_settings('LIVE_CLIENT_ID', null, 1), //env('PAYPAL_LIVE_CLIENT_ID', ''),
-        'client_secret' => PaymentGatewaySettings::paypal_settings('LIVE_CLIENT_SECRET', null, 1), //env('PAYPAL_LIVE_CLIENT_SECRET', ''),
-        'api_url'       => PaymentGatewaySettings::paypal_settings('API_URL', 'https://api-m.paypal.com', 1), //env('PAYPAL_LIVE_API_URL', 'https://api-m.paypal.com'),
-        'app_id'        => PaymentGatewaySettings::paypal_settings('APP_ID', null, 1), //'',
+        'client_id'     => PaymentSetting::settings('paypal_live_client_id'), //env('PAYPAL_LIVE_CLIENT_ID', ''),
+        'client_secret' => PaymentSetting::settings('paypal_live_client_secret'), //env('PAYPAL_LIVE_CLIENT_SECRET', ''),
+        'api_url'       => PaymentSetting::settings('paypal_live_api_url'), //env('PAYPAL_LIVE_API_URL', 'https://api-m.paypal.com'),
+        'app_id'        => PaymentSetting::settings('paypal_live_app_id'), //'',
     ],
 
-    'payment_action'    => PaymentGatewaySettings::paypal_settings('PAYMENT_ACTION', 'Sale', 1), //env('PAYPAL_PAYMENT_ACTION', 'Sale'), // Can only be 'Sale', 'Authorization' or 'Order'
-    'currency'          => PaymentGatewaySettings::paypal_settings('CURRENCY', 'USD', 1), //env('PAYPAL_CURRENCY', 'USD'),
-    'notify_url'        => PaymentGatewaySettings::paypal_settings('NOTIFY_URL', null, 1), //env('PAYPAL_NOTIFY_URL', ''), // Change this accordingly for your application.
-    'locale'            => PaymentGatewaySettings::paypal_settings('LOCALE', 'en_US', 1), //env('PAYPAL_LOCALE', 'en_US'), // force gateway language  i.e. it_IT, es_ES, en_US ... (for express checkout only)
-    'validate_ssl'      => PaymentGatewaySettings::paypal_settings('VALIDATE_SSL', true, 1), //env('PAYPAL_VALIDATE_SSL', true), // Validate SSL when creating api client.
+    'payment_action'    => PaymentSetting::settings('paypal_payment_action'), //env('PAYPAL_PAYMENT_ACTION', 'Sale'),
+    'currency'          => PaymentSetting::settings('paypal_currency'), //env('PAYPAL_CURRENCY', 'USD'),
+    'notify_url'        => PaymentSetting::settings('paypal_notify_url'), //env('PAYPAL_NOTIFY_URL', ''),
+    'locale'            => PaymentSetting::settings('paypal_local'), //env('PAYPAL_LOCALE', 'en_US'),
+    'validate_ssl'      => PaymentSetting::settings('paypal_validate_ssl'), //env('PAYPAL_VALIDATE_SSL', true),
 ];

@@ -12,6 +12,7 @@ use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
+use App\Helpers\PaymentGatewaySettings as PaymentSetting;
 
 class PaypalManager implements PaymentSystemContract
 {
@@ -50,15 +51,15 @@ class PaypalManager implements PaymentSystemContract
      */
     public function __construct()
     {
-        if (config('payments.paypal.mode') === 'sandbox') {
+        if (PaymentSetting::settings('paypal_mode') === 'sandbox') {
             $environment = new SandboxEnvironment(
-                config('payments.paypal.sandbox.client_id'),
-                config('payments.paypal.sandbox.client_secret')
+                PaymentSetting::settings('paypal_sandbox_client_id'),
+                PaymentSetting::settings('paypal_sandbox_client_secret')
             );
         } else {
             $environment = new ProductionEnvironment(
-                config('payments.paypal.live.client_id'),
-                config('payments.paypal.live.client_secret')
+                PaymentSetting::settings('paypal_live_client_id'),
+                PaymentSetting::settings('paypal_live_client_secret')
             );
         }
 
@@ -121,8 +122,8 @@ class PaypalManager implements PaymentSystemContract
                     'landing_page' => 'NO_PREFERENCE',
                     'shipping_preference' => 'NO_SHIPPING',
                     'user_action' => 'PAY_NOW',
-                    'return_url' => env('PAYMENTS_REDIRECT_URL'),
-                    'cancel_url' => env('PAYMENTS_REDIRECT_URL'),
+                    'return_url' => PaymentSetting::settings('payments_redirect_url'),
+                    'cancel_url' => PaymentSetting::settings('payments_redirect_url'),
                 ]
             ];
             $chargeObj = $this->gateway->execute($request);

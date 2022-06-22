@@ -2,69 +2,31 @@
 
 namespace App\Helpers;
 
-use App\Models\StripePaymentGatewaySetup;
-use App\Models\PaypalPaymentGatewaySetup;
-use App\Models\OpenpaydPaymentGatewaySetup;
+use App\Models\PaymentSystem as PaymentSystemModel;
+use App\Models\PaymentSettings as PaymentSettingsModel;
 
 
 
 class PaymentGatewaySettings
 {
 
-    //Get Stripe Gateway settings
-    public static function stripe_settings($getSetting = null, $default = null, $status = 1)
-    {
-            try {
-                $status     = (is_int($status) ? $status : 1);
-                $getSetting = strtolower($getSetting);
-                if($getSetting)
-                {
-                    $getValue = StripePaymentGatewaySetup::where('status', $status)->value($getSetting);
-                    return ($getValue ? $getValue : $default);
-                }else{
-                    return $default;
-                }
-            } catch (\Throwable $e) {
-                return null;
-            }
-    }
-
-    //Get Paypal Gateway settings
-    public static function paypal_settings($getSetting = null, $default = null, $status = 1)
-    {
-            try {
-                $status     = (is_int($status) ? $status : 1);
-                $getSetting = strtolower($getSetting);
-                if($getSetting)
-                {
-                    $getValue = PaypalPaymentGatewaySetup::where('status', $status)->value($getSetting);
-                    return ($getValue ? $getValue : $default);
-                }else{
-                    return $default;
-                }
-            } catch (\Throwable $e) {
-                return null;
-            }
-    }
-
-    //Get Openpayd Gateway settings
-    public static function openpayd_settings($getSetting = null, $default = null, $status = 1)
+    //Get Payment Gateway settings manager
+    public static function settings($getKey = null, $default = null, $status = 1): string
     {
         try {
             $status     = (is_int($status) ? $status : 1);
-            $getSetting = strtolower($getSetting);
-            if($getSetting)
+            $getKey = strtolower($getKey);
+            if($getKey)
             {
-                $getValue = OpenpaydPaymentGatewaySetup::where('status', $status)->value($getSetting);
+                $getValue = PaymentSettingsModel::where('setting_key', $getKey)->value('setting_value');
                 return ($getValue ? $getValue : $default);
             }else{
                 return $default;
             }
         } catch (\Throwable $e) {
-            return null;
+            return '';
         }
     }
-
 
 
 }

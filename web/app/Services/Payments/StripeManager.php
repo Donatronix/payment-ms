@@ -10,6 +10,7 @@ use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
 use Stripe\Stripe;
 use Stripe\Webhook;
+use App\Helpers\PaymentGatewaySettings as PaymentSetting;
 
 class StripeManager implements PaymentSystemContract
 {
@@ -37,7 +38,7 @@ class StripeManager implements PaymentSystemContract
         $this->gateway = [];
 
         // Set your secret API key
-        Stripe::setApiKey(config('payments.stripe.secret_key'));
+        Stripe::setApiKey(PaymentSetting::settings('stripe_secret_key'));
     }
 
     public static function gateway(): string
@@ -113,7 +114,7 @@ class StripeManager implements PaymentSystemContract
                     'gateway' => self::gateway(),
                     'payment_id' => $payment->id,
                     'session_id' => $stripeDocument->id,
-                    'public_key' => config('payments.stripe.public_key'),
+                    'public_key' => PaymentSetting::settings('stripe_public_key'),
                     'clientSecret' => $stripeDocument->client_secret,
                 ]
             ];
@@ -151,8 +152,8 @@ class StripeManager implements PaymentSystemContract
                     'payment_order' => $payment->id,
                     'check_code' => $payment->check_code,
                 ],
-                'success_url' => env('PAYMENTS_WEBHOOK_URL') . '?success=true',
-                'cancel_url' => env('PAYMENTS_WEBHOOK_URL') . '?canceled=true'
+                'success_url' => PaymentSetting::settings('payments_webhook_url') . '?success=true',
+                'cancel_url' => PaymentSetting::settings('payments_webhook_url') . '?canceled=true'
             ]);
 
             // Update order data
@@ -170,7 +171,7 @@ class StripeManager implements PaymentSystemContract
                     'payment_id' => $payment->id,
                     'session_id' => $checkout_session->id,
                     'session_url' => $checkout_session->url,
-                    'public_key' => config('payments.stripe.public_key')
+                    'public_key' => PaymentSetting::settings('stripe_public_key')
                 ]
             ];
         } catch (\Exception $e) {
@@ -202,7 +203,7 @@ class StripeManager implements PaymentSystemContract
             $event = Webhook::constructEvent(
                 $payload,
                 ($_SERVER['HTTP_STRIPE_SIGNATURE'] ?? null),
-                config('payments.stripe.webhook_secret')
+                PaymentSetting::settings('stripe_webhook_secret')
             );
         } catch (UnexpectedValueException $e) {
             // Invalid payload

@@ -10,6 +10,7 @@ use CoinbaseCommerce\Webhook;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Helpers\PaymentGatewaySettings as PaymentSetting;
 
 class CoinbaseManager implements PaymentSystemContract
 {
@@ -57,7 +58,7 @@ class CoinbaseManager implements PaymentSystemContract
     public function __construct()
     {
         try {
-            $this->gateway = ApiClient::init(config('payments.coinbase.api_key'));
+            $this->gateway = ApiClient::init(PaymentSetting::settings('coinbase_api_key'));
             $this->gateway->setTimeout(3);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -108,8 +109,8 @@ class CoinbaseManager implements PaymentSystemContract
                     'code' => $payment->check_code,
                     'payment_id' => $payment->id
                 ],
-                'redirect_url' => config('payments.coinbase.redirect_url'),
-                'cancel_url' => config('payments.coinbase.cancel_url')
+                'redirect_url' => PaymentSetting::settings('coinbase_redirect_url'),
+                'cancel_url' => PaymentSetting::settings('coinbase_cancel_url')
             ]);
 
             // Update payment transaction data
@@ -160,7 +161,7 @@ class CoinbaseManager implements PaymentSystemContract
             $event = Webhook::buildEvent(
                 trim(file_get_contents('php://input')),
                 $signature,
-                config('payments.coinbase.webhook_key')
+                PaymentSetting::settings('coinbase_webhook_key')
             );
             $paymentData = [
                 "id" => $event->data->id,
