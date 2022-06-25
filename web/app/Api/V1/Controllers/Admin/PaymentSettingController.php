@@ -125,12 +125,12 @@ class PaymentSettingController extends Controller
      *                 description="payment system id",
      *             ),
      *             @OA\Property(
-     *                 property="setting_key",
+     *                 property="key",
      *                 type="string",
      *                 description="payment setting key",
      *             ),
      *             @OA\Property(
-     *                 property="setting_value",
+     *                 property="value",
      *                 type="string",
      *                 description="payment setting value",
      *             ),
@@ -153,8 +153,8 @@ class PaymentSettingController extends Controller
         // Validate inputs
          try {
             $this->validate($request, [
-                'setting_key'       => 'required|string',
-                'setting_value'     => 'required|string',
+                'key'       => 'required|string',
+                'value'     => 'required|string',
                 'payment_system_id' => 'required|string',
             ]);
         } catch (ValidationException $e) {
@@ -170,14 +170,14 @@ class PaymentSettingController extends Controller
             if($paymentSystem)
             {
                 $setting = new PaymentSettingsModel;
-                $setting->setting_key = $request['setting_key'];
-                $setting->setting_value = $request['setting_value'];
-                $paymentSystem->paymentsettings()->save($setting);
+                $setting->key = $request['key'];
+                $setting->value = $request['value'];
+                $paymentSystem->payment_settings()->save($setting);
 
                 $resp['message'] = "New payment setting was added";
                 $resp['title']   = "Payment setting";
                 $resp['type']    = "success";
-                $resp['data']     = $paymentSystem->paymentsettings;
+                $resp['data']     = $paymentSystem->payment_settings;
                 return response()->json($resp, 200);
             }else{
                 $resp['message']  = "Unable to create payment setting";

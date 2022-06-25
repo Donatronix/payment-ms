@@ -78,7 +78,7 @@ class PaymentSystemController extends Controller
             $resp['message']    = "List of all payment system";
             $resp['title']      = "Display all payment system";
             $resp['type']       = "Success";
-            $resp['data']       = PaymentSystemModel::orderBy('name', 'Asc')->with('paymentsettings')
+            $resp['data']       = PaymentSystemModel::orderBy('name', 'Asc')->with('payment_settings')
                                 ->paginate($request->get('limit', 20));
             return response()->json($resp, 200);
         } catch (\Exception $e) {
@@ -144,7 +144,7 @@ class PaymentSystemController extends Controller
                 $resp['title']    = "Payment system details";
                 $resp['type']     = "success";
                 $paymentSystem    = PaymentSystemModel::findOrFail($id);
-                $resp['data']     = $paymentSystem->paymentsettings;
+                $resp['data']     = $paymentSystem->payment_settings;
                 return response()->json($resp, 200);
             } catch (\Exception $e) {
                     return response()->json([

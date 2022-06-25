@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Sumra\SDK\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Model;
+use Sumra\SDK\Traits\UuidTrait;
 
 /**
  * Model Balance

@@ -172,10 +172,10 @@ paths:
                 payment_system_id:
                   description: 'payment system id'
                   type: string
-                setting_key:
+                key:
                   description: 'payment setting key'
                   type: string
-                setting_value:
+                value:
                   description: 'payment setting value'
                   type: string
               type: object

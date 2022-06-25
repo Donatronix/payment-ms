@@ -8,10 +8,24 @@ $router->group([
     'namespace' => '\App\Api\V1\Controllers'
 ], function ($router) {
     /**
-     * Internal access
+     * PUBLIC ACCESS
+     */
+    /**
+     * Payments webhooks
      */
     $router->group([
-        'middleware' => 'checkUser'
+        'prefix' => 'webhooks',
+        'namespace' => 'Webhooks'
+    ], function ($router) {
+        $router->post('{gateway}/invoices', 'WebhookController@handlerWebhook');
+    });
+
+    /**
+     * USER APPLICATION PRIVATE ACCESS
+     */
+    $router->group([
+        'middleware' => 'checkUser',
+        'namespace' => 'User'
     ], function ($router) {
         /**
          * Payment actions
@@ -26,7 +40,7 @@ $router->group([
     });
 
     /**
-     * ADMIN PANEL
+     * ADMIN PANEL ACCESS
      */
     $router->group([
         'prefix' => 'admin',
@@ -41,23 +55,14 @@ $router->group([
         $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
 
         //Manage all payment system
-        $router->get('/admin/payment-system',          'PaymentSystemController@index');
-        $router->get('/admin/{id}/payment-system',     'PaymentSystemController@show');
-        $router->post('/admin/payment-system',         'PaymentSystemController@store');
-        $router->put('/admin/{id}/payment-system',     'PaymentSystemController@update');
-        $router->delete('/admin/{id}/payment-system',  'PaymentSystemController@destroy');
+        $router->get('/payment-system',          'PaymentSystemController@index');
+        $router->get('/payment-system/{id}',     'PaymentSystemController@show');
+        $router->post('/payment-system',         'PaymentSystemController@store');
+        $router->put('/payment-system/{id}',     'PaymentSystemController@update');
+        $router->delete('/payment-system/{id}',  'PaymentSystemController@destroy');
+
         //Manage all payment setting
-        $router->get('/admin/payment-setting',          'PaymentSettingController@index');
-        $router->post('/admin/payment-setting',         'PaymentSettingController@index');
-
-    });
-
-    /**
-     * Payments webhooks
-     */
-    $router->group([
-        'prefix' => 'webhooks'
-    ], function ($router) {
-        $router->post('{gateway}/invoices', 'WebhookController@handlerWebhook');
+        $router->get('/payment-setting',          'PaymentSettingController@index');
+        $router->post('/payment-setting',         'PaymentSettingController@index');
     });
 });

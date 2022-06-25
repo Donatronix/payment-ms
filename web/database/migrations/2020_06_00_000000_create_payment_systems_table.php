@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePaymemtSystemsTable extends Migration
+class CreatePaymentSystemsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -15,13 +15,14 @@ class CreatePaymemtSystemsTable extends Migration
     {
         Schema::create('payment_systems', function (Blueprint $table) {
             $table->uuid('id')->primary();
+
             $table->string('name');
             $table->string('gateway');
             $table->string('description')->nullable();
             $table->string('new_status')->default(1);
 
-            $table->softDeletes();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
