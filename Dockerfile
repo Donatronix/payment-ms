@@ -15,6 +15,10 @@ RUN apk update
 ## Install packages necessary during the build phase
 RUN apk --no-cache add mc
 
+## Install GMP extention
+RUN apk add gmp-dev
+RUN docker-php-ext-install gmp
+
 ## Clean apk cache after all installed packages
 RUN rm -rf /var/cache/apk/*
 
