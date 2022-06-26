@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-use App\Models\PaymentSettings as PaymentSettingsModel;
+use App\Models\PaymentSetting as PaymentSettingsModel;
 
 class PaymentGatewaySettings
 {

@@ -40,6 +40,6 @@ class PaymentSystem extends Model
      */
     public function payment_settings(): HasMany
     {
-        return $this->hasMany(PaymentSettings::class);
+        return $this->hasMany(PaymentSetting::class);
     }
 }
