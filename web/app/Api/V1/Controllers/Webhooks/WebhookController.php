@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\V1\Controllers;
+namespace App\Api\V1\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Models\LogPaymentWebhookError;

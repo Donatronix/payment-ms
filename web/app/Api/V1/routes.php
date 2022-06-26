@@ -25,7 +25,7 @@ $router->group([
      */
     $router->group([
         'middleware' => 'checkUser',
-        'namespace' => 'User'
+        'namespace' => 'Application'
     ], function ($router) {
         /**
          * Payment actions
