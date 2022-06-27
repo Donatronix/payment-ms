@@ -7,10 +7,9 @@ use App\Models\PaymentSetting as PaymentSettingsModel;
 class PaymentGatewaySettings
 {
     //Get Payment Gateway settings manager
-    public static function settings($getKey = null, $default = null, $status = 1): string
+    public static function settings($getKey = null, $default = null): string
     {
         try {
-            $status = (is_int($status) ? $status : 1);
             $getKey = strtolower($getKey);
 
             if ($getKey) {
@@ -20,8 +19,8 @@ class PaymentGatewaySettings
             } else {
                 return $default;
             }
-        } catch (\Throwable $e) {
-            return '';
+        } catch (\Exception $e) {
+            return $default;
         }
     }
 }

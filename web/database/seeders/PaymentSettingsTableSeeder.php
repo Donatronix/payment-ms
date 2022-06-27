@@ -31,27 +31,27 @@ class PaymentSettingsTableSeeder extends Seeder
                 ],
                 [
                     'key' => 'bitpay_api_token_merchant',
-                    'value' => null
+                    'value' => 'FDpsaV6E9BXq4UXTsEnNBA3GF8hPNoh5eguuGGfDymSd'
                 ],
                 [
                     'key' => 'bitpay_api_token_payroll',
-                    'value' => null
+                    'value' => '2c4LJEPemnFpPSRHiYKHh3qrJA9tV3HPvTjqeyW29pwo'
                 ],
                 [
                     'key' => 'bitpay_key_path',
-                    'value' => null
+                    'value' => 'keys/bitpay.key',
                 ],
                 [
                     'key' => 'bitpay_private_key_password',
-                    'value' => null
+                    'value' => 'A6Zaq4nVkH1iVgcR4pNA94rFTwraRQu9YqcnY7pHHNhS'
                 ],
                 [
                     'key' => 'bitpay_payment_webhook_url',
-                    'value' => 'https://sumra.net/payment/'
+                    'value' => 'https://api-dev.ultainfinity.com/v1/payments'
                 ],
                 [
                     'key' => 'bitpay_redirect_url',
-                    'value' => 'https://sumra.net/'
+                    'value' => 'https://ultainfinity.com'
                 ],
             ],
 

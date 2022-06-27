@@ -10,14 +10,9 @@ $router->group([
     /**
      * PUBLIC ACCESS
      */
-    /**
-     * Payments webhooks
-     */
     $router->group([
-        'prefix' => 'webhooks',
-        'namespace' => 'Webhooks'
+        'namespace' => 'Public'
     ], function ($router) {
-        $router->post('{gateway}/invoices', 'WebhookController@handlerWebhook');
     });
 
     /**
@@ -28,10 +23,19 @@ $router->group([
         'namespace' => 'Application'
     ], function ($router) {
         /**
+         * Init payment and charge wallet balance or invoice
+         */
+        $router->post('payments/charge', 'ChargeController');
+
+        /**
+         * Init payment and withdraw wallet balance
+         */
+        $router->post('payments/withdraw', 'ChargeController');
+
+        /**
          * Payment actions
          */
         $router->get('payments/{id:[\d]+}', 'PaymentController@show');
-        $router->post('payments/charge', 'PaymentController@charge');
 
         /**
          * Payment systems list
@@ -64,5 +68,15 @@ $router->group([
         //Manage all payment setting
         $router->get('/payment-setting',          'PaymentSettingController@index');
         $router->post('/payment-setting',         'PaymentSettingController@index');
+    });
+
+    /**
+     * WEBHOOKS
+     */
+    $router->group([
+        'prefix' => 'webhooks',
+        'namespace' => 'Webhooks'
+    ], function ($router) {
+        $router->post('{gateway}/invoices', 'WebhookController@handlerWebhook');
     });
 });

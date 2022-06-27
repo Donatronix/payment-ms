@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaymentSystemContract;
+use App\Helpers\PaymentGatewaySettings as PaymentSetting;
 use App\Models\Payment;
 use BitPaySDK\Client;
 use BitPaySDK\Exceptions\BitPayException;
@@ -10,7 +11,6 @@ use BitPaySDK\Model\Invoice\Invoice;
 use BitPaySDK\Tokens;
 use Exception;
 use Illuminate\Http\Request;
-use App\Helpers\PaymentGatewaySettings as PaymentSetting;
 
 class BitpayManager implements PaymentSystemContract
 {
@@ -52,15 +52,14 @@ class BitpayManager implements PaymentSystemContract
             // Initialize with separate variables and Private Key stored in file.
             $this->gateway = Client::create()->withData(
                 PaymentSetting::settings('bitpay_environment'),
-                PaymentSetting::settings('bitpay_key_path'),
+                storage_path(PaymentSetting::settings('bitpay_key_path')),
                 new Tokens(
                     PaymentSetting::settings('bitpay_api_token_merchant'), //merchant
                     PaymentSetting::settings('bitpay_api_token_payroll') //payroll
                 ),
                 PaymentSetting::settings('bitpay_private_key_password')
             );
-        }
-        catch (BitPayException $e) {
+        } catch (BitPayException $e) {
             throw new Exception($e->getMessage());
         }
     }
@@ -89,7 +88,7 @@ class BitpayManager implements PaymentSystemContract
      * Wrapper for create bitpay invoice for charge money
      *
      * @param Payment $payment
-     * @param array $input
+     * @param object $inputData
      * @return array
      */
     public function createInvoice(Payment $payment, object $inputData): array
@@ -103,9 +102,11 @@ class BitpayManager implements PaymentSystemContract
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
             $invoice->setNotificationURL(PaymentSetting::settings('bitpay_payment_webhook_url') . '/bitpay/invoices');
-            $invoice->setRedirectURL(PaymentSetting::settings('bitpay_redirect_url'));
+
+            $invoice->setRedirectURL($inputData->redirect_url); // PaymentSetting::settings('bitpay_redirect_url')
+
             $invoice->setPosData(json_encode(['code' => $payment->check_code]));
-            $invoice->setItemDesc("Charge Balance for Sumra User");
+            $invoice->setItemDesc("Charge user wallet balance");
 
             // Send data to bitpay and get created invoice
             $chargeObj = $this->gateway->createInvoice($invoice);
@@ -121,8 +122,7 @@ class BitpayManager implements PaymentSystemContract
                 'payment_id' => $payment->id,
                 'invoice_url' => $chargeObj->getURL()
             ];
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             return [
                 'type' => 'danger',
                 'message' => sprintf("Unable to create an invoice. Error: %s \n", $e->getMessage())
@@ -139,9 +139,11 @@ class BitpayManager implements PaymentSystemContract
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
             $invoice->setNotificationURL(PaymentSetting::settings('bitpay_payment_webhook_url') . '/bitpay/invoices');
-            $invoice->setRedirectURL(PaymentSetting::settings('bitpay_redirect_url'));
+
+            $invoice->setRedirectURL($inputData->redirect_url); // PaymentSetting::settings('bitpay_redirect_url')
+
             $invoice->setPosData(json_encode(['code' => $payment->check_code]));
-            $invoice->setItemDesc("Charge Balance for Sumra User");
+            $invoice->setItemDesc("Charge user wallet balance");
 
             // Send data to bitpay and get created invoice
             $chargeObj = $this->gateway->createInvoice($invoice);
@@ -209,7 +211,7 @@ class BitpayManager implements PaymentSystemContract
 
         $payment->status = $request->event['code'];
 
-       // $payment->payload = $paymentData;
+        // $payment->payload = $paymentData;
         $payment->save();
 
         // Return result
