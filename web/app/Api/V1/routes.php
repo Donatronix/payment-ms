@@ -8,16 +8,39 @@ $router->group([
     'namespace' => '\App\Api\V1\Controllers'
 ], function ($router) {
     /**
-     * Internal access
+     * PUBLIC ACCESS
+     *
+     * level with free access to the endpoint
      */
     $router->group([
+        'namespace' => 'Public'
+    ], function ($router) {
+        //
+    });
+
+    /**
+     * USER APPLICATION PRIVATE ACCESS
+     *
+     * Application level for users
+     */
+    $router->group([
+        'namespace' => 'Application',
         'middleware' => 'checkUser'
     ], function ($router) {
+        /**
+         * Init payment and charge wallet balance or invoice
+         */
+        $router->post('payments/charge', 'ChargeController');
+
+        /**
+         * Init payment and withdraw wallet balance
+         */
+        $router->post('payments/withdraw', 'ChargeController');
+
         /**
          * Payment actions
          */
         $router->get('payments/{id:[\d]+}', 'PaymentController@show');
-        $router->post('payments/charge', 'PaymentController@charge');
 
         /**
          * Payment systems list
@@ -26,7 +49,9 @@ $router->group([
     });
 
     /**
-     * ADMIN PANEL
+     * ADMIN PANEL ACCESS
+     *
+     * Admin / super admin access level (E.g CEO company)
      */
     $router->group([
         'prefix' => 'admin',
@@ -41,22 +66,25 @@ $router->group([
         $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
 
         //Manage all payment system
-        $router->get('/admin/payment-system',          'PaymentSystemController@index');
-        $router->get('/admin/{id}/payment-system',     'PaymentSystemController@show');
-        $router->post('/admin/payment-system',         'PaymentSystemController@store');
-        $router->put('/admin/{id}/payment-system',     'PaymentSystemController@update');
-        $router->delete('/admin/{id}/payment-system',  'PaymentSystemController@destroy');
-        //Manage all payment setting
-        $router->get('/admin/payment-setting',          'PaymentSettingController@index');
-        $router->post('/admin/payment-setting',         'PaymentSettingController@index');
+        $router->get('/payment-system',          'PaymentSystemController@index');
+        $router->get('/payment-system/{id}',     'PaymentSystemController@show');
+        $router->post('/payment-system',         'PaymentSystemController@store');
+        $router->put('/payment-system/{id}',     'PaymentSystemController@update');
+        $router->delete('/payment-system/{id}',  'PaymentSystemController@destroy');
 
+        //Manage all payment setting
+        $router->get('/payment-setting',          'PaymentSettingController@index');
+        $router->post('/payment-setting',         'PaymentSettingController@index');
     });
 
     /**
-     * Payments webhooks
+     * WEBHOOKS
+     *
+     * Access level of external / internal software services
      */
     $router->group([
-        'prefix' => 'webhooks'
+        'prefix' => 'webhooks',
+        'namespace' => 'Webhooks'
     ], function ($router) {
         $router->post('{gateway}/invoices', 'WebhookController@handlerWebhook');
     });

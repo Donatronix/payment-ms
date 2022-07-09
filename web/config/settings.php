@@ -48,11 +48,11 @@ return [
     ],
 
     /**
-     * RabbitMQ Exchange Points
+     * RabbitMQ Receivers
      */
-    'exchange_queue' => [
+    'pubsub_receiver' => [
         'files' => env('RABBITMQ_RECEIVER_FILES', 'FilesMS'),
         'referrals' => env('RABBITMQ_RECEIVER_REFERRALS', 'ReferralsMS'),
-        'contacts_book' => env('RABBITMQ_RECEIVER_CONTACTS', 'ContactsBooksMS')
+        'contacts_books' => env('RABBITMQ_RECEIVER_CONTACTS', 'ContactsBooksMS')
     ],
 ];

@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
@@ -20,7 +21,6 @@ class PaymentSystem extends Model
      *
      * @var array
      */
-
     protected $fillable = [
         'name',
         'gateway',
@@ -35,13 +35,11 @@ class PaymentSystem extends Model
      */
     protected $hidden = [];
 
-
     /**
      * Get the payment settings for the payment system
      */
-    public function paymentsettings()
+    public function payment_settings(): HasMany
     {
-        return $this->hasMany(PaymentSettings::class);
+        return $this->hasMany(PaymentSetting::class);
     }
-
 }

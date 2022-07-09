@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\V1\Controllers;
+namespace App\Api\V1\Controllers\Application;
 
 use App\Http\Controllers\Controller;
 use App\Models\LogPaymentRequest;
@@ -15,19 +15,19 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Class PaymentController
+ * Class ChargeController
  *
  * @package App\Api\V1\Controllers
  */
-class PaymentController extends Controller
+class ChargeController extends Controller
 {
     /**
-     * Make payment and charge wallet balance or invoice
+     * Init payment and charge wallet balance or invoice
      *
      * @OA\Post(
      *     path="/payments/charge",
-     *     description="Make payment and charge wallet balance or invoice",
-     *     tags={"Payments"},
+     *     description="Init payment and charge wallet balance or invoice",
+     *     tags={"Payments | Charge"},
      *
      *     security={{
      *         "default": {
@@ -36,14 +36,6 @@ class PaymentController extends Controller
      *             "ManagerWrite"
      *         }
      *     }},
-     *     x={
-     *         "auth-type": "Application & Application User",
-     *         "throttling-tier": "Unlimited",
-     *         "wso2-application-security": {
-     *             "security-types": {"oauth2"},
-     *             "optional": "false"
-     *         }
-     *     },
      *
      *     @OA\RequestBody(
      *         required=true,
@@ -54,7 +46,6 @@ class PaymentController extends Controller
      *                 type="string",
      *                 description="Payment gateway",
      *                 default="bitpay",
-     *
      *             ),
      *             @OA\Property(
      *                 property="amount",
@@ -69,15 +60,21 @@ class PaymentController extends Controller
      *                 default="GBP"
      *             ),
      *             @OA\Property(
-     *                 property="service",
+     *                 property="document_based_on",
      *                 type="string",
-     *                 description="Target service: "
-     *             )
+     *                 description="The document on which the deposit is based"
+     *             ),
+     *             @OA\Property(
+     *                 property="redirect_url",
+     *                 type="string",
+     *                 description="An address where the user will be redirected after payment",
+     *                 default="GBP"
+     *             ),
      *         )
      *     ),
      *
      *     @OA\Response(
-     *         response=200,
+     *         response="200",
      *         description="Success",
      *     )
      * )
@@ -85,15 +82,16 @@ class PaymentController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function charge(Request $request): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
         // Validate input
         try {
             $this->validate($request, [
                 'gateway' => 'string|required',
                 'amount' => 'integer|required',
-                'currency' => 'string',
-                'service' => 'string',
+                'currency' => 'integer|required',
+                'document_based_on' => 'string',
+                'redirect_url' => 'string|required'
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
@@ -110,7 +108,7 @@ class PaymentController extends Controller
         try {
             LogPaymentRequest::create([
                 'gateway' => $inputData->gateway,
-                'service' => $inputData->service,
+                'service' => $inputData->document_based_on,
                 'payload' => $inputData
             ]);
         } catch (\Exception $e) {
@@ -135,7 +133,7 @@ class PaymentController extends Controller
             'gateway' => $request->get('gateway'),
             'amount' => $request->get('amount'),
             'currency' => mb_strtoupper($request->get('currency')),
-            'service' => $request->get('service'),
+            'service' => $request->get('document_based_on'),
             'user_id' => Auth::user()->getAuthIdentifier()
         ]);
 
@@ -155,80 +153,5 @@ class PaymentController extends Controller
 
         // Return result
         return response()->json($result, $code);
-    }
-
-    /**
-     * Get detail info about transaction
-     *
-     * @OA\Get(
-     *     path="/payments/{id}",
-     *     summary="Get detail info about payment transaction",
-     *     description="Get detail info about payment transaction",
-     *     tags={"Payments"},
-     *
-     *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
-     *     }},
-     *     x={
-     *         "auth-type": "Application & Application User",
-     *         "throttling-tier": "Unlimited",
-     *         "wso2-application-security": {
-     *             "security-types": {"oauth2"},
-     *             "optional": "false"
-     *         }
-     *     },
-     *
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Payment transaction ID",
-     *         @OA\Schema(
-     *             type="string"
-     *         )
-     *     ),
-     *     @OA\Response(
-     *          response="200",
-     *          description="Data of payment transaction"
-     *     ),
-     *     @OA\Response(
-     *          response="404",
-     *          description="Payment transaction not found",
-     *     )
-     * )
-     *
-     * @param $id
-     * @return mixed
-     */
-    public function show($id)
-    {
-        try {
-            $payment = PaymentModel::findOrFail($id);
-        } catch (ModelNotFoundException $e) {
-            return response()->jsonApi([
-                'type' => 'danger',
-                'title' => "Get payment transaction object",
-                'message' => "payment transaction with id #{$id} not found: {$e->getMessage()}"
-            ], 404);
-        }
-
-        return response()->jsonApi([
-            'type' => 'success',
-            'title' => 'payment transaction details',
-            'message' => "payment transaction details received",
-            'data' => $payment->toArray()
-        ], 200);
-    }
-
-    function calculateOrderAmount(array $items): int
-    {
-        // Replace this constant with a calculation of the order's amount
-        // Calculate the order total on the server to prevent
-        // people from directly manipulating the amount on the client
-        return 1400;
     }
 }

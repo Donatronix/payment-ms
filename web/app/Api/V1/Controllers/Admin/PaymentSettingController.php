@@ -3,22 +3,20 @@
 namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\PaymentSetting as PaymentSettingsModel;
 use App\Models\PaymentSystem as PaymentSystemModel;
-use App\Models\PaymentSettings as PaymentSettingsModel;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Http\JsonResponse;
 
 /**
  * Class PaymentSettingController
  *
  * @package App\Api\V1\Controllers
  */
-
 class PaymentSettingController extends Controller
 {
-
-     /**
+    /**
      * Display list of all payment setting
      *
      * @OA\Get(
@@ -33,22 +31,15 @@ class PaymentSettingController extends Controller
      *             "ManagerWrite"
      *         }
      *     }},
-     *     x={
-     *         "auth-type": "Application & Application User",
-     *         "throttling-tier": "Unlimited",
-     *         "wso2-application-security": {
-     *             "security-types": {"oauth2"},
-     *             "optional": "false"
-     *         }
-     *     },
-     * *     @OA\Parameter(
+     *
+     *     @OA\Parameter(
      *         name="limit",
      *         description="Count of orders in response",
      *         in="query",
      *         required=false,
      *         @OA\Schema(
      *              type="integer",
-     *              default=20,
+     *              default=20
      *         )
      *     ),
      *     @OA\Parameter(
@@ -58,12 +49,12 @@ class PaymentSettingController extends Controller
      *         required=false,
      *         @OA\Schema(
      *              type="integer",
-     *              default=1,
+     *              default=1
      *         )
      *     ),
      *     @OA\Response(
-     *         response=200,
-     *         description="Success",
+     *         response="200",
+     *         description="Success"
      *     )
      * )
      *
@@ -73,26 +64,25 @@ class PaymentSettingController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $resp['data']    = [];
+        $resp['data'] = [];
         try {
-            $resp['message']    = "List of all payment setting";
-            $resp['title']      = "Display all payment setting";
-            $resp['type']       = "Success";
-            $resp['data']       = PaymentSettingsModel::orderBy('name', 'Asc')
-                                ->paginate($request->get('limit', 20));
+            $resp['message'] = "List of all payment setting";
+            $resp['title'] = "Display all payment setting";
+            $resp['type'] = "Success";
+            $resp['data'] = PaymentSettingsModel::orderBy('name', 'Asc')
+                ->paginate($request->get('limit', 20));
+
             return response()->json($resp, 200);
         } catch (\Exception $e) {
             return response()->json([
-                'type'  => 'danger',
-                'title'  => 'Display all payment setting',
+                'type' => 'danger',
+                'title' => 'Display all payment setting',
                 'message' => $e->getMessage()
             ], 400);
         }
     }
 
-
-
-     /**
+    /**
      * Method to add new payment setting
      *
      * @OA\Post(
@@ -107,15 +97,8 @@ class PaymentSettingController extends Controller
      *             "ManagerWrite"
      *         }
      *     }},
-     *     x={
-     *         "auth-type": "Application & Application User",
-     *         "throttling-tier": "Unlimited",
-     *         "wso2-application-security": {
-     *             "security-types": {"oauth2"},
-     *             "optional": "false"
-     *         }
-     *     },
-     * @OA\RequestBody(
+
+     *     @OA\RequestBody(
      *         required=true,
      *
      *         @OA\JsonContent(
@@ -125,19 +108,19 @@ class PaymentSettingController extends Controller
      *                 description="payment system id",
      *             ),
      *             @OA\Property(
-     *                 property="setting_key",
+     *                 property="key",
      *                 type="string",
      *                 description="payment setting key",
      *             ),
      *             @OA\Property(
-     *                 property="setting_value",
+     *                 property="value",
      *                 type="string",
      *                 description="payment setting value",
      *             ),
      *         )
      *     ),
      *     @OA\Response(
-     *         response=200,
+     *         response="200",
      *         description="Success",
      *     )
      * )
@@ -146,52 +129,54 @@ class PaymentSettingController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-
     public function store(Request $request)
     {
-        $resp['data']     = [];
+        $resp['data'] = [];
+
         // Validate inputs
-         try {
+        try {
             $this->validate($request, [
-                'setting_key'       => 'required|string',
-                'setting_value'     => 'required|string',
-                'payment_system_id' => 'required|string',
+                'key' => 'required|string',
+                'value' => 'required|string',
+                'payment_system_id' => 'required|string'
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
-                'type'      => 'warning',
-                'title'     => 'Payement system',
-                'message'   => 'Validation error',
-                'data'      => $e->getMessage()
+                'type' => 'warning',
+                'title' => 'Payement system',
+                'message' => 'Validation error',
+                'data' => $e->getMessage()
             ], 400);
         }
+
         try {
-            $paymentSystem =  PaymentSystemModel::findOrFail($request['payment_system_id']);
-            if($paymentSystem)
-            {
+            $paymentSystem = PaymentSystemModel::findOrFail($request['payment_system_id']);
+
+            if ($paymentSystem) {
                 $setting = new PaymentSettingsModel;
-                $setting->setting_key = $request['setting_key'];
-                $setting->setting_value = $request['setting_value'];
-                $paymentSystem->paymentsettings()->save($setting);
+                $setting->key = $request['key'];
+                $setting->value = $request['value'];
+                $paymentSystem->payment_settings()->save($setting);
 
                 $resp['message'] = "New payment setting was added";
-                $resp['title']   = "Payment setting";
-                $resp['type']    = "success";
-                $resp['data']     = $paymentSystem->paymentsettings;
+                $resp['title'] = "Payment setting";
+                $resp['type'] = "success";
+                $resp['data'] = $paymentSystem->payment_settings;
+
                 return response()->json($resp, 200);
-            }else{
-                $resp['message']  = "Unable to create payment setting";
-                $resp['title']    = "Payment setting";
-                $resp['type']     = "warning";
+            } else {
+                $resp['message'] = "Unable to create payment setting";
+                $resp['title'] = "Payment setting";
+                $resp['type'] = "warning";
+
                 return response()->json($resp, 400);
             }
         } catch (\Exception $e) {
             return response()->json([
-                'type'      => 'danger',
-                'title'     => 'Failed to add new payment setting',
-                'message'   => $e->getMessage()
+                'type' => 'danger',
+                'title' => 'Failed to add new payment setting',
+                'message' => $e->getMessage()
             ], 400);
         }
     }
-
 }
