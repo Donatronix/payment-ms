@@ -1,6 +1,6 @@
 {
-    "name": "kus/payments-gateways-ms",
-    "description": "Payment Gateways API Microservice",
+    "name": "kus/payments-ms",
+    "description": "Payments API Microservice",
     "license": "MIT",
     "type": "project",
     "private": true,
@@ -12,7 +12,7 @@
         "coinbase/coinbase-commerce": "~1",
         "laravel/lumen-framework": "~8",
         "paypal/paypal-checkout-sdk": "~1",
-        "safecharge-international/safecharge-php": "^2.1",
+        "safecharge-international/safecharge-php": "~2",
         "stripe/stripe-php": "~7",
         "sumra/sdk": "*"
     },

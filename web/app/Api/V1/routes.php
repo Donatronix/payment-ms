@@ -9,18 +9,23 @@ $router->group([
 ], function ($router) {
     /**
      * PUBLIC ACCESS
+     *
+     * level with free access to the endpoint
      */
     $router->group([
         'namespace' => 'Public'
     ], function ($router) {
+        //
     });
 
     /**
      * USER APPLICATION PRIVATE ACCESS
+     *
+     * Application level for users
      */
     $router->group([
-        'middleware' => 'checkUser',
-        'namespace' => 'Application'
+        'namespace' => 'Application',
+        'middleware' => 'checkUser'
     ], function ($router) {
         /**
          * Init payment and charge wallet balance or invoice
@@ -45,6 +50,8 @@ $router->group([
 
     /**
      * ADMIN PANEL ACCESS
+     *
+     * Admin / super admin access level (E.g CEO company)
      */
     $router->group([
         'prefix' => 'admin',
@@ -72,6 +79,8 @@ $router->group([
 
     /**
      * WEBHOOKS
+     *
+     * Access level of external / internal software services
      */
     $router->group([
         'prefix' => 'webhooks',

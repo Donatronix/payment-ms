@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\App;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,10 +15,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Run Seeder Class
-        $this->call([
-            PaymentSystemsTableSeeder::class,
-            PaymentSettingsTableSeeder::class
-        ]);
+        // Seeds for local and staging
+        if (App::environment(['local', 'staging'])) {
+            $this->call([
+                PaymentSystemsTableSeeder::class,
+                PaymentSettingsTableSeeder::class
+            ]);
+        }
+
+        // Seeds for production
+        if (App::environment('production')) {
+
+        }
     }
 }

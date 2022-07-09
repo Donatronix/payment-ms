@@ -15,7 +15,7 @@ services:
       - PHP_DISMOD=apcu,calendar,exif,gd,imagick,imap,ioncube,mongodb,ldap,pcntl,pdo_pgsql,pgsql,shmop,soap,sysvmsg,sysvsem,sysvshm,vips
       - PHP_DISPLAY_ERRORS=1
       - LOG_STDERR=/var/log/vhost-error.log
-      - PUBSUB_RECEIVER=Local.PaymentGatewaysMS
+      - PUBSUB_RECEIVER=Local.PaymentsMS
     volumes:
       - ./web:/var/www/html:rw
 #      - ./logs:/var/log/nginx:rw
