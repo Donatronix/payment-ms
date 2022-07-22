@@ -4,7 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Str;
 
-class Payment
+class PaymentService
 {
     /**
      * @param $gateway
@@ -15,7 +15,7 @@ class Payment
     public static function getInstance($gateway)
     {
         try {
-            $class = '\App\Services\Payments\\' . Str::ucfirst($gateway) . 'Manager';
+            $class = '\App\Services\PaymentServices\\' . Str::ucfirst($gateway) . 'Manager';
             $reflector = new \ReflectionClass($class);
         }
         catch(\Exception $e) {

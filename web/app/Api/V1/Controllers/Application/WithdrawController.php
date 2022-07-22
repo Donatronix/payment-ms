@@ -17,16 +17,14 @@ class WithdrawController extends Controller
      * Init payment and withdraw wallet balance
      *
      * @OA\Post(
-     *     path="/payments/withdraw",
-     *     description="Init payment and withdraw wallet balance",
-     *     tags={"Payments | Withdraw"},
+     *     path="/app/orders/withdraw",
+     *     summary="Withdraw | Init payment and withdraw wallet balance",
+     *     description="Withdraw | Init payment and withdraw wallet balance",
+     *     tags={"Application | Payment Orders"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\RequestBody(

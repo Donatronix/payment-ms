@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\Payments;
+namespace App\Services\PaymentServices;
 
 use App\Contracts\PaymentSystemContract;
-use App\Helpers\PaymentGatewaySettings as PaymentSetting;
-use App\Models\Payment;
+use App\Helpers\PaymentServiceSettings as PaymentSetting;
+use App\Models\PaymentOrder;
 use BitPaySDK\Client;
 use BitPaySDK\Exceptions\BitPayException;
 use BitPaySDK\Model\Invoice\Invoice;
@@ -87,11 +87,11 @@ class BitpayManager implements PaymentSystemContract
     /**
      * Wrapper for create bitpay invoice for charge money
      *
-     * @param Payment $payment
+     * @param PaymentOrder $payment
      * @param object $inputData
      * @return array
      */
-    public function createInvoice(Payment $payment, object $inputData): array
+    public function createInvoice(PaymentOrder $payment, object $inputData): array
     {
         try {
             // Set invoice detail
@@ -130,7 +130,7 @@ class BitpayManager implements PaymentSystemContract
         }
     }
 
-    public function charge(Payment $payment, object $inputData): mixed
+    public function charge(PaymentOrder $payment, object $inputData): mixed
     {
         try {
             // Set invoice detail
@@ -195,7 +195,7 @@ class BitpayManager implements PaymentSystemContract
         $paymentData['posData'] = json_decode($paymentData['posData']);
 
         // Find payment transaction
-        $payment = Payment::where('type', Payment::TYPE_PAYIN)
+        $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
             ->where('id', $paymentData['orderId'])
             ->where('document_id', $paymentData['id'])
             ->where('check_code', $paymentData['posData']->code)

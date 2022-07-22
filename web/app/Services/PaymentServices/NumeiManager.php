@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Payments;
+namespace App\Services\PaymentServices;
 
 use App\Contracts\PaymentSystemContract;
 use SafeCharge\Api\RestClient;

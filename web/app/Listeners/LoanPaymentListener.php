@@ -4,8 +4,8 @@ namespace App\Listeners;
 
 use App\Models\LogPaymentRequest;
 use App\Models\LogPaymentRequestError;
-use App\Models\Payment as PaymentModel;
-use App\Services\Payment as PaymentService;
+use App\Models\PaymentOrder;
+use App\Services\PaymentService as PaymentService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -76,8 +76,8 @@ class LoanPaymentListener
         }
 
         // Create internal order
-        $payment = PaymentModel::create([
-            'type' => PaymentModel::TYPE_PAYIN,
+        $payment = PaymentOrder::create([
+            'type' => PaymentOrder::TYPE_PAYIN,
             'gateway' => $inputData->gateway,
             'amount' => $inputData->amount,
             'currency' => mb_strtoupper($inputData->currency),

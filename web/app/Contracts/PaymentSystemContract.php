@@ -2,7 +2,7 @@
 
 namespace App\Contracts;
 
-use App\Models\Payment;
+use App\Models\PaymentOrder;
 use Illuminate\Http\Request;
 
 interface PaymentSystemContract
@@ -30,23 +30,23 @@ interface PaymentSystemContract
     /**
      * Make one-time charge money to system
      *
-     * @param Payment $payment
+     * @param PaymentOrder $payment
      * @param object $inputData
      * @return mixed
      */
-    public function charge(Payment $payment, object $inputData): mixed;
+    public function charge(PaymentOrder $payment, object $inputData): mixed;
 
 //    public function payout();
 //
 //    public function refund();
 
     /**
-     * @param Payment $payment
+     * @param PaymentOrder $payment
      * @param object $inputData
      *
      * @return mixed
      */
-    public function createInvoice(Payment $payment, object $inputData): mixed;
+    public function createInvoice(PaymentOrder $payment, object $inputData): mixed;
 
     /**
      * @param \Illuminate\Http\Request $request

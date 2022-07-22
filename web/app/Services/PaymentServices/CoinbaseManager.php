@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Services\Payments;
+namespace App\Services\PaymentServices;
 
 use App\Contracts\PaymentSystemContract;
-use App\Models\Payment;
+use App\Models\PaymentOrder;
 use CoinbaseCommerce\ApiClient;
 use CoinbaseCommerce\Resources\Charge;
 use CoinbaseCommerce\Webhook;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Helpers\PaymentGatewaySettings as PaymentSetting;
+use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
 class CoinbaseManager implements PaymentSystemContract
 {
@@ -88,12 +88,12 @@ class CoinbaseManager implements PaymentSystemContract
     /**
      * Wrapper for create coinbase invoice for charge money
      *
-     * @param Payment $payment
+     * @param PaymentOrder $payment
      * @param array $input
      *
      * @return array
      */
-    public function createInvoice(Payment $payment, object $inputData): array
+    public function createInvoice(PaymentOrder $payment, object $inputData): array
     {
         try {
             // Create new charge
@@ -189,7 +189,7 @@ class CoinbaseManager implements PaymentSystemContract
         }
 
         // Find payment transaction
-        $payment = Payment::where('type', Payment::TYPE_PAYIN)
+        $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
             ->where('id', $paymentData["metadata"]['payment_id'])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["metadata"]['code'])
@@ -222,7 +222,7 @@ class CoinbaseManager implements PaymentSystemContract
         ];
     }
 
-    public function charge(Payment $payment, object $inputData): mixed
+    public function charge(PaymentOrder $payment, object $inputData): mixed
     {
         // TODO: Implement charge() method.
     }

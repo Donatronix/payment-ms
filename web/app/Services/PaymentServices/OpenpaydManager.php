@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Services\Payments;
+namespace App\Services\PaymentServices;
 
 use App\Contracts\PaymentSystemContract;
-use App\Models\Payment;
+use App\Models\PaymentOrder;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-use App\Helpers\PaymentGatewaySettings as PaymentSetting;
+use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
 
 class OpenpaydManager implements PaymentSystemContract
@@ -94,22 +94,22 @@ class OpenpaydManager implements PaymentSystemContract
     /**
      * Make one-time charge money to system
      *
-     * @param Payment $payment
+     * @param PaymentOrder $payment
      * @param object $inputData
      * @return mixed
      */
-    public function charge(Payment $payment, object $inputData): mixed
+    public function charge(PaymentOrder $payment, object $inputData): mixed
     {
         // TODO not yet provided by openpayd
     }
 
     /**
-     * @param Payment $payment
+     * @param PaymentOrder $payment
      * @param object $inputData
      *
      * @return mixed
      */
-    public function createInvoice(Payment $payment, object $inputData): mixed
+    public function createInvoice(PaymentOrder $payment, object $inputData): mixed
     {
         // TODO not yet provided by openpayd
     }
@@ -139,7 +139,7 @@ class OpenpaydManager implements PaymentSystemContract
         if ($transactionType == self::TRANSACTION_TYPE_PAYIN) {
             //  retrieve payment and update status
             // TODO find a way to access webhook metadata.
-            $payment = Payment::where('type', Payment::TYPE_INVOICE)
+            $payment = PaymentOrder::where('type', PaymentOrder::TYPE_INVOICE)
                 ->where('id', $webhookPayload["metadata"]['orderId'])
                 ->where('document_id', $webhookPayload["metadata"]['documentId'])
                 ->where('check_code', $webhookPayload["metadata"]['check_code'])

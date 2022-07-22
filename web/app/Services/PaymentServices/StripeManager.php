@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Services\Payments;
+namespace App\Services\PaymentServices;
 
 use App\Contracts\PaymentSystemContract;
-use App\Models\Payment;
+use App\Models\PaymentOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
 use Stripe\Stripe;
 use Stripe\Webhook;
-use App\Helpers\PaymentGatewaySettings as PaymentSetting;
+use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
 class StripeManager implements PaymentSystemContract
 {
@@ -62,12 +62,12 @@ class StripeManager implements PaymentSystemContract
     }
 
     /**
-     * @param Payment $payment
+     * @param PaymentOrder $payment
      * @param object $inputData
      * @return array
      * @throws \Stripe\Exception\ApiErrorException
      */
-    public function charge(Payment $payment, object $inputData): array
+    public function charge(PaymentOrder $payment, object $inputData): array
     {
         try {
             // Create a PaymentIntent with amount and currency
@@ -131,11 +131,11 @@ class StripeManager implements PaymentSystemContract
     /**
      * Wrapper for create Stripe invoice for charge money
      *
-     * @param Payment $payment
+     * @param PaymentOrder $payment
      * @param object $inputData
      * @return array
      */
-    public function createInvoice(Payment $payment, object $inputData): array
+    public function createInvoice(PaymentOrder $payment, object $inputData): array
     {
         try {
             // Create checkout session

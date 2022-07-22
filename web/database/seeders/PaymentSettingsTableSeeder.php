@@ -2,20 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\PaymentSetting as PaymentSettingsModel;
-use Illuminate\Database\Seeder;
 use App\Models\PaymentSetting;
+use Illuminate\Database\Seeder;
 use App\Models\PaymentSystem;
 use BitPaySDK\Env;
 use Illuminate\Support\Str;
 
 class PaymentSettingsTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
    /**
      * Run the database seeds.
      *
@@ -58,11 +52,11 @@ class PaymentSettingsTableSeeder extends Seeder
             'coinbase' => [
                 [
                     'key' => 'coinbase_api_key',
-                    'value' => null
+                    'value' => 'c4733e03-d198-4437-ab57-daa8deecc08e'
                 ],
                 [
                     'key' => 'coinbase_webhook_key',
-                    'value' => null
+                    'value' => '4c644339-329f-43b1-9c33-4bc7173e9e94'
                 ],
                 [
                     'key' => 'coinbase_redirect_url',
@@ -100,11 +94,11 @@ class PaymentSettingsTableSeeder extends Seeder
                 ],
                 [
                     'key' => 'paypal_sandbox_client_id',
-                    'value' => 'sandbox'
+                    'value' => 'ATnX0XE4H-N5QapZkdhDVKHY6xdyITz_N9RPvQkcmDQx1kToXj-30hFWpIJ9VyiHPjf7wVI89YDkZaTK'
                 ],
                 [
                     'key' => 'paypal_sandbox_client_secret',
-                    'value' => 'sandbox'
+                    'value' => 'EMuQ9MOnfOW4k1nhJ63bISM2M9hUK1in5E_VuZDKU2osI54qGd9vkkPvi5YXefV1NkWC9nNbAOue0vvm'
                 ],
                 [
                     'key' => 'paypal_live_client_id',
@@ -140,10 +134,10 @@ class PaymentSettingsTableSeeder extends Seeder
                 ],
                 [
                     'key' => 'paypal_notify_url',
-                    'value' => 'sandbox'
+                    'value' => ''
                 ],
                 [
-                    'key' => 'paypal_local',
+                    'key' => 'paypal_locale',
                     'value' => 'en_US'
                 ],
                 [
@@ -155,15 +149,15 @@ class PaymentSettingsTableSeeder extends Seeder
             'stripe' => [
                 [
                     'key' => 'stripe_webhook_secret',
-                    'value' => null
+                    'value' => 'whsec_c08967af37c995990d48319f310cfcc1c559f7b7032605119d10a23fae73037f'
                 ],
                 [
                     'key' => 'stripe_public_key',
-                    'value' => null
+                    'value' => 'pk_test_51HcoG6KkrmrXUD8muOcKZTxu2vN6tHSaJrYwFtEcPYFPO7FoJFPPc1by3Uma118tNcCC0SvM8bdWF4b0DEknu3sK00FOYUsbxD'
                 ],
                 [
                     'key' => 'stripe_secret_key',
-                    'value' => null
+                    'value' => 'sk_test_51HcoG6KkrmrXUD8mrFuqkBKnPfFlsfh51HpDQ6gR3eI0uhQfxU24ayd1TqP47UiMGEDRRCB7mC6P6UPsvFcaSMX600IMaVUrZb'
                 ],
                 [
                     'key' => 'payments_redirect_url',

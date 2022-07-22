@@ -3,8 +3,9 @@
 namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PaymentSetting as PaymentSettingsModel;
-use App\Models\PaymentSystem as PaymentSystemModel;
+use App\Models\PaymentSetting;
+use App\Models\PaymentSystem;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -25,11 +26,8 @@ class PaymentSettingController extends Controller
      *     tags={"Admin / Payment-Setting"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\Parameter(
@@ -58,9 +56,9 @@ class PaymentSettingController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -69,12 +67,12 @@ class PaymentSettingController extends Controller
             $resp['message'] = "List of all payment setting";
             $resp['title'] = "Display all payment setting";
             $resp['type'] = "Success";
-            $resp['data'] = PaymentSettingsModel::orderBy('name', 'Asc')
+            $resp['data'] = PaymentSetting::orderBy('name', 'Asc')
                 ->paginate($request->get('limit', 20));
 
-            return response()->json($resp, 200);
-        } catch (\Exception $e) {
-            return response()->json([
+            return response()->jsonApi($resp, 200);
+        } catch (Exception $e) {
+            return response()->jsonApi([
                 'type' => 'danger',
                 'title' => 'Display all payment setting',
                 'message' => $e->getMessage()
@@ -91,13 +89,10 @@ class PaymentSettingController extends Controller
      *     tags={"Admin / Payment-Setting"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
-
+     *
      *     @OA\RequestBody(
      *         required=true,
      *
@@ -125,9 +120,9 @@ class PaymentSettingController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function store(Request $request)
     {
@@ -150,10 +145,10 @@ class PaymentSettingController extends Controller
         }
 
         try {
-            $paymentSystem = PaymentSystemModel::findOrFail($request['payment_system_id']);
+            $paymentSystem = PaymentSystem::findOrFail($request['payment_system_id']);
 
             if ($paymentSystem) {
-                $setting = new PaymentSettingsModel;
+                $setting = new PaymentSetting;
                 $setting->key = $request['key'];
                 $setting->value = $request['value'];
                 $paymentSystem->payment_settings()->save($setting);
@@ -163,16 +158,16 @@ class PaymentSettingController extends Controller
                 $resp['type'] = "success";
                 $resp['data'] = $paymentSystem->payment_settings;
 
-                return response()->json($resp, 200);
+                return response()->jsonApi($resp, 200);
             } else {
                 $resp['message'] = "Unable to create payment setting";
                 $resp['title'] = "Payment setting";
                 $resp['type'] = "warning";
 
-                return response()->json($resp, 400);
+                return response()->jsonApi($resp, 400);
             }
-        } catch (\Exception $e) {
-            return response()->json([
+        } catch (Exception $e) {
+            return response()->jsonApi([
                 'type' => 'danger',
                 'title' => 'Failed to add new payment setting',
                 'message' => $e->getMessage()

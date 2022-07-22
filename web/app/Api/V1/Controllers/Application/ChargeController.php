@@ -5,9 +5,9 @@ namespace App\Api\V1\Controllers\Application;
 use App\Http\Controllers\Controller;
 use App\Models\LogPaymentRequest;
 use App\Models\LogPaymentRequestError;
-use App\Models\Payment as PaymentModel;
-use App\Services\Payment as PaymentService;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Models\PaymentOrder;
+use App\Services\PaymentService as PaymentService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,16 +25,14 @@ class ChargeController extends Controller
      * Init payment and charge wallet balance or invoice
      *
      * @OA\Post(
-     *     path="/payments/charge",
-     *     description="Init payment and charge wallet balance or invoice",
-     *     tags={"Payments | Charge"},
+     *     path="/app/orders/charge",
+     *     summary="Charge | Init payment and charge wallet balance or invoice",
+     *     description="Charge | Init payment and charge wallet balance or invoice",
+     *     tags={"Application | Payment Orders"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\RequestBody(
@@ -44,8 +42,8 @@ class ChargeController extends Controller
      *             @OA\Property(
      *                 property="gateway",
      *                 type="string",
-     *                 description="Payment gateway",
-     *                 default="bitpay",
+     *                 description="Payment service provider",
+     *                 default="stripe",
      *             ),
      *             @OA\Property(
      *                 property="amount",
@@ -57,18 +55,36 @@ class ChargeController extends Controller
      *                 property="currency",
      *                 type="string",
      *                 description="Currency of balance",
-     *                 default="GBP"
+     *                 default="USD"
      *             ),
      *             @OA\Property(
-     *                 property="document_based_on",
-     *                 type="string",
-     *                 description="The document on which the deposit is based"
+     *                 property="document",
+     *                 type="object",
+     *                 description="The document on which the deposit is based",
+     *                 @OA\Property(
+     *                     property="id",
+     *                     type="string",
+     *                     description="Document ID",
+     *                     example="80000000-8000-8000-8000-000000000008"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="object",
+     *                     type="string",
+     *                     description="Document model",
+     *                     example="Deposit"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="service",
+     *                     type="string",
+     *                     description="Service which was generated document",
+     *                     example="CryptoLaunchpadMS"
+     *                 )
      *             ),
      *             @OA\Property(
      *                 property="redirect_url",
      *                 type="string",
-     *                 description="An address where the user will be redirected after payment",
-     *                 default="GBP"
+     *                 description="URL where the user will be redirected after payment",
+     *                 default="https://domain.com"
      *             ),
      *         )
      *     ),
@@ -87,53 +103,54 @@ class ChargeController extends Controller
         // Validate input
         try {
             $this->validate($request, [
-                'gateway' => 'string|required',
-                'amount' => 'integer|required',
-                'currency' => 'integer|required',
-                'document_based_on' => 'string',
-                'redirect_url' => 'string|required'
+                'gateway' => 'required|string',
+                'amount' => 'required|integer',
+                'currency' => 'required|string',
+                'document' => 'sometimes|array:id,object,service',
+                'document.id' => 'required|string|min:36|max:36',
+                'document.object' => 'required|string',
+                'document.service' => 'required|string',
+                'redirect_url' => 'sometimes|string'
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
-                'type' => 'warning',
-                'title' => 'Contributor details data',
-                'message' => "Validation error",
-                'data' => $e->getMessage() // $validation->errors()->toJson()
-            ], 400);
+                'title' => 'Creating a charge payment',
+                'message' => "Field validation error: " . $e->getMessage(),
+                'data' => $e->errors()
+            ], 422);
         }
 
         $inputData = (object)$request->all();
 
+
         // Write log
         try {
             LogPaymentRequest::create([
-                'gateway' => $inputData->gateway,
-                'service' => $inputData->document_based_on,
-                'payload' => $inputData
+                'gateway' => $request->get('gateway'),
+                'service' => $request->get('document.service'),
+                'payload' => $request->all()
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::info('Log of invoice failed: ' . $e->getMessage());
         }
 
         // Init manager
         try {
-            $system = PaymentService::getInstance($inputData->gateway);
-        } catch (\Exception $e) {
-            return response()->json([
-                'type' => 'danger',
+            $system = PaymentService::getInstance($request->get('gateway'));
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'title' => 'Creating a charge payment',
                 'message' => $e->getMessage()
             ], 400);
         }
 
-        //dd($system);
-
         // Create internal order
-        $payment = PaymentModel::create([
-            'type' => PaymentModel::TYPE_PAYIN,
+        $payment = PaymentOrder::create([
+            'type' => PaymentOrder::TYPE_PAYIN,
             'gateway' => $request->get('gateway'),
             'amount' => $request->get('amount'),
             'currency' => mb_strtoupper($request->get('currency')),
-            'service' => $request->get('document_based_on'),
+            'service' => $request->get('document.service', null),
             'user_id' => Auth::user()->getAuthIdentifier()
         ]);
 
@@ -146,12 +163,12 @@ class ChargeController extends Controller
             $code = 400;
 
             LogPaymentRequestError::create([
-                'gateway' => $inputData->gateway,
+                'gateway' => $request->get('gateway'),
                 'payload' => $result['message']
             ]);
         }
 
         // Return result
-        return response()->json($result, $code);
+        return response()->jsonApi($result, $code);
     }
 }

@@ -15,17 +15,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Common seeds
+        $this->call([
+            PaymentSystemsTableSeeder::class,
+            PaymentSettingsTableSeeder::class
+        ]);
+
         // Seeds for local and staging
         if (App::environment(['local', 'staging'])) {
-            $this->call([
-                PaymentSystemsTableSeeder::class,
-                PaymentSettingsTableSeeder::class
-            ]);
+//            $this->call([
+//            ]);
         }
 
         // Seeds for production
         if (App::environment('production')) {
-
+            //
         }
     }
 }

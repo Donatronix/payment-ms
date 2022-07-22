@@ -4,7 +4,8 @@ namespace App\Api\V1\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Models\LogPaymentWebhookError;
-use App\Services\Payment;
+use App\Services\PaymentService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -28,14 +29,6 @@ class WebhookController extends Controller
      *     description="Webhooks Notifications about invoices",
      *     tags={"Webhooks"},
      *
-     *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
-     *     }},
-     *
      *     @OA\Parameter(
      *         name="gateway",
      *         description="Payment gateway",
@@ -53,8 +46,8 @@ class WebhookController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
-     * @param string                   $gateway
+     * @param Request $request
+     * @param string $gateway
      *
      * @return mixed
      */
@@ -72,9 +65,9 @@ class WebhookController extends Controller
         }
 
         // Init manager
-        try{
-            $system = Payment::getInstance($gateway);
-        } catch(\Exception $e){
+        try {
+            $system = PaymentService::getInstance($gateway);
+        } catch (Exception $e) {
             Log::info($e->getMessage());
 
             exit;

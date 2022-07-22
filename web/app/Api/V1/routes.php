@@ -15,7 +15,10 @@ $router->group([
     $router->group([
         'namespace' => 'Public'
     ], function ($router) {
-        //
+        /**
+         * Payment systems list
+         */
+        $router->get('payment-systems', 'PaymentSystemController');
     });
 
     /**
@@ -24,28 +27,31 @@ $router->group([
      * Application level for users
      */
     $router->group([
+        'prefix' => 'app',
         'namespace' => 'Application',
         'middleware' => 'checkUser'
     ], function ($router) {
         /**
-         * Init payment and charge wallet balance or invoice
+         * Payment Orders
          */
-        $router->post('payments/charge', 'ChargeController');
+        $router->group([
+            'prefix' => 'orders',
+        ], function ($router) {
+            /**
+             * Init payment and charge wallet balance or invoice
+             */
+            $router->post('charge', 'ChargeController');
 
-        /**
-         * Init payment and withdraw wallet balance
-         */
-        $router->post('payments/withdraw', 'ChargeController');
+            /**
+             * Init payment and withdraw wallet balance
+             */
+            $router->post('withdraw', 'WithdrawController');
 
-        /**
-         * Payment actions
-         */
-        $router->get('payments/{id:[\d]+}', 'PaymentController@show');
-
-        /**
-         * Payment systems list
-         */
-        $router->get('payment-systems', 'PaymentSystemController');
+            /**
+             * Payment actions
+             */
+            $router->get('{id:[\d]+}', 'PaymentOrderController@show');
+        });
     });
 
     /**
@@ -61,9 +67,16 @@ $router->group([
             'checkAdmin'
         ]
     ], function ($router) {
-        $router->get('/payments', 'PaymentController@index');
-        $router->get('/payments/lost', 'PaymentController@lost');
-        $router->post('/payments/{id:[\d]+}', 'PaymentController@update');
+        /**
+         * Payment Orders
+         */
+        $router->group([
+            'prefix' => 'orders',
+        ], function ($router) {
+            $router->get('/', 'PaymentOrderController@index');
+            $router->get('/lost', 'PaymentOrderController@lost');
+            $router->post('/{id:[\d]+}', 'PaymentOrderController@update');
+        });
 
         //Manage all payment system
         $router->get('/payment-system',          'PaymentSystemController@index');

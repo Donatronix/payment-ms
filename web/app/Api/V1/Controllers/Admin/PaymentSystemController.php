@@ -3,7 +3,8 @@
 namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PaymentSystem as PaymentSystemModel;
+use App\Models\PaymentSystem;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -24,11 +25,8 @@ class PaymentSystemController extends Controller
      *     tags={"Admin / Payment-System"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\Parameter(
@@ -57,9 +55,9 @@ class PaymentSystemController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -68,12 +66,12 @@ class PaymentSystemController extends Controller
             $resp['message'] = "List of all payment system";
             $resp['title'] = "Display all payment system";
             $resp['type'] = "Success";
-            $resp['data'] = PaymentSystemModel::orderBy('name', 'Asc')->with('payment_settings')
+            $resp['data'] = PaymentSystem::orderBy('name', 'Asc')->with('payment_settings')
                 ->paginate($request->get('limit', 20));
 
-            return response()->json($resp, 200);
-        } catch (\Exception $e) {
-            return response()->json([
+            return response()->jsonApi($resp, 200);
+        } catch (Exception $e) {
+            return response()->jsonApi([
                 'type' => 'danger',
                 'title' => 'Display all payment system',
                 'message' => $e->getMessage()
@@ -90,13 +88,10 @@ class PaymentSystemController extends Controller
      *     tags={"Admin / Payment-System"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
-
+     *
      *     @OA\RequestBody(
      *         required=true,
      *
@@ -114,9 +109,9 @@ class PaymentSystemController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function show($id): JsonResponse
     {
@@ -125,12 +120,12 @@ class PaymentSystemController extends Controller
             $resp['message'] = "Payment system details";
             $resp['title'] = "Payment system details";
             $resp['type'] = "success";
-            $paymentSystem = PaymentSystemModel::findOrFail($id);
+            $paymentSystem = PaymentSystem::findOrFail($id);
             $resp['data'] = $paymentSystem->payment_settings;
 
-            return response()->json($resp, 200);
-        } catch (\Exception $e) {
-            return response()->json([
+            return response()->jsonApi($resp, 200);
+        } catch (Exception $e) {
+            return response()->jsonApi([
                 'type' => 'danger',
                 'title' => 'Payement system Details',
                 'message' => $e->getMessage()
@@ -147,11 +142,8 @@ class PaymentSystemController extends Controller
      *     tags={"Admin / Payment-System"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\RequestBody(
@@ -186,9 +178,9 @@ class PaymentSystemController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
 
     public function store(Request $request)
@@ -212,21 +204,21 @@ class PaymentSystemController extends Controller
             ], 400);
         }
         try {
-            $paymentSystem = PaymentSystemModel::create($request->all());
+            $paymentSystem = PaymentSystem::create($request->all());
             if ($paymentSystem) {
                 $resp['message'] = "New payment system was added";
                 $resp['title'] = "Payment system";
                 $resp['type'] = "success";
                 $resp['data'] = $paymentSystem;
-                return response()->json($resp, 200);
+                return response()->jsonApi($resp, 200);
             } else {
                 $resp['message'] = "Unable to create payment system";
                 $resp['title'] = "Payment system";
                 $resp['type'] = "warning";
-                return response()->json($resp, 400);
+                return response()->jsonApi($resp, 400);
             }
-        } catch (\Exception $e) {
-            return response()->json([
+        } catch (Exception $e) {
+            return response()->jsonApi([
                 'type' => 'danger',
                 'title' => 'Failed to add new payement system',
                 'message' => $e->getMessage()
@@ -244,11 +236,8 @@ class PaymentSystemController extends Controller
      *     tags={"Admin / Payment-System"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\RequestBody(
@@ -288,10 +277,10 @@ class PaymentSystemController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param                          $id
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
 
     public function update($id, Request $request)
@@ -315,23 +304,23 @@ class PaymentSystemController extends Controller
             ], 400);
         }
         try {
-            $paymentSystem = PaymentSystemModel::findOrFail($id);
+            $paymentSystem = PaymentSystem::findOrFail($id);
             $saved = $paymentSystem->update($request->all());
             if ($saved) {
                 $resp['message'] = "Successfully updated";
                 $resp['title'] = "Payment system";
                 $resp['type'] = "success";
-                $resp['data'] = PaymentSystemModel::findOrFail($id);
-                return response()->json($resp, 200);
+                $resp['data'] = PaymentSystem::findOrFail($id);
+                return response()->jsonApi($resp, 200);
             } else {
                 $resp['message'] = "Unable to update payment system";
                 $resp['title'] = "Payment system";
                 $resp['type'] = "warning";
                 $resp['data'] = [];
-                return response()->json($resp, 400);
+                return response()->jsonApi($resp, 400);
             }
-        } catch (\Exception $e) {
-            return response()->json([
+        } catch (Exception $e) {
+            return response()->jsonApi([
                 'type' => 'danger',
                 'title' => 'Update payement system details',
                 'message' => $e->getMessage()
@@ -349,11 +338,8 @@ class PaymentSystemController extends Controller
      *     tags={"Admin / Payment-System"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\RequestBody(
@@ -392,10 +378,10 @@ class PaymentSystemController extends Controller
      *         description="Success",
      *     )
      * )
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param                          $id
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
 
     public function destroy($id, Request $request)
@@ -404,23 +390,23 @@ class PaymentSystemController extends Controller
         $resp['data'] = [];
 
         try {
-            $deleted = PaymentSystemModel::findOrFail($id)->delete();
+            $deleted = PaymentSystem::findOrFail($id)->delete();
             if ($deleted) {
                 $resp['message'] = "Payment system was deleted";
                 $resp['title'] = "Payment system";
                 $resp['type'] = "success";
-                $resp['data'] = PaymentSystemModel::orderBy('name', 'Asc')
+                $resp['data'] = PaymentSystem::orderBy('name', 'Asc')
                     ->paginate($request->get('limit', 20));
-                return response()->json($resp, 200);
+                return response()->jsonApi($resp, 200);
             } else {
                 $resp['message'] = "Unable to delete payment system";
                 $resp['title'] = "Payment system";
                 $resp['type'] = "warning";
                 $resp['data'] = [];
-                return response()->json($resp, 400);
+                return response()->jsonApi($resp, 400);
             }
-        } catch (\Exception $e) {
-            return response()->json([
+        } catch (Exception $e) {
+            return response()->jsonApi([
                 'type' => 'danger',
                 'title' => 'Delete payement system',
                 'message' => $e->getMessage()

@@ -2,33 +2,32 @@
 
 namespace App\Api\V1\Controllers\Admin;
 
-use App\Api\V1\Controllers\PaymentSystemController;
 use App\Http\Controllers\Controller;
-use App\Models\Payment;
-use Illuminate\Http\Request;
+use App\Models\PaymentOrder;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 /**
- * Class PaymentController
+ * Class PaymentOrderController
  *
  * @package App\Api\V1\Controllers
  */
-class PaymentController extends Controller
+class PaymentOrderController extends Controller
 {
     /**
      * Display Payments list
      *
      * @OA\Get(
-     *     path="/admin/payments",
+     *     path="/admin/orders",
      *     description="Display list of all patment orders",
-     *     tags={"Admin / Payments"},
+     *     tags={"Admin | Payment Orders"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\Parameter(
@@ -57,22 +56,24 @@ class PaymentController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         try {
-            $data = Payment::paginate($request->get('limit', 20));
+            $data = PaymentOrder::paginate($request->get('limit', config('settings.pagination_limit')));
 
-            return response()->json(array_merge([
-                'success' => true
-            ], $data->toArray()), 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
+            return response()->jsonApi([
+                'title' => 'Getting payment orders collection',
+                'message' => 'Payment orders list received successfully',
+                'data' => $data
+            ]);
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'title' => 'Getting payment orders collection',
+                'message' => $e->getMessage()
             ], 400);
         }
     }
@@ -81,16 +82,13 @@ class PaymentController extends Controller
      * Display invoice list not finished
      *
      * @OA\Get(
-     *     path="/admin/payments/lost",
+     *     path="/admin/orders/lost",
      *     description="Display list of all patment orders",
-     *     tags={"Admin / Payments"},
+     *     tags={"Admin | Payment Orders"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\Parameter(
@@ -129,9 +127,9 @@ class PaymentController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function lost(Request $request)
     {
@@ -148,7 +146,7 @@ class PaymentController extends Controller
         $page = intval($request->get('page', 1));
 
         if ($limit * $page == 0) {
-            return response()->json([
+            return response()->jsonApi([
                 'success' => false,
                 'error' => "Incorrect pagination: page or limit",
             ], 400);
@@ -158,14 +156,14 @@ class PaymentController extends Controller
         $startItem = ($page - 1) * $limit;
 
         if ($gateway != "" && !isset($newStatuses[$gateway])) {
-            return response()->json([
+            return response()->jsonApi([
                 'success' => false,
                 'error' => "Gateway not defined",
             ], 400);
         }
 
         try {
-            $payments = Payment::where('created_at', "<=", "DATE_SUB(NOW(), INTERVAL 1 HOUR)");
+            $payments = PaymentOrder::where('created_at', "<=", "DATE_SUB(NOW(), INTERVAL 1 HOUR)");
 
             if ($gateway == "") {
                 foreach ($newStatuses as $gateway => $newstatus) {
@@ -184,13 +182,13 @@ class PaymentController extends Controller
                 ->limit($limit)
                 ->get();
 
-            return response()->json([
+            return response()->jsonApi([
                 'success' => true,
                 'payments' => $payments
             ], 200);
 
-        } catch (\Exception $e) {
-            return response()->json([
+        } catch (Exception $e) {
+            return response()->jsonApi([
                 'success' => false,
                 'error' => $e->getMessage()
             ], 400);
@@ -201,16 +199,13 @@ class PaymentController extends Controller
      * Method for proof of payment by payment order
      *
      * @OA\Post(
-     *     path="/admin/payments",
+     *     path="/admin/orders",
      *     description="Method for proof of payment by payment order",
-     *     tags={"Admin / Payments"},
+     *     tags={"Admin | Payment Orders"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\Response(
@@ -219,12 +214,13 @@ class PaymentController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param                          $id
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
-    public function update(Request $request, $id){
+    public function update(Request $request, $id)
+    {
         // Validate input
         $this->validate($request, [
             //'status' => 'boolean'
@@ -232,10 +228,9 @@ class PaymentController extends Controller
 
         // Get payment order model
         try {
-            $order = Payment::findOrFail($id);
+            $order = PaymentOrder::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Payment order not found',
                 'message' => "Payment order #{$id} not found"
             ], 404);

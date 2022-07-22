@@ -2,8 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Models\Order;
-use App\Models\Payment;
+use App\Models\PaymentOrder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -46,7 +45,7 @@ class RechargeBalanceTransactionListener
 
         // Get or check order
         try{
-            $payment = Payment::findOrFail($inputData['payment_id']);
+            $payment = PaymentOrder::findOrFail($inputData['payment_id']);
         }catch(\Exception $e){
             Log::info('Recharge balance transaction listener error: ' . $e->getMessage());
 

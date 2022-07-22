@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Services\Payments;
+namespace App\Services\PaymentServices;
 
 use App\Contracts\PaymentSystemContract;
-use App\Models\Payment;
+use App\Models\PaymentOrder;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +12,7 @@ use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
-use App\Helpers\PaymentGatewaySettings as PaymentSetting;
+use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
 class PaypalManager implements PaymentSystemContract
 {
@@ -93,7 +93,7 @@ class PaypalManager implements PaymentSystemContract
      *
      * @return mixed|void
      */
-    public function createInvoice(Payment $payment, object $inputData): array
+    public function createInvoice(PaymentOrder $payment, object $inputData): array
     {
         try {
             // Create new charge
@@ -180,7 +180,7 @@ class PaypalManager implements PaymentSystemContract
         }
 
         // Find payment transaction
-        $payment = Payment::where('type', Payment::TYPE_PAYIN)
+        $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
             ->where('id', $paymentData["purchase_units"][0]["invoice_id"])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["purchase_units"][0]["custom_id"])
@@ -212,7 +212,7 @@ class PaypalManager implements PaymentSystemContract
         ];
     }
 
-    public function charge(Payment $payment, object $inputData): mixed
+    public function charge(PaymentOrder $payment, object $inputData): mixed
     {
         // TODO: Implement charge() method.
     }

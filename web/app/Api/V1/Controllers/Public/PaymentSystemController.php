@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\V1\Controllers\Application;
+namespace App\Api\V1\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -19,15 +19,7 @@ class PaymentSystemController extends Controller
      * @OA\Get(
      *     path="/payment-systems",
      *     description="List of payment systems",
-     *     tags={"Payment Systems"},
-     *
-     *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
-     *     }},
+     *     tags={"Public | Payment Systems"},
      *
      *     @OA\Response(
      *         response="200",
@@ -64,7 +56,7 @@ class PaymentSystemController extends Controller
     {
         $systems = [];
 
-        $dir = base_path('app/Services/Payments');
+        $dir = base_path('app/Services/PaymentServices');
 
         if ($handle = opendir($dir)) {
             /* Именно такой способ чтения элементов каталога является правильным. */
@@ -72,7 +64,7 @@ class PaymentSystemController extends Controller
                 if (($entry == '.') || ($entry == '..'))
                     continue;
 
-                $class = '\App\Services\Payments\\' . preg_replace('/\.php/', '', $entry);
+                $class = '\App\Services\PaymentServices\\' . preg_replace('/\.php/', '', $entry);
 
                 if (!class_exists($class))
                     continue;

@@ -3,19 +3,11 @@
 namespace App\Api\V1\Controllers\Application;
 
 use App\Http\Controllers\Controller;
-use App\Models\LogPaymentRequest;
-use App\Models\LogPaymentRequestError;
-use App\Models\Payment as PaymentModel;
-use App\Services\Payment as PaymentService;
+use App\Models\PaymentOrder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 
 /**
- * Class PaymentController
+ * Class PaymentOrderController
  *
  * @package App\Api\V1\Controllers
  */
@@ -25,17 +17,14 @@ class PaymentController extends Controller
      * Get detail info about transaction
      *
      * @OA\Get(
-     *     path="/payments/{id}",
-     *     summary="Get detail info about payment transaction",
-     *     description="Get detail info about payment transaction",
-     *     tags={"Payments"},
+     *     path="/app/orders/{id}",
+     *     summary="Detail | Get detail info about payment transaction",
+     *     description="Detail | Get detail info about payment transaction",
+     *     tags={"Application | Payment Orders"},
      *
      *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
+     *         "bearerAuth": {},
+     *         "apiKey": {}
      *     }},
      *
      *     @OA\Parameter(
@@ -60,23 +49,21 @@ class PaymentController extends Controller
      * @param $id
      * @return mixed
      */
-    public function show($id)
+    public function show($id): mixed
     {
         try {
-            $payment = PaymentModel::findOrFail($id);
+            $payment = PaymentOrder::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'type' => 'danger',
-                'title' => "Get payment transaction object",
-                'message' => "payment transaction with id #{$id} not found: {$e->getMessage()}"
+                'title' => 'Payment transaction',
+                'message' => "Payment transaction not found: {$e->getMessage()}"
             ], 404);
         }
 
         return response()->jsonApi([
-            'type' => 'success',
-            'title' => 'payment transaction details',
-            'message' => "payment transaction details received",
-            'data' => $payment->toArray()
+            'title' => 'Payment transaction',
+            'message' => "Payment transaction detail received",
+            'data' => $payment
         ], 200);
     }
 

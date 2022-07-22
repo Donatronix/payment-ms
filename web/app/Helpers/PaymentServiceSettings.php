@@ -2,9 +2,9 @@
 
 namespace App\Helpers;
 
-use App\Models\PaymentSetting as PaymentSettingsModel;
+use App\Models\PaymentSetting;
 
-class PaymentGatewaySettings
+class PaymentServiceSettings
 {
     //Get Payment Gateway settings manager
     public static function settings($getKey = null, $default = null): string
@@ -13,7 +13,7 @@ class PaymentGatewaySettings
             $getKey = strtolower($getKey);
 
             if ($getKey) {
-                $getValue = PaymentSettingsModel::where('key', $getKey)->value('value');
+                $getValue = PaymentSetting::where('key', $getKey)->value('value');
 
                 return ($getValue ? $getValue : $default);
             } else {

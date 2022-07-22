@@ -10,10 +10,10 @@ use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
 /**
- * Class Payment
+ * Class PaymentOrder
  * @package App\Models
  */
-class Payment extends Model
+class PaymentOrder extends Model
 {
     use HasFactory;
     use OwnerTrait;
