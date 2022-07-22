@@ -102,16 +102,24 @@ class ChargeController extends Controller
     {
         // Validate input
         try {
-            $this->validate($request, [
+            $rules = [
                 'gateway' => 'required|string',
                 'amount' => 'required|integer',
                 'currency' => 'required|string',
-                'document' => 'sometimes|array:id,object,service',
-                'document.id' => 'required|string|min:36|max:36',
-                'document.object' => 'required|string',
-                'document.service' => 'required|string',
                 'redirect_url' => 'sometimes|string'
-            ]);
+            ];
+
+            // If based on document, then
+            if($request->has('document')){
+                $rules += [
+                    'document' => 'sometimes|array:id,object,service',
+                    'document.id' => 'required|string|min:36|max:36',
+                    'document.object' => 'required|string',
+                    'document.service' => 'required|string'
+                ];
+            }
+
+            $this->validate($request, $rules);
         } catch (ValidationException $e) {
             return response()->jsonApi([
                 'title' => 'Creating a charge payment',
@@ -127,7 +135,7 @@ class ChargeController extends Controller
         try {
             LogPaymentRequest::create([
                 'gateway' => $request->get('gateway'),
-                'service' => $request->get('document.service'),
+                'service' => $request->get('document.service', null),
                 'payload' => $request->all()
             ]);
         } catch (Exception $e) {
