@@ -50,7 +50,7 @@ class RechargeBalanceRequestListener
         ]);
 
         if ($validation->fails()) {
-            \PubSub::transaction(function () {})->publish(self::RECEIVER_LISTENER, [
+            \PubSub::publish(self::RECEIVER_LISTENER, [
                 'status' => 'error',
                 'order_id' => $inputData['order_id'],
                 'message' => $validation->errors()
@@ -86,7 +86,7 @@ class RechargeBalanceRequestListener
             $paymentGateway = PaymentService::getInstance($inputData['gateway']);
         }
         catch(\Exception $e) {
-            \PubSub::transaction(function () {})->publish(self::RECEIVER_LISTENER, [
+            \PubSub::publish(self::RECEIVER_LISTENER, [
                 'status' => 'error',
                 'order_id' => $inputData['order_id'],
                 'message' => $e->getMessage(),
@@ -107,7 +107,7 @@ class RechargeBalanceRequestListener
         }
 
         // Send payment request to payment gateway
-        \PubSub::transaction(function () {})->publish(self::RECEIVER_LISTENER, array_merge($result, [
+        \PubSub::publish(self::RECEIVER_LISTENER, array_merge($result, [
             'order_id' => $inputData['order_id'],
         ]), $inputData['replay_to']);
     }

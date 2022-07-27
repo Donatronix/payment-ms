@@ -17,11 +17,6 @@ use Illuminate\Support\Facades\Log;
 class WebhookController extends Controller
 {
     /**
-     * @var string
-     */
-    private const RECEIVER_LISTENER = 'rechargeBalanceWebhook';
-
-    /**
      * Invoices webhook
      *
      * @OA\Post(
@@ -123,22 +118,22 @@ class WebhookController extends Controller
         // $payment->payload = $request;
         $payment->save();
 
-//        // Logging success request content
-//        try {
-//            LogPaymentWebhook::create([
-//                'gateway' => $gateway,
-//                'payment_id' => $result['payment_id'],
-//                'payload' => $request->all(),
-//            ]);
-//        } catch (\Exception $e) {
-//            Log::info('Log of invoice failed: ' . $e->getMessage());
-//        }
-//
-//        // If paid complete, than send notification
-//        if($result['payment_completed']){
-//            \PubSub::transaction(function () {})->publish(self::RECEIVER_LISTENER, $result, $result['service']);
-//        }
-//
+        // Logging success request content
+        try {
+            LogPaymentWebhook::create([
+                'gateway' => $gateway,
+                'payment_id' => $result['payment_id'],
+                'payload' => $request->all(),
+            ]);
+        } catch (\Exception $e) {
+            Log::info('Log of invoice failed: ' . $e->getMessage());
+        }
+
+        // If paid complete, than send notification
+        if($result['payment_completed']){
+            \PubSub::publish('rechargeBalanceWebhook', $result, $result['service']);
+        }
+
         // Send status 200 OK
         return response('');
     }

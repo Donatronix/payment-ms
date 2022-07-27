@@ -102,8 +102,7 @@ class LoanPaymentListener
             exit;
         } else {
             // Return result
-            \PubSub::transaction(function () {
-            })->publish(self::RECEIVER_LISTENER, [
+            \PubSub::publish(self::RECEIVER_LISTENER, [
                 'type' => 'success',
                 'title' => "Payment sent",
                 'data' => [
