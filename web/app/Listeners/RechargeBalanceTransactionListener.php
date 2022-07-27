@@ -34,7 +34,7 @@ class RechargeBalanceTransactionListener
     {
         // Validate input
         $validation = Validator::make($inputData, [
-            'payment_id' => 'integer|required',
+            'payment_order_id' => 'integer|required',
         ]);
 
         if ($validation->fails()) {
@@ -45,7 +45,7 @@ class RechargeBalanceTransactionListener
 
         // Get or check order
         try{
-            $payment = PaymentOrder::findOrFail($inputData['payment_id']);
+            $payment = PaymentOrder::findOrFail($inputData['payment_order_id']);
         }catch(\Exception $e){
             Log::info('Recharge balance transaction listener error: ' . $e->getMessage());
 

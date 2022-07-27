@@ -78,6 +78,12 @@ class ChargeController extends Controller
      *                     type="string",
      *                     description="Service which was generated document",
      *                     example="CryptoLaunchpadMS"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="meta",
+     *                     type="object",
+     *                     description="Document metadata",
+     *                     example="{}"
      *                 )
      *             ),
      *             @OA\Property(
@@ -85,7 +91,7 @@ class ChargeController extends Controller
      *                 type="string",
      *                 description="URL where the user will be redirected after payment",
      *                 default="https://domain.com"
-     *             ),
+     *             )
      *         )
      *     ),
      *
@@ -112,10 +118,11 @@ class ChargeController extends Controller
             // If based on document, then
             if($request->has('document')){
                 $rules += [
-                    'document' => 'sometimes|array:id,object,service',
+                    'document' => 'sometimes|array:id,object,service,meta',
                     'document.id' => 'required|string|min:36|max:36',
                     'document.object' => 'required|string',
-                    'document.service' => 'required|string'
+                    'document.service' => 'required|string',
+                    'document.meta' => 'nullable|array'
                 ];
             }
 

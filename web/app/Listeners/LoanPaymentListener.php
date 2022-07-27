@@ -44,7 +44,7 @@ class LoanPaymentListener
             'replay_to' => 'string|required',
             'user_id' => 'string|required',
             'loan_id' => 'string|required',
-            'payment_id' => 'string|required',
+            'payment_order_id' => 'string|required',
             'total_load' => 'integer|required',
             'token' => 'string',
         ]);
@@ -106,9 +106,9 @@ class LoanPaymentListener
                 'type' => 'success',
                 'title' => "Payment sent",
                 'data' => [
-                    "reference_id" => $result["data"]["payment_id"],
+                    "reference_id" => $result["data"]["payment_order_id"],
                     "loan_id" => $inputData->loan_id,
-                    "payment_id" => $inputData->payment_id,
+                    "payment_order_id" => $inputData->payment_order_id,
                     'amount_paid' => $inputData->amount,
                     'total_load' => $inputData->total_load,
                     'token' => $inputData->token,

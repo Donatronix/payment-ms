@@ -122,7 +122,7 @@ class WebhookController extends Controller
         try {
             LogPaymentWebhook::create([
                 'gateway' => $gateway,
-                'payment_id' => $result['payment_id'],
+                'payment_order_id' => $result['payment_order_id'],
                 'payload' => $request->all(),
             ]);
         } catch (\Exception $e) {

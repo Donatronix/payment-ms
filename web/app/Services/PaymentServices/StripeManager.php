@@ -112,7 +112,7 @@ class StripeManager implements PaymentSystemContract
                 'message' => "Session successfully created",
                 'data' => [
                     'gateway' => self::gateway(),
-                    'payment_id' => $payment->id,
+                    'payment_order_id' => $payment->id,
                     'session_id' => $stripeDocument->id,
                     'public_key' => PaymentSetting::settings('stripe_public_key'),
                     'clientSecret' => $stripeDocument->client_secret,
@@ -168,7 +168,7 @@ class StripeManager implements PaymentSystemContract
                 'message' => "Session successfully created",
                 'data' => [
                     'gateway' => self::gateway(),
-                    'payment_id' => $payment->id,
+                    'payment_order_id' => $payment->id,
                     'session_id' => $checkout_session->id,
                     'session_url' => $checkout_session->url,
                     'public_key' => PaymentSetting::settings('stripe_public_key')
@@ -263,7 +263,7 @@ class StripeManager implements PaymentSystemContract
                 return [
                     'type' => 'success',
                     'stripeDocument' => $stripeDocument
-//                    'payment_id' => $payment->id,
+//                    'payment_order_id' => $payment->id,
 //                    'service' => $payment->service,
 //                    'amount' => $payment->amount,
 //                    'currency' => $payment->currency,

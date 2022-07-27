@@ -107,7 +107,7 @@ class CoinbaseManager implements PaymentSystemContract
                 ],
                 'metadata' => [
                     'code' => $payment->check_code,
-                    'payment_id' => $payment->id
+                    'payment_order_id' => $payment->id
                 ],
                 'redirect_url' => PaymentSetting::settings('coinbase_redirect_url'),
                 'cancel_url' => PaymentSetting::settings('coinbase_cancel_url')
@@ -122,7 +122,7 @@ class CoinbaseManager implements PaymentSystemContract
             return [
                 'type' => 'success',
                 'gateway' => self::gateway(),
-                'payment_id' => $payment->id,
+                'payment_order_id' => $payment->id,
                 'invoice_url' => $chargeObj->hosted_url
             ];
         } catch (Exception $e) {
@@ -167,7 +167,7 @@ class CoinbaseManager implements PaymentSystemContract
                 "id" => $event->data->id,
                 "metadata" => [
                     "code" => $event->data->metadata->code,
-                    "payment_id"=>$event->data->metadata->payment_id
+                    "payment_order_id"=>$event->data->metadata->payment_order_id
                 ]
             ];
         } catch (Exception $e) {
@@ -190,7 +190,7 @@ class CoinbaseManager implements PaymentSystemContract
 
         // Find payment transaction
         $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
-            ->where('id', $paymentData["metadata"]['payment_id'])
+            ->where('id', $paymentData["metadata"]['payment_order_id'])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["metadata"]['code'])
             ->where('gateway', self::gateway())
@@ -199,7 +199,7 @@ class CoinbaseManager implements PaymentSystemContract
         if (!$payment) {
             return [
                 'type' => 'danger',
-                'message' => sprintf("Payment transaction not found in database: payment_id=%s, document_id=%s, code=%s", $paymentData->metadata['payment_id'], $paymentData->id, $paymentData->metadata['code'])
+                'message' => sprintf("Payment transaction not found in database: payment_order_id=%s, document_id=%s, code=%s", $paymentData->metadata['payment_order_id'], $paymentData->id, $paymentData->metadata['code'])
             ];
         }
 
@@ -213,7 +213,7 @@ class CoinbaseManager implements PaymentSystemContract
         return [
             'status' => 'success',
             'gateway' => self::gateway(),
-            'payment_id' => $payment->id,
+            'payment_order_id' => $payment->id,
             'amount' => $payment->amount,
             'currency' => $payment->currency,
             'service' => $payment->service,

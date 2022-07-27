@@ -30,7 +30,7 @@ class LogPaymentWebhook extends Model
      */
     protected $fillable = [
         'gateway',
-        'payment_id',
+        'payment_order_id',
         'payload'
     ];
 }

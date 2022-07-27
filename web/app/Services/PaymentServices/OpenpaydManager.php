@@ -161,7 +161,7 @@ class OpenpaydManager implements PaymentSystemContract
             // Return result
             return [
                 'status' => 'success',
-                'payment_id' => $payment->id,
+                'payment_order_id' => $payment->id,
                 'amount' => $payment->amount,
                 'currency' => $payment->currency,
                 'service' => $payment->service,

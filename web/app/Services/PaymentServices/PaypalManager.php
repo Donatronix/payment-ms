@@ -143,7 +143,7 @@ class PaypalManager implements PaymentSystemContract
             return [
                 'type' => 'success',
                 'gateway' => self::gateway(),
-                'payment_id' => $payment->id,
+                'payment_order_id' => $payment->id,
                 'invoice_url' => $invoiceUrl
             ];
         } catch (Exception $e) {
@@ -203,7 +203,7 @@ class PaypalManager implements PaymentSystemContract
         // Return result
         return [
             'status' => 'success',
-            'payment_id' => $payment->id,
+            'payment_order_id' => $payment->id,
             'service' => $payment->service,
             'amount' => $payment->amount,
             'currency' => $payment->currency,

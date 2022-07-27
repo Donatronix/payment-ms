@@ -16,7 +16,7 @@ class CreateLogPaymentWebhooksTable extends Migration
         Schema::create('log_payment_webhooks', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('gateway',10);
-            $table->unsignedBigInteger('payment_id')->nullable();
+            $table->unsignedBigInteger('payment_order_id')->nullable();
             $table->text('payload');
             $table->timestamps();
         });

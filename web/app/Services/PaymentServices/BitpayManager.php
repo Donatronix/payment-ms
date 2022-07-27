@@ -119,7 +119,7 @@ class BitpayManager implements PaymentSystemContract
             return [
                 'type' => 'success',
                 'gateway' => self::gateway(),
-                'payment_id' => $payment->id,
+                'payment_order_id' => $payment->id,
                 'invoice_url' => $chargeObj->getURL()
             ];
         } catch (Exception $e) {
@@ -156,7 +156,7 @@ class BitpayManager implements PaymentSystemContract
             return [
                 'type' => 'success',
                 'gateway' => self::gateway(),
-                'payment_id' => $payment->id,
+                'payment_order_id' => $payment->id,
                 'invoice_url' => $chargeObj->getURL()
             ];
         } catch (Exception $e) {
@@ -217,7 +217,7 @@ class BitpayManager implements PaymentSystemContract
         // Return result
         return [
             'status' => 'success',
-            'payment_id' => $payment->id,
+            'payment_order_id' => $payment->id,
             'amount' => $payment->amount,
             'currency' => $payment->currency,
             'service' => $payment->service,
