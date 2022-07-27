@@ -51,6 +51,16 @@ $router->group([
              * Payment actions
              */
             $router->get('{id:[\d]+}', 'PaymentOrderController@show');
+
+        });
+        /**
+         * Transactions
+         */
+        $router->group([
+            'prefix' => 'transactions'
+        ], function($router) {
+            $router->get('/', 'TransactionController@index');
+            $router->get('/{id}', 'TransactionController@show');
         });
     });
 
@@ -76,6 +86,17 @@ $router->group([
             $router->get('/', 'PaymentOrderController@index');
             $router->get('/lost', 'PaymentOrderController@lost');
             $router->post('/{id:[\d]+}', 'PaymentOrderController@update');
+        });
+
+        /**
+         * Transactions
+         */
+        $router->group([
+            'prefix' => 'transactions'
+        ], function($router) {
+            $router->get('/', 'TransactionController@index');
+            $router->get('/{id}', 'TransactionController@show');
+            $router->post('/', 'TransactionController@store');
         });
 
         //Manage all payment system
