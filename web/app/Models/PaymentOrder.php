@@ -83,4 +83,8 @@ class PaymentOrder extends Model
             $obj->setAttribute('check_code', $checkCode);
         });
     }
+
+    public function transactions(){
+        return $this->hasMany(Transaction::class, 'payment_order_id', 'id');
+    }
 }
