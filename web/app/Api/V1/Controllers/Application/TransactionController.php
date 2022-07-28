@@ -73,24 +73,22 @@ class TransactionController extends Controller
     public function index(Request $request)
     {
         try {
-            $transaction = Transaction::with(['paymentOrders'])->latest()->paginate($request->get('limit', config('settings.pagination_limit')));
+            $transaction = Transaction::with(['paymentOrders'])
+                ->latest()
+                ->paginate($request->get('limit', config('settings.pagination_limit')));
 
-            return response()->json([
-                'type' => 'success',
+            return response()->jsonApi([
                 'title' => 'Get Transaction List',
                 'message' => 'Transaction List',
                 'data' => $transaction
-            ], 200);
+            ]);
         } catch (\Throwable $th) {
-            return response()->json([
-                'type' => 'danger',
+            return response()->jsonApi([
                 'title' => 'Get Transaction List',
-                'message' => 'Get Transaction List Failed',
-                'data' => $th->getMessage()
+                'message' => 'Get Transaction List Failed: ' . $th->getMessage(),
             ], 500);
         }
     }
-
 
      /**
      *  Display a listing of the band
@@ -104,7 +102,7 @@ class TransactionController extends Controller
      *          response="200",
      *          description="Success",
      *          @OA\JsonContent(
-     *              type="array",
+     *              type="object",
      *              @OA\Property(
      *                  property="id",
      *                  type="number",
@@ -117,7 +115,6 @@ class TransactionController extends Controller
      *                  description="transaction_id",
      *                  example="PAY_INT_ULTRA62e19abcca0c5"
      *              ),
-     *
      *              @OA\Property(
      *                  property="payment_order_id",
      *                  type="string",
@@ -149,19 +146,19 @@ class TransactionController extends Controller
     public function show($id)
     {
         try {
-            $transaction = Transaction::with(['paymentOrders'])->where('id', $id)->first();
-            return response()->json([
-                'type' => 'success',
+            $transaction = Transaction::with(['paymentOrders'])
+                ->where('id', $id)
+                ->first();
+
+            return response()->jsonApi([
                 'title' => 'Get Transaction',
                 'message' => 'Transaction',
                 'data' => $transaction
-            ], 200);
+            ]);
         } catch (\Throwable $th) {
-            return response()->json([
-                'type' => 'danger',
+            return response()->jsonApi([
                 'title' => 'Get a Transaction',
-                'message' => 'Get a Transaction Failed',
-                'data' => $th->getMessage()
+                'message' => 'Get a Transaction Failed: ' . $th->getMessage(),
             ], 500);
         }
     }

@@ -64,7 +64,7 @@ class PaymentController extends Controller
             'title' => 'Payment transaction',
             'message' => "Payment transaction detail received",
             'data' => $payment
-        ], 200);
+        ]);
     }
 
     function calculateOrderAmount(array $items): int

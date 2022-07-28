@@ -185,7 +185,7 @@ class PaymentOrderController extends Controller
             return response()->jsonApi([
                 'success' => true,
                 'payments' => $payments
-            ], 200);
+            ]);
 
         } catch (Exception $e) {
             return response()->jsonApi([

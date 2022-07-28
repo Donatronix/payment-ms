@@ -351,12 +351,12 @@ class PaymentSystemController extends Controller
      *                 type="string",
      *                 description="payment system id",
      *             ),
-     *         @OA\Parameter(
-     *          name="limit",
-     *           description="Count of orders in response",
-     *           in="query",
-     *           required=false,
-     *           @OA\Schema(
+     *             @OA\Parameter(
+     *             name="limit",
+     *             description="Count of orders in response",
+     *             in="query",
+     *             required=false,
+     *             @OA\Schema(
      *              type="integer",
      *              default=20,
      *           )

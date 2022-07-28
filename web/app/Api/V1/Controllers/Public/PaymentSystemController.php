@@ -44,7 +44,7 @@ class PaymentSystemController extends Controller
             'title' => "Get payment systems list",
             'message' => "Payment systems data successfully",
             'data' => $systems
-        ], 200);
+        ]);
     }
 
     public function clear_cache()
