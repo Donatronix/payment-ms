@@ -34,9 +34,9 @@ class TransactionController extends Controller
      *                      example="90000009-9009-9009-9009-900000000009"
      *                  ),
      *                  @OA\Property(
-     *                      property="transaction_id",
+     *                      property="trx_id",
      *                      type="string",
-     *                      description="transaction_id",
+     *                      description="trx_id",
      *                      example="PAY_INT_ULTRA62e19abcca0c5"
      *                  ),
      *                  @OA\Property(
@@ -68,7 +68,7 @@ class TransactionController extends Controller
      *
      * @return mixed
      */
-    public function index(Request $request)
+    public function index(Request $request): mixed
     {
         try {
             $transaction = Transaction::with(['paymentOrders'])
@@ -84,78 +84,6 @@ class TransactionController extends Controller
             return response()->jsonApi([
                 'title' => 'Get Transaction List',
                 'message' => 'Get Transaction List Failed: ' . $th->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     *  Display a listing of the transaction
-     *
-     * @OA\Get(
-     *     path="/admin/transaction/{id}",
-     *     description="Get all transactions",
-     *     tags={"Admin | transactions"},
-     *
-     *     @OA\Response(
-     *          response="200",
-     *          description="Success",
-     *          @OA\JsonContent(
-     *              type="object",
-     *
-     *              @OA\Property(
-     *                  property="id",
-     *                  type="number",
-     *                  description="id",
-     *                  example="90000009-9009-9009-9009-900000000009"
-     *              ),
-     *              @OA\Property(
-     *                  property="transaction_id",
-     *                  type="string",
-     *                  description="transaction_id",
-     *                  example="PAY_INT_ULTRA62e19abcca0c5"
-     *              ),
-     *              @OA\Property(
-     *                  property="payment_order_id",
-     *                  type="string",
-     *                  description="payment_order_id",
-     *                  example="96e17ebc-5404-43ee-b1c9-323ed169f935"
-     *              )
-     *          )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response="500",
-     *         description="Unknown error"
-     *     ),
-     *     @OA\Response(
-     *         response="400",
-     *         description="Invalid request"
-     *     ),
-     *
-     *     @OA\Response(
-     *         response="404",
-     *         description="Not Found"
-     *     ),
-     * )
-     *
-     * @param Request $request
-     *
-     * @return mixed
-     */
-    public function show($id)
-    {
-        try {
-            $transaction = Transaction::with(['paymentOrders'])->where('id', $id)->first();
-
-            return response()->jsonApi([
-                'title' => 'Get Transaction',
-                'message' => 'Transaction',
-                'data' => $transaction
-            ]);
-        } catch (\Throwable $th) {
-            return response()->jsonApi([
-                'title' => 'Get a Transaction',
-                'message' => 'Get a Transaction Failed: ' . $th->getMessage(),
             ], 500);
         }
     }
@@ -179,7 +107,7 @@ class TransactionController extends Controller
      *                 example="A"
      *             ),
      *             @OA\Property(
-     *                 property="transaction_id",
+     *                 property="trx_id",
      *                 type="string",
      *                 description="id of transaction",
      *                 example="383892830232320323-23232"
@@ -205,9 +133,9 @@ class TransactionController extends Controller
      *                 example="90000009-9009-9009-9009-900000000009"
      *             ),
      *             @OA\Property(
-     *                 property="transaction_id",
+     *                 property="trx_id",
      *                 type="string",
-     *                 description="transaction_id",
+     *                 description="trx_id",
      *                 example="90000009-9009-9009-9009-900000000009"
      *             ),
      *             @OA\Property(
@@ -238,16 +166,16 @@ class TransactionController extends Controller
      * @return transaction|JsonResponse
      * @throws ValidationException
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse|Transaction
     {
         try {
             $this->validate($request, [
-                'transaction_id' => 'required|string',
+                'trx_id' => 'required|string',
                 'payment_order_id' => 'required|string',
             ]);
 
             $transaction = new transaction();
-            $transaction->transaction_id = $request->transaction_id;
+            $transaction->trx_id = $request->trx_id;
             $transaction->payment_order_id = $request->payment_order_id;
 
             $transaction->save();
@@ -261,6 +189,78 @@ class TransactionController extends Controller
             return response()->jsonApi([
                 'title' => 'Store transaction',
                 'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     *  Display a listing of the transaction
+     *
+     * @OA\Get(
+     *     path="/admin/transaction/{id}",
+     *     description="Get all transactions",
+     *     tags={"Admin | transactions"},
+     *
+     *     @OA\Response(
+     *          response="200",
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              type="object",
+     *
+     *              @OA\Property(
+     *                  property="id",
+     *                  type="number",
+     *                  description="id",
+     *                  example="90000009-9009-9009-9009-900000000009"
+     *              ),
+     *              @OA\Property(
+     *                  property="trx_id",
+     *                  type="string",
+     *                  description="trx_id",
+     *                  example="PAY_INT_ULTRA62e19abcca0c5"
+     *              ),
+     *              @OA\Property(
+     *                  property="payment_order_id",
+     *                  type="string",
+     *                  description="payment_order_id",
+     *                  example="96e17ebc-5404-43ee-b1c9-323ed169f935"
+     *              )
+     *          )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response="500",
+     *         description="Unknown error"
+     *     ),
+     *     @OA\Response(
+     *         response="400",
+     *         description="Invalid request"
+     *     ),
+     *
+     *     @OA\Response(
+     *         response="404",
+     *         description="Not Found"
+     *     ),
+     * )
+     *
+     * @param Request $request
+     *
+     * @return mixed
+     */
+    public function show($id): mixed
+    {
+        try {
+            $transaction = Transaction::with(['paymentOrders'])->where('id', $id)->first();
+
+            return response()->jsonApi([
+                'title' => 'Get Transaction',
+                'message' => 'Transaction',
+                'data' => $transaction
+            ]);
+        } catch (\Throwable $th) {
+            return response()->jsonApi([
+                'title' => 'Get a Transaction',
+                'message' => 'Get a Transaction Failed: ' . $th->getMessage(),
             ], 500);
         }
     }

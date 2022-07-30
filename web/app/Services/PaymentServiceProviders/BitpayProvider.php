@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\PaymentServices;
+namespace App\Services\PaymentServiceProviders;
 
-use App\Contracts\PaymentSystemContract;
+use App\Contracts\PaymentServiceContract;
 use App\Helpers\PaymentServiceSettings as PaymentSetting;
 use App\Models\PaymentOrder;
 use BitPaySDK\Client;
@@ -11,8 +11,9 @@ use BitPaySDK\Model\Invoice\Invoice;
 use BitPaySDK\Tokens;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
-class BitpayManager implements PaymentSystemContract
+class BitpayProvider implements PaymentServiceContract
 {
     /**
      * Invoice statuses
@@ -41,16 +42,16 @@ class BitpayManager implements PaymentSystemContract
     /**
      * @var \BitPaySDK\Client
      */
-    private $gateway;
+    private $service;
 
     /**
-     * BitPayManager constructor.
+     * BitPayProvider constructor.
      */
     public function __construct()
     {
         try {
             // Initialize with separate variables and Private Key stored in file.
-            $this->gateway = Client::create()->withData(
+            $this->service = Client::create()->withData(
                 PaymentSetting::settings('bitpay_environment'),
                 storage_path(PaymentSetting::settings('bitpay_key_path')),
                 new Tokens(
@@ -74,7 +75,7 @@ class BitpayManager implements PaymentSystemContract
         return 'BitPay is..';
     }
 
-    public static function gateway(): string
+    public static function service(): string
     {
         return 'bitpay';
     }
@@ -109,16 +110,16 @@ class BitpayManager implements PaymentSystemContract
             $invoice->setItemDesc("Charge user wallet balance");
 
             // Send data to bitpay and get created invoice
-            $chargeObj = $this->gateway->createInvoice($invoice);
+            $chargeObj = $this->service->createInvoice($invoice);
 
-            // Update payment transaction data
+            // Update Payment Order data
             $payment->status = self::STATUS_INVOICE_NEW;
             $payment->document_id = $chargeObj->getId();
             $payment->save();
 
             return [
                 'type' => 'success',
-                'gateway' => self::gateway(),
+                'gateway' => self::service(),
                 'payment_order_id' => $payment->id,
                 'invoice_url' => $chargeObj->getURL()
             ];
@@ -146,16 +147,16 @@ class BitpayManager implements PaymentSystemContract
             $invoice->setItemDesc("Charge user wallet balance");
 
             // Send data to bitpay and get created invoice
-            $chargeObj = $this->gateway->createInvoice($invoice);
+            $chargeObj = $this->service->createInvoice($invoice);
 
-            // Update payment transaction data
+            // Update Payment Order data
             $payment->status = self::STATUS_INVOICE_NEW;
             $payment->document_id = $chargeObj->getId();
             $payment->save();
 
             return [
                 'type' => 'success',
-                'gateway' => self::gateway(),
+                'gateway' => self::service(),
                 'payment_order_id' => $payment->id,
                 'invoice_url' => $chargeObj->getURL()
             ];
@@ -174,7 +175,7 @@ class BitpayManager implements PaymentSystemContract
      */
     public function handlerWebhook(Request $request): array
     {
-        \Log::info($request);
+        Log::info($request);
         // Check event property
         if (!$request->has('event')) {
             return [
@@ -194,18 +195,18 @@ class BitpayManager implements PaymentSystemContract
 
         $paymentData['posData'] = json_decode($paymentData['posData']);
 
-        // Find payment transaction
+        // Find Payment Order
         $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
             ->where('id', $paymentData['orderId'])
             ->where('document_id', $paymentData['id'])
             ->where('check_code', $paymentData['posData']->code)
-            ->where('gateway', self::gateway())
+            ->where('gateway', self::service())
             ->first();
 
         if (!$payment) {
             return [
                 'type' => 'danger',
-                'message' => 'Payment transaction not found in Payment Microservice database'
+                'message' => 'Payment Order not found in Payment Microservice database'
             ];
         }
 

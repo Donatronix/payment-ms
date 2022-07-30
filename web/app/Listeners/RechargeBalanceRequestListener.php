@@ -4,7 +4,7 @@ namespace App\Listeners;
 
 use App\Models\LogPaymentRequest;
 use App\Models\LogPaymentRequestError;
-use App\Services\PaymentService;
+use App\Services\PaymentServiceManager;
 use App\Models\PaymentOrder as PayModel;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -83,7 +83,7 @@ class RechargeBalanceRequestListener
                 'payload' => $inputData
             ]);
 
-            $paymentGateway = PaymentService::getInstance($inputData['gateway']);
+            $paymentGateway = PaymentServiceManager::getInstance($inputData['gateway']);
         }
         catch(\Exception $e) {
             \PubSub::publish(self::RECEIVER_LISTENER, [

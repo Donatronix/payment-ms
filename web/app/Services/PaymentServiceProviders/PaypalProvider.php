@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\PaymentServices;
+namespace App\Services\PaymentServiceProviders;
 
-use App\Contracts\PaymentSystemContract;
+use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
 use Exception;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
-class PaypalManager implements PaymentSystemContract
+class PaypalProvider implements PaymentServiceContract
 {
     /**
      * Order / Invoice statuses
@@ -44,10 +44,10 @@ class PaypalManager implements PaymentSystemContract
     /**
      * @var \PayPalCheckoutSdk\Core\PayPalHttpClient
      */
-    private $gateway;
+    private $service;
 
     /**
-     * BitPayManager constructor.
+     * PaypalProvider constructor.
      */
     public function __construct()
     {
@@ -63,7 +63,7 @@ class PaypalManager implements PaymentSystemContract
             );
         }
 
-        $this->gateway = new PayPalHttpClient($environment);
+        $this->service = new PayPalHttpClient($environment);
     }
 
     public static function name(): string
@@ -76,7 +76,7 @@ class PaypalManager implements PaymentSystemContract
         return 'PayPal payment is..';
     }
 
-    public static function gateway(): string
+    public static function service(): string
     {
         return 'paypal';
     }
@@ -126,9 +126,9 @@ class PaypalManager implements PaymentSystemContract
                     'cancel_url' => PaymentSetting::settings('payments_redirect_url'),
                 ]
             ];
-            $chargeObj = $this->gateway->execute($request);
+            $chargeObj = $this->service->execute($request);
 
-            // Update payment transaction data
+            // Update Payment Order data
             $payment->status = self::STATUS_ORDER_CREATED;
             $payment->document_id = $chargeObj->result->id;
             $payment->save();
@@ -142,7 +142,7 @@ class PaypalManager implements PaymentSystemContract
 
             return [
                 'type' => 'success',
-                'gateway' => self::gateway(),
+                'gateway' => self::service(),
                 'payment_order_id' => $payment->id,
                 'invoice_url' => $invoiceUrl
             ];
@@ -161,7 +161,7 @@ class PaypalManager implements PaymentSystemContract
      */
     public function handlerWebhook(Request $request): array
     {
-        \Log::info($request);
+        Log::info($request);
         // Check sender
         if (!Str::contains($request->header('User-Agent'), 'PayPal')) {
             return [
@@ -179,22 +179,22 @@ class PaypalManager implements PaymentSystemContract
             ];
         }
 
-        // Find payment transaction
+        // Find Payment Order
         $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
             ->where('id', $paymentData["purchase_units"][0]["invoice_id"])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["purchase_units"][0]["custom_id"])
-            ->where('gateway', self::gateway())
+            ->where('gateway', self::service())
             ->first();
 
         if (!$payment) {
             return [
                 'type' => 'danger',
-                'message' => 'Payment transaction not found in Payment Microservice database'
+                'message' => 'Payment Order not found in Payment Microservice database'
             ];
         }
 
-        // Update payment transaction status
+        // Update Payment Order status
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentData["status"]);
         $payment->status = constant("self::{$status}");
        // $payment->payload = $paymentData;

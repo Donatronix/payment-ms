@@ -19,7 +19,7 @@ class CreatePaymentSettingsTable extends Migration
             $table->string('key');
             $table->string('value')->nullable();
 
-            $table->foreignUuid('payment_system_id')
+            $table->foreignUuid('payment_service_id')
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');

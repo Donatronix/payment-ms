@@ -4,7 +4,7 @@ namespace App\Api\V1\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Models\LogPaymentWebhookError;
-use App\Services\PaymentService;
+use App\Services\PaymentServiceManager;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -61,7 +61,7 @@ class WebhookController extends Controller
 
         // Init manager
         try {
-            $system = PaymentService::getInstance($gateway);
+            $system = PaymentServiceManager::getInstance($gateway);
         } catch (Exception $e) {
             Log::info($e->getMessage());
 

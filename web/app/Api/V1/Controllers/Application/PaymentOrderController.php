@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\LogPaymentRequest;
 use App\Models\LogPaymentRequestError;
 use App\Models\PaymentOrder;
-use App\Services\PaymentService as PaymentService;
-use Exception;
+use App\Services\PaymentServiceManager;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Class ChargeController
+ * Class PaymentOrderController
  *
  * @package App\Api\V1\Controllers
  */
-class ChargeController extends Controller
+class PaymentOrderController extends Controller
 {
     /**
      * Init payment and charge wallet balance or invoice
@@ -104,7 +104,7 @@ class ChargeController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function __invoke(Request $request): JsonResponse
+    public function charge(Request $request): JsonResponse
     {
         // Validate input
         try {
@@ -137,7 +137,6 @@ class ChargeController extends Controller
 
         $inputData = (object)$request->all();
 
-
         // Write log
         try {
             LogPaymentRequest::create([
@@ -145,14 +144,14 @@ class ChargeController extends Controller
                 'service' => $request->get('document.service', null),
                 'payload' => $request->all()
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::info('Log of invoice failed: ' . $e->getMessage());
         }
 
         // Init manager
         try {
-            $system = PaymentService::getInstance($request->get('gateway'));
-        } catch (Exception $e) {
+            $system = PaymentServiceManager::getInstance($request->get('gateway'));
+        } catch (\Exception $e) {
             return response()->jsonApi([
                 'title' => 'Creating a charge payment',
                 'message' => $e->getMessage()
@@ -185,5 +184,108 @@ class ChargeController extends Controller
 
         // Return result
         return response()->jsonApi($result, $code);
+    }
+
+    /**
+     * Init payment and withdraw wallet balance
+     *
+     * @OA\Post(
+     *     path="/app/orders/withdraw",
+     *     summary="Withdraw | Init payment and withdraw wallet balance",
+     *     description="Withdraw | Init payment and withdraw wallet balance",
+     *     tags={"Application | Payment Orders"},
+     *
+     *     security={{
+     *         "bearerAuth": {},
+     *         "apiKey": {}
+     *     }},
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="gateway",
+     *                 type="string",
+     *                 description="Payment gateway",
+     *                 default="bitpay"
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response="200",
+     *         description="Success"
+     *     )
+     * )
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function withdraw(Request $request): JsonResponse
+    {
+        //
+    }
+
+    /**
+     * Get detail info about transaction
+     *
+     * @OA\Get(
+     *     path="/app/orders/{id}",
+     *     summary="Detail | Get detail info about Payment Order",
+     *     description="Detail | Get detail info about Payment Order",
+     *     tags={"Application | Payment Orders"},
+     *
+     *     security={{
+     *         "bearerAuth": {},
+     *         "apiKey": {}
+     *     }},
+     *
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Payment Order ID",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *          response="200",
+     *          description="Data of Payment Order"
+     *     ),
+     *     @OA\Response(
+     *          response="404",
+     *          description="Payment Order not found",
+     *     )
+     * )
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function show($id): mixed
+    {
+        try {
+            $payment = PaymentOrder::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->jsonApi([
+                'title' => 'Payment Order',
+                'message' => "Payment Order not found: {$e->getMessage()}"
+            ], 404);
+        }
+
+        return response()->jsonApi([
+            'title' => 'Payment Order',
+            'message' => "Payment Order detail received",
+            'data' => $payment
+        ]);
+    }
+
+    function calculateOrderAmount(array $items): int
+    {
+        // Replace this constant with a calculation of the order's amount
+        // Calculate the order total on the server to prevent
+        // people from directly manipulating the amount on the client
+        return 1400;
     }
 }

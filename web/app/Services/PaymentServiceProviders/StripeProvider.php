@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\PaymentServices;
+namespace App\Services\PaymentServiceProviders;
 
-use App\Contracts\PaymentSystemContract;
+use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -12,7 +12,7 @@ use Stripe\Stripe;
 use Stripe\Webhook;
 use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
-class StripeManager implements PaymentSystemContract
+class StripeProvider implements PaymentServiceContract
 {
     const STATUS_ORDER_REQUIRES_PAYMENT_METHOD = 1;
     const STATUS_ORDER_REQUIRES_CONFIRMATION = 2;
@@ -28,20 +28,20 @@ class StripeManager implements PaymentSystemContract
     /**
      * @var array
      */
-    private array $gateway;
+    private array $service;
 
     /**
      * constructor.
      */
     public function __construct()
     {
-        $this->gateway = [];
+        $this->service = [];
 
         // Set your secret API key
         Stripe::setApiKey(PaymentSetting::settings('stripe_secret_key'));
     }
 
-    public static function gateway(): string
+    public static function service(): string
     {
         return 'stripe';
     }
@@ -111,7 +111,7 @@ class StripeManager implements PaymentSystemContract
                 'title' => 'Stripe checkout payment session creating',
                 'message' => "Session successfully created",
                 'data' => [
-                    'gateway' => self::gateway(),
+                    'gateway' => self::service(),
                     'payment_order_id' => $payment->id,
                     'session_id' => $stripeDocument->id,
                     'public_key' => PaymentSetting::settings('stripe_public_key'),
@@ -167,7 +167,7 @@ class StripeManager implements PaymentSystemContract
                 'title' => 'Stripe checkout payment session creating',
                 'message' => "Session successfully created",
                 'data' => [
-                    'gateway' => self::gateway(),
+                    'gateway' => self::service(),
                     'payment_order_id' => $payment->id,
                     'session_id' => $checkout_session->id,
                     'session_url' => $checkout_session->url,

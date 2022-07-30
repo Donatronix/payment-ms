@@ -4,7 +4,7 @@ namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PaymentSetting;
-use App\Models\PaymentSystem;
+use App\Models\PaymentService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -98,7 +98,7 @@ class PaymentSettingController extends Controller
      *
      *         @OA\JsonContent(
      *            @OA\Property(
-     *                 property="payment_system_id",
+     *                 property="payment_service_id",
      *                 type="string",
      *                 description="payment system id",
      *             ),
@@ -133,7 +133,7 @@ class PaymentSettingController extends Controller
             $this->validate($request, [
                 'key' => 'required|string',
                 'value' => 'required|string',
-                'payment_system_id' => 'required|string'
+                'payment_service_id' => 'required|string'
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
@@ -145,7 +145,7 @@ class PaymentSettingController extends Controller
         }
 
         try {
-            $paymentSystem = PaymentSystem::findOrFail($request['payment_system_id']);
+            $paymentSystem = PaymentService::findOrFail($request['payment_service_id']);
 
             if ($paymentSystem) {
                 $setting = new PaymentSetting;

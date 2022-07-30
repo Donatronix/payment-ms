@@ -3,7 +3,7 @@
 namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PaymentSystem;
+use App\Models\PaymentService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -66,7 +66,7 @@ class PaymentSystemController extends Controller
             $resp['message'] = "List of all payment system";
             $resp['title'] = "Display all payment system";
             $resp['type'] = "Success";
-            $resp['data'] = PaymentSystem::orderBy('name', 'Asc')->with('payment_settings')
+            $resp['data'] = PaymentService::orderBy('name', 'Asc')->with('payment_settings')
                 ->paginate($request->get('limit', 20));
 
             return response()->jsonApi($resp, 200);
@@ -120,7 +120,7 @@ class PaymentSystemController extends Controller
             $resp['message'] = "Payment system details";
             $resp['title'] = "Payment system details";
             $resp['type'] = "success";
-            $paymentSystem = PaymentSystem::findOrFail($id);
+            $paymentSystem = PaymentService::findOrFail($id);
             $resp['data'] = $paymentSystem->payment_settings;
 
             return response()->jsonApi($resp, 200);
@@ -204,7 +204,7 @@ class PaymentSystemController extends Controller
             ], 400);
         }
         try {
-            $paymentSystem = PaymentSystem::create($request->all());
+            $paymentSystem = PaymentService::create($request->all());
             if ($paymentSystem) {
                 $resp['message'] = "New payment system was added";
                 $resp['title'] = "Payment system";
@@ -304,13 +304,13 @@ class PaymentSystemController extends Controller
             ], 400);
         }
         try {
-            $paymentSystem = PaymentSystem::findOrFail($id);
+            $paymentSystem = PaymentService::findOrFail($id);
             $saved = $paymentSystem->update($request->all());
             if ($saved) {
                 $resp['message'] = "Successfully updated";
                 $resp['title'] = "Payment system";
                 $resp['type'] = "success";
-                $resp['data'] = PaymentSystem::findOrFail($id);
+                $resp['data'] = PaymentService::findOrFail($id);
                 return response()->jsonApi($resp, 200);
             } else {
                 $resp['message'] = "Unable to update payment system";
@@ -390,12 +390,12 @@ class PaymentSystemController extends Controller
         $resp['data'] = [];
 
         try {
-            $deleted = PaymentSystem::findOrFail($id)->delete();
+            $deleted = PaymentService::findOrFail($id)->delete();
             if ($deleted) {
                 $resp['message'] = "Payment system was deleted";
                 $resp['title'] = "Payment system";
                 $resp['type'] = "success";
-                $resp['data'] = PaymentSystem::orderBy('name', 'Asc')
+                $resp['data'] = PaymentService::orderBy('name', 'Asc')
                     ->paginate($request->get('limit', 20));
                 return response()->jsonApi($resp, 200);
             } else {

@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Services\PaymentServices;
+namespace App\Services\PaymentServiceProviders;
 
-use App\Contracts\PaymentSystemContract;
+use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
 use CoinbaseCommerce\ApiClient;
 use CoinbaseCommerce\Resources\Charge;
 use CoinbaseCommerce\Webhook;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
-class CoinbaseManager implements PaymentSystemContract
+class CoinbaseProvider implements PaymentServiceContract
 {
     /**
      * Charge statuses
@@ -50,16 +51,16 @@ class CoinbaseManager implements PaymentSystemContract
     /**
      * @var \CoinbaseCommerce\ApiClient
      */
-    private $gateway;
+    private $service;
 
     /**
-     * CoinbaseManager constructor.
+     * CoinbaseProvider constructor.
      */
     public function __construct()
     {
         try {
-            $this->gateway = ApiClient::init(PaymentSetting::settings('coinbase_api_key'));
-            $this->gateway->setTimeout(3);
+            $this->service = ApiClient::init(PaymentSetting::settings('coinbase_api_key'));
+            $this->service->setTimeout(3);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -75,7 +76,7 @@ class CoinbaseManager implements PaymentSystemContract
         return 'Coinbase Commerce is..';
     }
 
-    public static function gateway(): string
+    public static function service(): string
     {
         return 'coinbase';
     }
@@ -113,7 +114,7 @@ class CoinbaseManager implements PaymentSystemContract
                 'cancel_url' => PaymentSetting::settings('coinbase_cancel_url')
             ]);
 
-            // Update payment transaction data
+            // Update Payment Order data
             $payment->status = self::STATUS_CHARGE_CREATED;
             $payment->document_id = $chargeObj->id;
             $payment->save();
@@ -121,7 +122,7 @@ class CoinbaseManager implements PaymentSystemContract
             // Return result
             return [
                 'type' => 'success',
-                'gateway' => self::gateway(),
+                'gateway' => self::service(),
                 'payment_order_id' => $payment->id,
                 'invoice_url' => $chargeObj->hosted_url
             ];
@@ -140,12 +141,12 @@ class CoinbaseManager implements PaymentSystemContract
      */
     public function handlerWebhook(Request $request): array
     {
-        \Log::info($_SERVER);
-        \Log::info(file_get_contents('php://input'));
-        \Log::info($request);
+        Log::info((string)$_SERVER);
+        Log::info(file_get_contents('php://input'));
+        Log::info($request);
         $event = $request["event"];
-        \Log::info("Event:");
-        \Log::info($event);
+        Log::info("Event:");
+        Log::info($event);
         $paymentData = $event["data"];
 
         $signature = $request->header('X-Cc-Webhook-Signature', null);
@@ -179,8 +180,8 @@ class CoinbaseManager implements PaymentSystemContract
         }
 
         // Get event data
-        \Log::info($event);
-        \Log::info(json_encode($paymentData));
+        Log::info($event);
+        Log::info(json_encode($paymentData));
         if (!isset($paymentData) || !is_array($paymentData) || !isset($paymentData["metadata"])) {
             return [
                 'type' => 'danger',
@@ -188,22 +189,22 @@ class CoinbaseManager implements PaymentSystemContract
             ];
         }
 
-        // Find payment transaction
+        // Find Payment Order
         $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
             ->where('id', $paymentData["metadata"]['payment_order_id'])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["metadata"]['code'])
-            ->where('gateway', self::gateway())
+            ->where('gateway', self::service())
             ->first();
 
         if (!$payment) {
             return [
                 'type' => 'danger',
-                'message' => sprintf("Payment transaction not found in database: payment_order_id=%s, document_id=%s, code=%s", $paymentData->metadata['payment_order_id'], $paymentData->id, $paymentData->metadata['code'])
+                'message' => sprintf("Payment Order not found in database: payment_order_id=%s, document_id=%s, code=%s", $paymentData->metadata['payment_order_id'], $paymentData->id, $paymentData->metadata['code'])
             ];
         }
 
-        // Update payment transaction status
+        // Update Payment Order status
         $status = 'STATUS_' . mb_strtoupper(Str::snake(str_replace(':', ' ', $event["type"])));
         $payment->status = intval(constant("self::{$status}"));
         //$payment->payload = $paymentData;
@@ -212,7 +213,7 @@ class CoinbaseManager implements PaymentSystemContract
         // Return result
         return [
             'status' => 'success',
-            'gateway' => self::gateway(),
+            'gateway' => self::service(),
             'payment_order_id' => $payment->id,
             'amount' => $payment->amount,
             'currency' => $payment->currency,

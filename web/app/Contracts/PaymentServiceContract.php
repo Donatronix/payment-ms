@@ -5,12 +5,12 @@ namespace App\Contracts;
 use App\Models\PaymentOrder;
 use Illuminate\Http\Request;
 
-interface PaymentSystemContract
+interface PaymentServiceContract
 {
     /**
      * @return mixed
      */
-    public static function gateway();
+    public static function service();
 
     /**
      * @return mixed

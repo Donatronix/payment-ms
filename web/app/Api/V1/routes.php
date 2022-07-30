@@ -40,19 +40,19 @@ $router->group([
             /**
              * Init payment and charge wallet balance or invoice
              */
-            $router->post('charge', 'ChargeController');
+            $router->post('charge', 'PaymentOrderController@charge');
 
             /**
              * Init payment and withdraw wallet balance
              */
-            $router->post('withdraw', 'WithdrawController');
+            $router->post('withdraw', 'PaymentOrderController@withdraw');
 
             /**
              * Payment actions
              */
-            $router->get('{id:[\d]+}', 'PaymentOrderController@show');
-
+            $router->get('/{id:[a-fA-F0-9\-]{36}}', 'PaymentOrderController@show');
         });
+
         /**
          * Transactions
          */
@@ -60,6 +60,7 @@ $router->group([
             'prefix' => 'transactions'
         ], function($router) {
             $router->get('/', 'TransactionController@index');
+            $router->post('/', 'TransactionController@store');
             $router->get('/{id}', 'TransactionController@show');
         });
     });
@@ -120,6 +121,6 @@ $router->group([
         'prefix' => 'webhooks',
         'namespace' => 'Webhooks'
     ], function ($router) {
-        $router->post('{gateway}/invoices', 'WebhookController@handlerWebhook');
+        $router->post('{gateway}', 'WebhookController@handlerWebhook');
     });
 });

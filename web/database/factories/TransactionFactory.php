@@ -12,9 +12,13 @@ class TransactionFactory extends Factory
 
     public function definition(): array
     {
+
+
     	return [
-    	    'transaction_id' => uniqid('PAY_INT_ULTRA'),
-            'payment_order_id' => PaymentOrder::all()->random()->id
+    	    'gateway' => '',
+    	    'trx_id' => uniqid('PAY_INT_ULTRA'),
+            'payment_order_id' => PaymentOrder::all()->random()->id,
+            'status'
     	];
     }
 }

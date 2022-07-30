@@ -13,7 +13,7 @@ class CreatePaymentSystemsTable extends Migration
      */
     public function up()
     {
-        Schema::create('payment_systems', function (Blueprint $table) {
+        Schema::create('payment_services', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
             $table->string('name');
@@ -33,6 +33,6 @@ class CreatePaymentSystemsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('payment_systems');
+        Schema::dropIfExists('payment_services');
     }
 }

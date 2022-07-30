@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
-class PaymentSystem extends Model
+class PaymentService extends Model
 {
     use HasFactory;
     use OwnerTrait;

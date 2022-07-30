@@ -38,7 +38,7 @@ class CreatePaymentOrdersTable extends Migration
     }
 
 //            $table->tinyInteger('payment_method');
-//            $table->tinyInteger('payment_system');
+//            $table->tinyInteger('payment_service');
 //            $table->unsignedTinyInteger('payment_currency_id')->nullable();
 
     /**

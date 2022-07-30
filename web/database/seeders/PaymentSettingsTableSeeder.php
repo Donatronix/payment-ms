@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\PaymentSetting;
 use Illuminate\Database\Seeder;
-use App\Models\PaymentSystem;
+use App\Models\PaymentService;
 use BitPaySDK\Env;
 use Illuminate\Support\Str;
 
@@ -172,7 +172,7 @@ class PaymentSettingsTableSeeder extends Seeder
 
         foreach ($data as $gateway => $values) {
             // Get provider by key
-            $provider = PaymentSystem::where('gateway', $gateway)->first();
+            $provider = PaymentService::where('gateway', $gateway)->first();
 
             // Loop all values
             foreach ($values as $key => $value){

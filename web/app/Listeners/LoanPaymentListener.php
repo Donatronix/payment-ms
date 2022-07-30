@@ -5,7 +5,7 @@ namespace App\Listeners;
 use App\Models\LogPaymentRequest;
 use App\Models\LogPaymentRequestError;
 use App\Models\PaymentOrder;
-use App\Services\PaymentService as PaymentService;
+use App\Services\PaymentServiceManager as PaymentService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -69,7 +69,7 @@ class LoanPaymentListener
 
         // Init manager
         try {
-            $system = PaymentService::getInstance($inputData->gateway);
+            $system = PaymentServiceManager::getInstance($inputData->gateway);
         } catch (\Exception $e) {
             Log::info($e->getMessage());
             exit;

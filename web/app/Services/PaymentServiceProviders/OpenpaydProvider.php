@@ -1,18 +1,16 @@
 <?php
 
-namespace App\Services\PaymentServices;
+namespace App\Services\PaymentServiceProviders;
 
-use App\Contracts\PaymentSystemContract;
+use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
-
-class OpenpaydManager implements PaymentSystemContract
+class OpenpaydProvider implements PaymentServiceContract
 {
-
     // https://apidocs.openpayd.com/docs/transaction-status-updated-webhook#transaction-types
     // Transaction statuses
 
@@ -79,7 +77,7 @@ class OpenpaydManager implements PaymentSystemContract
         return 'OpenPayd is..';
     }
 
-    public static function gateway(): string
+    public static function service(): string
     {
         return 'openpayd';
     }
@@ -143,13 +141,13 @@ class OpenpaydManager implements PaymentSystemContract
                 ->where('id', $webhookPayload["metadata"]['orderId'])
                 ->where('document_id', $webhookPayload["metadata"]['documentId'])
                 ->where('check_code', $webhookPayload["metadata"]['check_code'])
-                ->where('gateway', self::gateway())
+                ->where('gateway', self::service())
                 ->first();
 
             if (!$payment) {
                 return [
                     'type' => 'danger',
-                    'message' => 'Payment transaction not found in Payment Microservice database'
+                    'message' => 'Payment Order not found in Payment Microservice database'
                 ];
             }
 

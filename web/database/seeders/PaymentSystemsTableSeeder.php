@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\PaymentSystem;
+use App\Models\PaymentService;
 
 class PaymentSystemsTableSeeder extends Seeder
 {
@@ -54,7 +54,7 @@ class PaymentSystemsTableSeeder extends Seeder
 
         ];
         foreach ($data as $key => $value) {
-            PaymentSystem::create($value);
+            PaymentService::create($value);
         }
     }
 }

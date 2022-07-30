@@ -24,7 +24,7 @@ class PaymentSetting extends Model
     protected $fillable = [
         'key',
         'value',
-        'payment_system_id',
+        'payment_service_id',
     ];
 
     /**
@@ -37,8 +37,8 @@ class PaymentSetting extends Model
     /**
      * Get the payment system that owns the settings.
      */
-    public function payment_system(): BelongsTo
+    public function payment_service(): BelongsTo
     {
-        return $this->belongsTo(PaymentSystem::class);
+        return $this->belongsTo(PaymentService::class);
     }
 }
