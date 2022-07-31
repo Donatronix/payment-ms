@@ -96,7 +96,7 @@ class RechargeBalanceRequestListener
         }
 
         // Create invoice
-        $result = $paymentGateway->createInvoice($payment, (object) $inputData);
+        $result = $paymentGateway->charge($payment, (object) $inputData);
 
         // Return response
         if ($result['type'] === 'error') {

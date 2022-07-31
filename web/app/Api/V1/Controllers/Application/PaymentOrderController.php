@@ -91,6 +91,12 @@ class PaymentOrderController extends Controller
      *                 type="string",
      *                 description="URL where the user will be redirected after payment",
      *                 default="https://domain.com"
+     *             ),
+     *             @OA\Property(
+     *                 property="cancel_url",
+     *                 type="string",
+     *                 description="URL where the user will be redirected if canceled payment",
+     *                 default="https://domain.com"
      *             )
      *         )
      *     ),
@@ -106,13 +112,16 @@ class PaymentOrderController extends Controller
      */
     public function charge(Request $request): JsonResponse
     {
+        $responseTitle = 'Creating a charge payment order';
+
         // Validate input
         try {
             $rules = [
                 'gateway' => 'required|string',
                 'amount' => 'required|integer',
                 'currency' => 'required|string',
-                'redirect_url' => 'sometimes|string'
+                'redirect_url' => 'sometimes|url',
+                'cancel_url' => 'sometimes|url'
             ];
 
             // If based on document, then
@@ -129,13 +138,11 @@ class PaymentOrderController extends Controller
             $this->validate($request, $rules);
         } catch (ValidationException $e) {
             return response()->jsonApi([
-                'title' => 'Creating a charge payment',
+                'title' => $responseTitle,
                 'message' => "Field validation error: " . $e->getMessage(),
                 'data' => $e->errors()
             ], 422);
         }
-
-        $inputData = (object)$request->all();
 
         // Write log
         try {
@@ -148,42 +155,42 @@ class PaymentOrderController extends Controller
             Log::info('Log of invoice failed: ' . $e->getMessage());
         }
 
-        // Init manager
         try {
-            $system = PaymentServiceManager::getInstance($request->get('gateway'));
-        } catch (\Exception $e) {
+            // Init payment service session
+            $service = PaymentServiceManager::getInstance($request->get('gateway'));
+
+            // Create internal payment order
+            $order = PaymentOrder::create([
+                'type' => PaymentOrder::TYPE_PAYIN,
+                'gateway' => $request->get('gateway'),
+                'amount' => $request->get('amount'),
+                'currency' => mb_strtoupper($request->get('currency')),
+                'service' => $request->get('document.service', null),
+                'user_id' => Auth::user()->getAuthIdentifier()
+            ]);
+
+            // Create invoice
+            $inputData = (object)$request->all();
+            $result = $service->charge($order, $inputData);
+
+            // Return result
             return response()->jsonApi([
-                'title' => 'Creating a charge payment',
-                'message' => $e->getMessage()
-            ], 400);
-        }
-
-        // Create internal order
-        $payment = PaymentOrder::create([
-            'type' => PaymentOrder::TYPE_PAYIN,
-            'gateway' => $request->get('gateway'),
-            'amount' => $request->get('amount'),
-            'currency' => mb_strtoupper($request->get('currency')),
-            'service' => $request->get('document.service', null),
-            'user_id' => Auth::user()->getAuthIdentifier()
-        ]);
-
-        // Create invoice
-        $result = $system->charge($payment, $inputData);
-
-        // Return response
-        $code = 200;
-        if ($result['type'] === 'danger') {
-            $code = 400;
-
+                'title' => $responseTitle,
+                'message' => 'Payment session successfully created',
+                'data' => $result
+            ]);
+        }catch (\Exception $e){
             LogPaymentRequestError::create([
                 'gateway' => $request->get('gateway'),
                 'payload' => $result['message']
             ]);
-        }
 
-        // Return result
-        return response()->jsonApi($result, $code);
+            // Return response
+            return response()->jsonApi([
+                'title' => $responseTitle,
+                'message' => sprintf("Unable to create an payment session. Error: %s \n", $e->getMessage())
+            ], $e->getCode());
+        }
     }
 
     /**
@@ -266,26 +273,18 @@ class PaymentOrderController extends Controller
     public function show($id): mixed
     {
         try {
-            $payment = PaymentOrder::findOrFail($id);
+            $order = PaymentOrder::findOrFail($id);
+
+            return response()->jsonApi([
+                'title' => 'Payment Order',
+                'message' => "Payment Order detail received",
+                'data' => $order
+            ]);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
                 'title' => 'Payment Order',
                 'message' => "Payment Order not found: {$e->getMessage()}"
             ], 404);
         }
-
-        return response()->jsonApi([
-            'title' => 'Payment Order',
-            'message' => "Payment Order detail received",
-            'data' => $payment
-        ]);
-    }
-
-    function calculateOrderAmount(array $items): int
-    {
-        // Replace this constant with a calculation of the order's amount
-        // Calculate the order total on the server to prevent
-        // people from directly manipulating the amount on the client
-        return 1400;
     }
 }

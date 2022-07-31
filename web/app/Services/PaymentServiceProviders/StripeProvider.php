@@ -3,15 +3,21 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
+use App\Helpers\PaymentServiceSettings as PaymentSetting;
 use App\Models\PaymentOrder;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
+use Stripe\PaymentIntent;
 use Stripe\Stripe;
 use Stripe\Webhook;
-use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
+/**
+ * Class StripeProvider
+ * @package App\Services\PaymentServiceProviders
+ */
 class StripeProvider implements PaymentServiceContract
 {
     const STATUS_ORDER_REQUIRES_PAYMENT_METHOD = 1;
@@ -26,166 +32,134 @@ class StripeProvider implements PaymentServiceContract
     const STATUS_ORDER_NO_PAYMENT_REQUIRED = 10;
 
     /**
-     * @var array
+     * @var
      */
-    private array $service;
+    private $service;
 
     /**
-     * constructor.
+     * StripeProvider constructor.
      */
     public function __construct()
     {
-        $this->service = [];
+        $this->service = null;
 
         // Set your secret API key
         Stripe::setApiKey(PaymentSetting::settings('stripe_secret_key'));
     }
 
+    /**
+     * @return string
+     */
     public static function service(): string
     {
         return 'stripe';
     }
 
+    /**
+     * @return string
+     */
     public static function name(): string
     {
-        return 'Stripe';
+        return 'Stripe Payment Provider';
     }
 
+    /**
+     * @return string
+     */
     public static function description(): string
     {
-        return 'Stripe is..';
+        return 'Stripe Payment Processing Platform for the Internet';
     }
 
-    public static function getNewStatusId(): int
+    /**
+     * @return int
+     */
+    public static function newStatus(): int
     {
         return self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
     }
 
     /**
+     * Wrapper for create payment order for charge money
+     *
      * @param PaymentOrder $payment
      * @param object $inputData
      * @return array
-     * @throws \Stripe\Exception\ApiErrorException
+     * @throws Exception
      */
     public function charge(PaymentOrder $payment, object $inputData): array
     {
         try {
             // Create a PaymentIntent with amount and currency
-            $stripeDocument = \Stripe\PaymentIntent::create([
-                'amount' => $inputData->amount,
+            $stripeDocument = PaymentIntent::create([
+                'amount' => $inputData->amount * 100,
                 'currency' => mb_strtolower($inputData->currency),
-//                'automatic_payment_methods' => [
-//                    'enabled' => true,
-//                ],
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                ],
                 'payment_method_types' => [
-//                    'acss_debit',
+                    'acss_debit',
+                    'affirm',
+
                     'afterpay_clearpay',
                     'alipay',
-//                    'au_becs_debit',
-//                    'grabpay',
-//                    'bancontact',
-//                    'boleto',
-//                    'bacs_debit',
+
+                    'au_becs_debit',
+                    'bacs_debit',
+                    'bancontact',
+                    'blik',
+                    'boleto',
+
                     'card',
-//                    'eps',
-//                    'giropay',
-//                    'fpx',
-//                    'ideal',
+
+                    'card_present',
+                    'eps',
+                    'fpx',
+                    'giropay',
+                    'grabpay',
+                    'ideal',
+
                     'klarna',
-//                    'p24',
-//                    'oxxo',
-//                    'sepa_debit',
-//                    'sofort',
+
+                    'konbini',
+                    'link',
+                    'oxxo',
+                    'p24',
+                    'paynow',
+                    'promptpay',
+                    'sepa_debit',
+                    'sofort',
+                    'us_bank_account',
+
                     'wechat_pay'
-                ]
+                ],
+                'metadata' => [
+                    'code' => $payment->check_code,
+                    'payment_order_id' => $payment->id
+                ],
+                'return_url' => $payment->redirect_url ?? null
             ]);
 
-            // Update order data
+            // Update payment order
             $payment->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
             $payment->document_id = $stripeDocument->id;
             $payment->save();
 
             // Return result
             return [
-                'type' => 'success',
-                'title' => 'Stripe checkout payment session creating',
-                'message' => "Session successfully created",
-                'data' => [
-                    'gateway' => self::service(),
-                    'payment_order_id' => $payment->id,
-                    'session_id' => $stripeDocument->id,
-                    'public_key' => PaymentSetting::settings('stripe_public_key'),
-                    'clientSecret' => $stripeDocument->client_secret,
-                ]
+                'gateway' => self::service(),
+                'payment_order_id' => $payment->id,
+                'session_id' => $stripeDocument->id,
+                'public_key' => PaymentSetting::settings('stripe_public_key'),
+                'clientSecret' => $stripeDocument->client_secret,
             ];
-        } catch (\Exception $e) {
-            return [
-                'type' => 'danger',
-                'title' => 'Stripe checkout payment session creating',
-                'message' => sprintf("Unable to create an session. Error: %s \n", $e->getMessage()),
-                'data' => []
-            ];
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode());
         }
     }
 
     /**
-     * Wrapper for create Stripe invoice for charge money
-     *
-     * @param PaymentOrder $payment
-     * @param object $inputData
-     * @return array
-     */
-    public function createInvoice(PaymentOrder $payment, object $inputData): array
-    {
-        try {
-            // Create checkout session
-            $checkout_session = \Stripe\Checkout\Session::create([
-                'mode' => 'payment',
-                'payment_method_types' => ['card'],
-                'line_items' => [[
-                    'amount' => $inputData->amount * 100,
-                    'currency' => $inputData->currency,
-                    'quantity' => 1,
-                    'name' => 'Wallet Charge',
-                ]],
-                'metadata' => [
-                    'payment_order' => $payment->id,
-                    'check_code' => $payment->check_code,
-                ],
-                'success_url' => PaymentSetting::settings('payments_webhook_url') . '?success=true',
-                'cancel_url' => PaymentSetting::settings('payments_webhook_url') . '?canceled=true'
-            ]);
-
-            // Update order data
-            $payment->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
-            $payment->document_id = $checkout_session->id;
-            $payment->save();
-
-            // Return result
-            return [
-                'type' => 'success',
-                'title' => 'Stripe checkout payment session creating',
-                'message' => "Session successfully created",
-                'data' => [
-                    'gateway' => self::service(),
-                    'payment_order_id' => $payment->id,
-                    'session_id' => $checkout_session->id,
-                    'session_url' => $checkout_session->url,
-                    'public_key' => PaymentSetting::settings('stripe_public_key')
-                ]
-            ];
-        } catch (\Exception $e) {
-            return [
-                'type' => 'danger',
-                'title' => 'Stripe checkout payment session creating',
-                'message' => sprintf("Unable to create an session. Error: %s \n", $e->getMessage()),
-                'data' => []
-            ];
-        }
-    }
-
-    /**
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
      * @return array
      */

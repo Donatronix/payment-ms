@@ -1,67 +1,69 @@
 <?php
 
-
 namespace App\Services\PaymentServiceProviders;
 
-
+use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
 use Illuminate\Http\Request;
 
-class NetworkBNBBeaconChainProvider implements \App\Contracts\PaymentServiceContract
+/**
+ * Class NetworkBNBBeaconChainProvider
+ * @package App\Services\PaymentServiceProviders
+ */
+class NetworkBNBBeaconChainProvider implements PaymentServiceContract
 {
     /**
-     * @inheritDoc
+     * @return string
      */
-    public static function service()
+    public static function service(): string
     {
-        // TODO: Implement service() method.
+        return 'bnb-beacon-chain-network';
     }
 
     /**
-     * @inheritDoc
+     * @return string
      */
-    public static function name()
+    public static function name(): string
     {
-        // TODO: Implement name() method.
+        return 'BNB Beacon Chain Network';
     }
 
     /**
-     * @inheritDoc
+     * @return string
      */
-    public static function description()
+    public static function description(): string
     {
-        // TODO: Implement description() method.
+        return 'BNB Beacon Chain (formerly known as Binance Chain) is used for sending and receiving BNB and digital assets based on the BEP2 token standard. BNB network addresses start with "bnb..."';
     }
 
     /**
-     * @inheritDoc
+     * @return int
      */
-    public static function getNewStatusId()
+    public static function newStatus(): int
     {
-        // TODO: Implement getNewStatusId() method.
+        return 0;
     }
 
     /**
-     * @inheritDoc
+     * Wrapper for create payment order for charge money
+     *
+     * @param PaymentOrder $payment
+     * @param object $inputData
+     * @return array
+     * @throws Exception
      */
-    public function charge(PaymentOrder $payment, object $inputData): mixed
+    public function charge(PaymentOrder $payment, object $inputData): array
     {
-        // TODO: Implement charge() method.
+        return [];
     }
 
     /**
-     * @inheritDoc
+     * @param Request $request
+     *
+     * @return array
      */
-    public function createInvoice(PaymentOrder $payment, object $inputData): mixed
+    public function handlerWebhook(Request $request): array
     {
-        // TODO: Implement createInvoice() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function handlerWebhook(Request $request): mixed
-    {
-        // TODO: Implement handlerWebhook() method.
+        return [];
     }
 }

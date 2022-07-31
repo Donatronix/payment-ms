@@ -3,11 +3,11 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
+use App\Helpers\PaymentServiceSettings as PaymentSetting;
 use App\Models\PaymentOrder;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
 class OpenpaydProvider implements PaymentServiceContract
 {
@@ -29,23 +29,22 @@ class OpenpaydProvider implements PaymentServiceContract
     const TRANSACTION_STATUS_CANCELLED = "CANCELLED";
 
     /**
-     * @var  \GuzzleHttp\Client
+     * @var  Client
      */
-    private $openPaydClient;
+    private Client $service;
 
+    /**
+     * OpenpaydProvider constructor.
+     * @throws Exception
+     */
     public function __construct()
     {
-    }
-
-    public function getAccessToken()
-    {
         try {
-
-            $this->openPaydClient = new Client(['base_uri' => PaymentSetting::settings('openpayd_url')]);
+            $this->service = new Client(['base_uri' => PaymentSetting::settings('openpayd_url')]);
 
             $username = PaymentSetting::settings('openpayd_username');
             $password = PaymentSetting::settings('openpayd_password');
-            $salt = $username.":".$password;
+            $salt = $username . ":" . $password;
 
             $code = base64_encode($salt);
 
@@ -59,34 +58,42 @@ class OpenpaydProvider implements PaymentServiceContract
                 ]
             ];
 
-            $response = $this->openPaydClient->post("oauth/token?grant_type=client_credentials", $payload);
-
-            return $response;
+            return $this->service->post("oauth/token?grant_type=client_credentials", $payload);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
 
-    public static function name(): string
-    {
-        return 'OpenPayd';
-    }
-
-    public static function description(): string
-    {
-        return 'OpenPayd is..';
-    }
-
+    /**
+     * @return string
+     */
     public static function service(): string
     {
         return 'openpayd';
     }
 
     /**
+     * @return string
+     */
+    public static function name(): string
+    {
+        return 'OpenPayd';
+    }
+
+    /**
+     * @return string
+     */
+    public static function description(): string
+    {
+        return 'OpenPayd is..';
+    }
+
+    /**
      * @return integer
      */
-    public static function getNewStatusId()
+    public static function newStatus(): int
     {
+        return 0;
     }
 
     /**
@@ -102,18 +109,7 @@ class OpenpaydProvider implements PaymentServiceContract
     }
 
     /**
-     * @param PaymentOrder $payment
-     * @param object $inputData
-     *
-     * @return mixed
-     */
-    public function createInvoice(PaymentOrder $payment, object $inputData): mixed
-    {
-        // TODO not yet provided by openpayd
-    }
-
-    /**
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
      * @return mixed
      */
@@ -177,9 +173,9 @@ class OpenpaydProvider implements PaymentServiceContract
 
     private function isValidSignature($signature, $data): bool
     {
-         $pubKeyPath = PaymentSetting::settings('openpayd_public_key_path');
+        $pubKeyPath = PaymentSetting::settings('openpayd_public_key_path');
 
-         if ($signature == hash_hmac_file('sha256', $data, $pubKeyPath)){
+        if ($signature == hash_hmac_file('sha256', $data, $pubKeyPath)) {
 
             return true;
         }

@@ -8,24 +8,24 @@ use Illuminate\Http\Request;
 interface PaymentServiceContract
 {
     /**
-     * @return mixed
+     * @return string
      */
-    public static function service();
+    public static function service(): string;
 
     /**
-     * @return mixed
+     * @return string
      */
-    public static function name();
+    public static function name(): string;
 
     /**
-     * @return mixed
+     * @return string
      */
-    public static function description();
+    public static function description(): string;
 
     /**
      * @return integer
      */
-    public static function getNewStatusId();
+    public static function newStatus(): int;
 
     /**
      * Make one-time charge money to system
@@ -35,18 +35,6 @@ interface PaymentServiceContract
      * @return mixed
      */
     public function charge(PaymentOrder $payment, object $inputData): mixed;
-
-//    public function payout();
-//
-//    public function refund();
-
-    /**
-     * @param PaymentOrder $payment
-     * @param object $inputData
-     *
-     * @return mixed
-     */
-    public function createInvoice(PaymentOrder $payment, object $inputData): mixed;
 
     /**
      * @param \Illuminate\Http\Request $request

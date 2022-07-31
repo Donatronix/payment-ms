@@ -3,6 +3,7 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
+use App\Helpers\PaymentServiceSettings as PaymentSetting;
 use App\Models\PaymentOrder;
 use CoinbaseCommerce\ApiClient;
 use CoinbaseCommerce\Resources\Charge;
@@ -11,13 +12,9 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
 class CoinbaseProvider implements PaymentServiceContract
 {
-    /**
-     * Charge statuses
-     */
     // New charge is created
     const STATUS_CHARGE_CREATED = 1;
 
@@ -49,9 +46,9 @@ class CoinbaseProvider implements PaymentServiceContract
     ];
 
     /**
-     * @var \CoinbaseCommerce\ApiClient
+     * @var ApiClient
      */
-    private $service;
+    private ApiClient $service;
 
     /**
      * CoinbaseProvider constructor.
@@ -66,41 +63,53 @@ class CoinbaseProvider implements PaymentServiceContract
         }
     }
 
-    public static function name(): string
-    {
-        return 'Coinbase';
-    }
-
-    public static function description(): string
-    {
-        return 'Coinbase Commerce is..';
-    }
-
+    /**
+     * @return string
+     */
     public static function service(): string
     {
         return 'coinbase';
     }
 
-    public static function getNewStatusId(): int
+    /**
+     * @return string
+     */
+    public static function name(): string
+    {
+        return 'Coinbase Payment Provider';
+    }
+
+    /**
+     * @return string
+     */
+    public static function description(): string
+    {
+        return 'Coinbase – Buy &amp; Sell Bitcoin, Ethereum, and more with trust';
+    }
+
+    /**
+     * @return int
+     */
+    public static function newStatus(): int
     {
         return self::STATUS_CHARGE_CREATED;
     }
 
     /**
-     * Wrapper for create coinbase invoice for charge money
+     * Wrapper for create payment order for charge money
      *
      * @param PaymentOrder $payment
-     * @param array $input
-     *
+     * @param object $inputData
      * @return array
+     * @throws Exception
      */
-    public function createInvoice(PaymentOrder $payment, object $inputData): array
+    public function charge(PaymentOrder $payment, object $inputData): array
     {
         try {
             // Create new charge
             $chargeObj = Charge::create([
-                'name' => 'Charge Balance',
-                'description' => 'Charge Balance for Sumra User',
+                'name' => 'Charge account balance',
+                'description' => 'Payment Order for charge user account balance',
                 'pricing_type' => 'fixed_price',
                 'local_price' => [
                     'amount' => $inputData->amount,
@@ -110,34 +119,30 @@ class CoinbaseProvider implements PaymentServiceContract
                     'code' => $payment->check_code,
                     'payment_order_id' => $payment->id
                 ],
-                'redirect_url' => PaymentSetting::settings('coinbase_redirect_url'),
-                'cancel_url' => PaymentSetting::settings('coinbase_cancel_url')
+                'redirect_url' => $inputData->redirect_url ?? null,
+                'cancel_url' => $inputData->cancel_url ?? null
             ]);
 
-            // Update Payment Order data
+            // Update payment order
             $payment->status = self::STATUS_CHARGE_CREATED;
             $payment->document_id = $chargeObj->id;
             $payment->save();
 
             // Return result
             return [
-                'type' => 'success',
                 'gateway' => self::service(),
                 'payment_order_id' => $payment->id,
                 'invoice_url' => $chargeObj->hosted_url
             ];
         } catch (Exception $e) {
-            return [
-                'type' => 'danger',
-                'message' => sprintf("Unable to create a charge. Error: %s \n", $e->getMessage())
-            ];
+            throw new Exception($e->getMessage(), $e->getCode());
         }
     }
 
     /**
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
-     * @return array|string[]
+     * @return array
      */
     public function handlerWebhook(Request $request): array
     {
@@ -150,7 +155,7 @@ class CoinbaseProvider implements PaymentServiceContract
         $paymentData = $event["data"];
 
         $signature = $request->header('X-Cc-Webhook-Signature', null);
-        if ($signature === null && !env("APP_DEBUG",0)) {
+        if ($signature === null && !env("APP_DEBUG", 0)) {
             return [
                 'type' => 'danger',
                 'message' => 'Missing signature'
@@ -168,11 +173,12 @@ class CoinbaseProvider implements PaymentServiceContract
                 "id" => $event->data->id,
                 "metadata" => [
                     "code" => $event->data->metadata->code,
-                    "payment_order_id"=>$event->data->metadata->payment_order_id
+                    "payment_order_id" => $event->data->metadata->payment_order_id
                 ]
             ];
         } catch (Exception $e) {
-            if(env("APP_DEBUG",0)) {
+            if (env("APP_DEBUG", 0)) {
+
             } else return [
                 'type' => 'danger',
                 'message' => $e->getMessage()
@@ -221,10 +227,5 @@ class CoinbaseProvider implements PaymentServiceContract
             'user_id' => $payment->user_id,
             'payment_completed' => (self::STATUS_CHARGE_CONFIRMED === $payment->status),
         ];
-    }
-
-    public function charge(PaymentOrder $payment, object $inputData): mixed
-    {
-        // TODO: Implement charge() method.
     }
 }

@@ -3,16 +3,16 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
+use App\Helpers\PaymentServiceSettings as PaymentSetting;
 use App\Models\PaymentOrder;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
-use App\Helpers\PaymentServiceSettings as PaymentSetting;
 
 class PaypalProvider implements PaymentServiceContract
 {
@@ -42,9 +42,9 @@ class PaypalProvider implements PaymentServiceContract
     const STATUS_ORDER_PAYER_ACTION_REQUIRED = 6;
 
     /**
-     * @var \PayPalCheckoutSdk\Core\PayPalHttpClient
+     * @var PayPalHttpClient
      */
-    private $service;
+    private PayPalHttpClient $service;
 
     /**
      * PaypalProvider constructor.
@@ -66,34 +66,47 @@ class PaypalProvider implements PaymentServiceContract
         $this->service = new PayPalHttpClient($environment);
     }
 
-    public static function name(): string
-    {
-        return 'PayPal';
-    }
-
-    public static function description(): string
-    {
-        return 'PayPal payment is..';
-    }
-
+    /**
+     * @return string
+     */
     public static function service(): string
     {
         return 'paypal';
     }
 
-    public static function getNewStatusId(): int
+    /**
+     * @return string
+     */
+    public static function name(): string
+    {
+        return 'PayPal Payment Provider';
+    }
+
+    /**
+     * @return string
+     */
+    public static function description(): string
+    {
+        return 'PayPal is a Simple and Safer Way to Pay and Get Paid';
+    }
+
+    /**
+     * @return int
+     */
+    public static function newStatus(): int
     {
         return self::STATUS_ORDER_CREATED;
     }
 
     /**
-     * Wrapper for create paypal invoice for charge money
+     * Wrapper for create payment order for charge money
      *
-     * @param array $input
-     *
-     * @return mixed|void
+     * @param PaymentOrder $payment
+     * @param object $inputData
+     * @return array
+     * @throws Exception
      */
-    public function createInvoice(PaymentOrder $payment, object $inputData): array
+    public function charge(PaymentOrder $payment, object $inputData): array
     {
         try {
             // Create new charge
@@ -122,8 +135,8 @@ class PaypalProvider implements PaymentServiceContract
                     'landing_page' => 'NO_PREFERENCE',
                     'shipping_preference' => 'NO_SHIPPING',
                     'user_action' => 'PAY_NOW',
-                    'return_url' => PaymentSetting::settings('payments_redirect_url'),
-                    'cancel_url' => PaymentSetting::settings('payments_redirect_url'),
+                    'return_url' => $inputData->redirect_url ?? null,
+                    'cancel_url' => $inputData->cancel_url ?? null,
                 ]
             ];
             $chargeObj = $this->service->execute($request);
@@ -141,27 +154,24 @@ class PaypalProvider implements PaymentServiceContract
             }
 
             return [
-                'type' => 'success',
                 'gateway' => self::service(),
                 'payment_order_id' => $payment->id,
                 'invoice_url' => $invoiceUrl
             ];
         } catch (Exception $e) {
-            return [
-                'type' => 'danger',
-                'message' => sprintf("Unable to create an order. Error: %s \n", $e->getMessage())
-            ];
+            throw new Exception($e->getMessage(), $e->getCode());
         }
     }
 
     /**
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
      * @return array
      */
     public function handlerWebhook(Request $request): array
     {
         Log::info($request);
+
         // Check sender
         if (!Str::contains($request->header('User-Agent'), 'PayPal')) {
             return [
@@ -197,7 +207,7 @@ class PaypalProvider implements PaymentServiceContract
         // Update Payment Order status
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentData["status"]);
         $payment->status = constant("self::{$status}");
-       // $payment->payload = $paymentData;
+        // $payment->payload = $paymentData;
         $payment->save();
 
         // Return result
@@ -210,10 +220,5 @@ class PaypalProvider implements PaymentServiceContract
             'user_id' => $payment->user_id,
             'payment_completed' => (self::STATUS_ORDER_COMPLETED === $payment->status),
         ];
-    }
-
-    public function charge(PaymentOrder $payment, object $inputData): mixed
-    {
-        // TODO: Implement charge() method.
     }
 }

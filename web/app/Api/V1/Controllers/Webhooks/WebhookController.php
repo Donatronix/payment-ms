@@ -20,7 +20,7 @@ class WebhookController extends Controller
      * Invoices webhook
      *
      * @OA\Post(
-     *     path="/webhooks/{gateway}/invoices",
+     *     path="/webhooks/{gateway}",
      *     description="Webhooks Notifications about invoices",
      *     tags={"Webhooks"},
      *

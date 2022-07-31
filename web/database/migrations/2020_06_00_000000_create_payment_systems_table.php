@@ -17,7 +17,7 @@ class CreatePaymentSystemsTable extends Migration
             $table->uuid('id')->primary();
 
             $table->string('name');
-            $table->string('gateway');
+            $table->string('gateway', 30);
             $table->string('description')->nullable();
             $table->string('new_status')->default(1);
 

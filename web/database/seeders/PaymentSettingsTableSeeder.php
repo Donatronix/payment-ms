@@ -38,15 +38,7 @@ class PaymentSettingsTableSeeder extends Seeder
                 [
                     'key' => 'bitpay_private_key_password',
                     'value' => 'A6Zaq4nVkH1iVgcR4pNA94rFTwraRQu9YqcnY7pHHNhS'
-                ],
-                [
-                    'key' => 'bitpay_payment_webhook_url',
-                    'value' => 'https://api-dev.ultainfinity.com/v1/payments'
-                ],
-                [
-                    'key' => 'bitpay_redirect_url',
-                    'value' => 'https://ultainfinity.com'
-                ],
+                ]
             ],
 
             'coinbase' => [
@@ -57,15 +49,7 @@ class PaymentSettingsTableSeeder extends Seeder
                 [
                     'key' => 'coinbase_webhook_key',
                     'value' => '4c644339-329f-43b1-9c33-4bc7173e9e94'
-                ],
-                [
-                    'key' => 'coinbase_redirect_url',
-                    'value' => 'https://sumra.net/'
-                ],
-                [
-                    'key' => 'coinbase_cancel_url',
-                    'value' => 'https://sumra.net/'
-                ],
+                ]
             ],
 
             'openpayd' => [
@@ -158,15 +142,7 @@ class PaymentSettingsTableSeeder extends Seeder
                 [
                     'key' => 'stripe_secret_key',
                     'value' => 'sk_test_51HcoG6KkrmrXUD8mrFuqkBKnPfFlsfh51HpDQ6gR3eI0uhQfxU24ayd1TqP47UiMGEDRRCB7mC6P6UPsvFcaSMX600IMaVUrZb'
-                ],
-                [
-                    'key' => 'payments_redirect_url',
-                    'value' => 'https://e0ee1c07505d.ngrok.io/'
-                ],
-                [
-                    'key' => 'payments_webhook_url',
-                    'value' => 'https://e0ee1c07505d.ngrok.io/v1/payments/webhooks'
-                ],
+                ]
             ]
         ];
 

@@ -16,7 +16,7 @@ class CreatePaymentOrdersTable extends Migration
         Schema::create('payment_orders', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->tinyInteger('type');
-            $table->string('gateway', 10);
+            $table->string('gateway', 30);
 
             $table->decimal('amount');
             $table->char('currency', 3);

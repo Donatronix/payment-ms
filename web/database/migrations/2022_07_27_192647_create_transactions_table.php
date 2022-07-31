@@ -22,7 +22,7 @@ class CreateTransactionsTable extends Migration
                 ->onDelete('cascade');
             $table->string('trx_id', 200);
 
-            $table->string('gateway', 10);
+            $table->string('gateway', 30);
             $table->smallInteger('status')->nullable();
 
             $table->timestamps();

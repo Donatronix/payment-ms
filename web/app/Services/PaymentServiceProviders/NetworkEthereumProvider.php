@@ -2,64 +2,68 @@
 
 namespace App\Services\PaymentServiceProviders;
 
+use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
 use Illuminate\Http\Request;
 
-class NetworkEthereumProvider implements \App\Contracts\PaymentServiceContract
+/**
+ * Class NetworkEthereumProvider
+ * @package App\Services\PaymentServiceProviders
+ */
+class NetworkEthereumProvider implements PaymentServiceContract
 {
     /**
-     * @inheritDoc
+     * @return string
      */
-    public static function service()
+    public static function service(): string
     {
-        // TODO: Implement service() method.
+        return 'ethereum-network';
     }
 
     /**
-     * @inheritDoc
+     * @return string
      */
-    public static function name()
+    public static function name(): string
     {
-        // TODO: Implement name() method.
+        return 'Ethereum Network';
     }
 
     /**
-     * @inheritDoc
+     * @return string
      */
-    public static function description()
+    public static function description(): string
     {
-        // TODO: Implement description() method.
+        return 'Ethereum is a global, decentralized platform for money and new kinds of applications. On Ethereum, you can write code that controls money, and build applications accessible anywhere in the world.';
     }
 
     /**
-     * @inheritDoc
+     * @return int
      */
-    public static function getNewStatusId()
+    public static function newStatus(): int
     {
-        // TODO: Implement getNewStatusId() method.
+        return 0;
     }
 
     /**
-     * @inheritDoc
+     * Wrapper for create payment order for charge money
+     *
+     * @param PaymentOrder $payment
+     * @param object $inputData
+     * @return array
+     * @throws Exception
      */
-    public function charge(PaymentOrder $payment, object $inputData): mixed
+    public function charge(PaymentOrder $payment, object $inputData): array
     {
-        // TODO: Implement charge() method.
+        return [];
     }
 
     /**
-     * @inheritDoc
+     * @param Request $request
+     *
+     * @return array
      */
-    public function createInvoice(PaymentOrder $payment, object $inputData): mixed
+    public function handlerWebhook(Request $request): array
     {
-        // TODO: Implement createInvoice() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function handlerWebhook(Request $request): mixed
-    {
-        // TODO: Implement handlerWebhook() method.
+        return [];
     }
 }

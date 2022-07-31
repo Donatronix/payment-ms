@@ -73,7 +73,7 @@ class PaymentSystemController extends Controller
                     $gateway = $class::gateway();
                     $name = $class::name();
                     $description = $class::description();
-                    $new_status = $class::getNewStatusId();
+                    $new_status = $class::newStatus();
                 } catch (\Exception $e) {
                     $gateway = 'error';
                     $name = 'error';

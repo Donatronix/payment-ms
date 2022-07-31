@@ -5,6 +5,7 @@ namespace App\Services\PaymentServiceProviders;
 use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
 use Illuminate\Http\Request;
+use SafeCharge\Api\Environment;
 use SafeCharge\Api\RestClient;
 
 class NumeiProvider implements PaymentServiceContract
@@ -16,7 +17,7 @@ class NumeiProvider implements PaymentServiceContract
     public function __construct()
     {
         $this->config = [
-            'enviroment' => \SafeCharge\Api\Environment::INT,
+            'enviroment' => Environment::INT,
             'merchantId' => '<your merchantId>',
             'merchantSiteId' => '<your merchantSiteId>',
             'merchantSecretKey' => '<your merchantSecretKey>',
@@ -24,6 +25,45 @@ class NumeiProvider implements PaymentServiceContract
 
         $this->service = new RestClient();
         $this->service->initialize($this->config);
+    }
+
+    public static function service(): string
+    {
+        return 'Bitcoin Network';
+    }
+
+    public static function name(): string
+    {
+        return 'Bitcoin Network';
+    }
+
+    public static function description(): string
+    {
+        return 'Bitcoin Network';
+    }
+
+    public static function newStatus(): int
+    {
+        return 0;
+    }
+
+    public function charge(PaymentOrder $payment, object $inputData): mixed
+    {
+        // TODO: Implement charge() method.
+    }
+
+    public function handlerWebhook(Request $request): mixed
+    {
+        // TODO: Implement handlerWebhook() method.
+    }
+
+    public function getPaymentStatus($paymentId)
+    {
+        $paymentStatus = $this->service->getPaymentService()->getPaymentStatus([
+            'paymentId' => $paymentId,
+        ]);
+
+        return $paymentStatus;
     }
 
     public function openOrder($data = [])
@@ -97,50 +137,5 @@ class NumeiProvider implements PaymentServiceContract
         ]);
 
         return $payment;
-
-    }
-
-    public function getPaymentStatus($paymentId)
-    {
-        $paymentStatus = $this->service->getPaymentService()->getPaymentStatus([
-            'paymentId' => $paymentId,
-        ]);
-
-        return $paymentStatus;
-    }
-
-    public static function service()
-    {
-        // TODO: Implement service() method.
-    }
-
-    public static function name()
-    {
-        // TODO: Implement name() method.
-    }
-
-    public static function description()
-    {
-        // TODO: Implement description() method.
-    }
-
-    public static function getNewStatusId()
-    {
-        // TODO: Implement getNewStatusId() method.
-    }
-
-    public function charge(PaymentOrder $payment, object $inputData): mixed
-    {
-        // TODO: Implement charge() method.
-    }
-
-    public function createInvoice(PaymentOrder $payment, object $inputData): mixed
-    {
-        // TODO: Implement createInvoice() method.
-    }
-
-    public function handlerWebhook(Request $request): mixed
-    {
-        // TODO: Implement handlerWebhook() method.
     }
 }

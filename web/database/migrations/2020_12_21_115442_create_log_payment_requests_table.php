@@ -15,7 +15,7 @@ class CreateLogPaymentRequestsTable extends Migration
     {
         Schema::create('log_payment_requests', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('gateway', 10);
+            $table->string('gateway', 30);
             $table->string('service');
             $table->text('payload');
             $table->timestamps();

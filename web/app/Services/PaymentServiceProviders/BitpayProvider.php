@@ -15,10 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class BitpayProvider implements PaymentServiceContract
 {
-    /**
-     * Invoice statuses
-     */
-    // New
+    // New Invoice statuses
     const STATUS_INVOICE_NEW = 1000;
 
     // To notify merchant that an invoice has reached the status paid
@@ -40,9 +37,9 @@ class BitpayProvider implements PaymentServiceContract
     const STATUS_INVOICE_REFUND_COMPLETE = 1016;
 
     /**
-     * @var \BitPaySDK\Client
+     * @var Client
      */
-    private $service;
+    private Client $service;
 
     /**
      * BitPayProvider constructor.
@@ -65,34 +62,47 @@ class BitpayProvider implements PaymentServiceContract
         }
     }
 
-    public static function name(): string
-    {
-        return 'BitPay';
-    }
-
-    public static function description(): string
-    {
-        return 'BitPay is..';
-    }
-
+    /**
+     * @return string
+     */
     public static function service(): string
     {
         return 'bitpay';
     }
 
-    public static function getNewStatusId(): int
+    /**
+     * @return string
+     */
+    public static function name(): string
+    {
+        return 'BitPay Payment Provider';
+    }
+
+    /**
+     * @return string
+     */
+    public static function description(): string
+    {
+        return 'BitPay: Buy Crypto Without Fees | Store, Swap & Spend Bitcoin';
+    }
+
+    /**
+     * @return int
+     */
+    public static function newStatus(): int
     {
         return self::STATUS_INVOICE_NEW;
     }
 
     /**
-     * Wrapper for create bitpay invoice for charge money
+     * Wrapper for create payment order for charge money
      *
      * @param PaymentOrder $payment
      * @param object $inputData
      * @return array
+     * @throws Exception
      */
-    public function createInvoice(PaymentOrder $payment, object $inputData): array
+    public function charge(PaymentOrder $payment, object $inputData): array
     {
         try {
             // Set invoice detail
@@ -102,46 +112,9 @@ class BitpayProvider implements PaymentServiceContract
 
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
-            $invoice->setNotificationURL(PaymentSetting::settings('bitpay_payment_webhook_url') . '/bitpay/invoices');
+            $invoice->setNotificationURL( config('settings.api.payments') . '/' . self::service());
 
-            $invoice->setRedirectURL($inputData->redirect_url); // PaymentSetting::settings('bitpay_redirect_url')
-
-            $invoice->setPosData(json_encode(['code' => $payment->check_code]));
-            $invoice->setItemDesc("Charge user wallet balance");
-
-            // Send data to bitpay and get created invoice
-            $chargeObj = $this->service->createInvoice($invoice);
-
-            // Update Payment Order data
-            $payment->status = self::STATUS_INVOICE_NEW;
-            $payment->document_id = $chargeObj->getId();
-            $payment->save();
-
-            return [
-                'type' => 'success',
-                'gateway' => self::service(),
-                'payment_order_id' => $payment->id,
-                'invoice_url' => $chargeObj->getURL()
-            ];
-        } catch (Exception $e) {
-            return [
-                'type' => 'danger',
-                'message' => sprintf("Unable to create an invoice. Error: %s \n", $e->getMessage())
-            ];
-        }
-    }
-
-    public function charge(PaymentOrder $payment, object $inputData): mixed
-    {
-        try {
-            // Set invoice detail
-            $invoice = new Invoice($inputData->amount, $inputData->currency);
-            $invoice->setOrderId($payment->id);
-            $invoice->setFullNotifications(true);
-            $invoice->setExtendedNotifications(true);
-            $invoice->setNotificationURL(PaymentSetting::settings('bitpay_payment_webhook_url') . '/bitpay/invoices');
-
-            $invoice->setRedirectURL($inputData->redirect_url); // PaymentSetting::settings('bitpay_redirect_url')
+            $invoice->setRedirectURL($inputData->redirect_url ?? null);
 
             $invoice->setPosData(json_encode(['code' => $payment->check_code]));
             $invoice->setItemDesc("Charge user wallet balance");
@@ -149,27 +122,24 @@ class BitpayProvider implements PaymentServiceContract
             // Send data to bitpay and get created invoice
             $chargeObj = $this->service->createInvoice($invoice);
 
-            // Update Payment Order data
+            // Update payment order
             $payment->status = self::STATUS_INVOICE_NEW;
             $payment->document_id = $chargeObj->getId();
             $payment->save();
 
+            // Return result
             return [
-                'type' => 'success',
                 'gateway' => self::service(),
                 'payment_order_id' => $payment->id,
-                'invoice_url' => $chargeObj->getURL()
+                'payment_order_url' => $chargeObj->getURL()
             ];
         } catch (Exception $e) {
-            return [
-                'type' => 'danger',
-                'message' => sprintf("Unable to create an invoice. Error: %s \n", $e->getMessage())
-            ];
+            throw new Exception($e->getMessage(), $e->getCode());
         }
     }
 
     /**
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
      * @return array|string[]
      */
@@ -218,6 +188,7 @@ class BitpayProvider implements PaymentServiceContract
         // Return result
         return [
             'status' => 'success',
+            'gateway' => self::service(),
             'payment_order_id' => $payment->id,
             'amount' => $payment->amount,
             'currency' => $payment->currency,
