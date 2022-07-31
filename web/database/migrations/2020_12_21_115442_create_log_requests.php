@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateLogPaymentRequestErrorsTable extends Migration
+class CreateLogPaymentRequestsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,12 @@ class CreateLogPaymentRequestErrorsTable extends Migration
      */
     public function up()
     {
-        Schema::create('log_payment_request_errors', function (Blueprint $table) {
+        Schema::create('log_requests', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('gateway',10);
-            $table->text('payload');
+            $table->string('source', 10);
+            $table->string('gateway', 30);
+            $table->string('service');
+            $table->text('payload')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +30,6 @@ class CreateLogPaymentRequestErrorsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('log_payment_request_errors');
+        Schema::dropIfExists('log_requests');
     }
 }

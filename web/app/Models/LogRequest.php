@@ -10,7 +10,7 @@ use Sumra\SDK\Traits\UuidTrait;
  *
  * @package App\Models
  */
-class LogPaymentRequestError extends Model
+class LogRequest extends Model
 {
     use UuidTrait;
 
@@ -30,13 +30,7 @@ class LogPaymentRequestError extends Model
      */
     protected $fillable = [
         'gateway',
+        'payment_order_id',
         'payload'
     ];
-
-    /**
-     * The attributes excluded from the model's JSON form.
-     *
-     * @var array
-     */
-    protected $hidden = [];
 }

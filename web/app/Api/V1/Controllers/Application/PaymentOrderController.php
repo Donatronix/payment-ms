@@ -3,8 +3,8 @@
 namespace App\Api\V1\Controllers\Application;
 
 use App\Http\Controllers\Controller;
-use App\Models\LogPaymentRequest;
-use App\Models\LogPaymentRequestError;
+use App\Models\LogError;
+use App\Models\LogRequest;
 use App\Models\PaymentOrder;
 use App\Services\PaymentServiceManager;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -125,7 +125,7 @@ class PaymentOrderController extends Controller
             ];
 
             // If based on document, then
-            if($request->has('document')){
+            if ($request->has('document')) {
                 $rules += [
                     'document' => 'sometimes|array:id,object,service,meta',
                     'document.id' => 'required|string|min:36|max:36',
@@ -146,7 +146,8 @@ class PaymentOrderController extends Controller
 
         // Write log
         try {
-            LogPaymentRequest::create([
+            LogRequest::create([
+                'source' => 'charge',
                 'gateway' => $request->get('gateway'),
                 'service' => $request->get('document.service', null),
                 'payload' => $request->all()
@@ -179,10 +180,11 @@ class PaymentOrderController extends Controller
                 'message' => 'Payment session successfully created',
                 'data' => $result
             ]);
-        }catch (\Exception $e){
-            LogPaymentRequestError::create([
+        } catch (\Exception $e) {
+            LogError::create([
+                'source' => 'charge',
                 'gateway' => $request->get('gateway'),
-                'payload' => $result['message']
+                'message' => $e->getMessage()
             ]);
 
             // Return response

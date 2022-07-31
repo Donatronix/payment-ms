@@ -3,7 +3,7 @@
 namespace App\Api\V1\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
-use App\Models\LogPaymentWebhookError;
+use App\Models\LogError;
 use App\Services\PaymentServiceManager;
 use Exception;
 use Illuminate\Http\Request;
@@ -50,7 +50,8 @@ class WebhookController extends Controller
     {
         // Check content type
         if (!$request->isJson()) {
-            LogPaymentWebhookError::create([
+            LogError::create([
+                'source' => 'webhook',
                 'gateway' => $gateway,
                 'message' => 'Is not JSON content',
                 'payload' => $request->getContent()
@@ -73,7 +74,8 @@ class WebhookController extends Controller
 
         // If error, logging and send status 400
         if ($result['type'] === 'danger') {
-            LogPaymentWebhookError::create([
+            LogError::create([
+                'source' => 'webhook',
                 'gateway' => $gateway,
                 'message' => $result['message'],
                 'payload' => $result['payload']

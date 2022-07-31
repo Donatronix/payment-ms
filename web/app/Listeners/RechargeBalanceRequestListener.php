@@ -2,8 +2,8 @@
 
 namespace App\Listeners;
 
-use App\Models\LogPaymentRequest;
-use App\Models\LogPaymentRequestError;
+use App\Models\LogRequest;
+use App\Models\LogError;
 use App\Services\PaymentServiceManager;
 use App\Models\PaymentOrder as PayModel;
 use Illuminate\Support\Facades\Validator;
@@ -61,7 +61,8 @@ class RechargeBalanceRequestListener
 
         // Payment Log
         try {
-            LogPaymentRequest::create([
+            LogRequest::create([
+                'source' => 'listener',
                 'gateway' => $inputData['gateway'],
                 'service' => $inputData['replay_to'],
                 'payload' => $inputData
@@ -100,9 +101,11 @@ class RechargeBalanceRequestListener
 
         // Return response
         if ($result['type'] === 'error') {
-            LogPaymentRequestError::create([
+            LogError::create([
+                'source' => 'listener',
                 'gateway' => $inputData['gateway'],
-                'payload' => $result['message']
+                'message' => $result['message'],
+                'payload' => $result
             ]);
         }
 

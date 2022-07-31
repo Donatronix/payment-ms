@@ -2,10 +2,10 @@
 
 namespace App\Listeners;
 
-use App\Models\LogPaymentRequest;
-use App\Models\LogPaymentRequestError;
+use App\Models\LogRequest;
+use App\Models\LogError;
 use App\Models\PaymentOrder;
-use App\Services\PaymentServiceManager as PaymentService;
+use App\Services\PaymentServiceManager;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -58,7 +58,8 @@ class LoanPaymentListener
 
         // Write log
         try {
-            LogPaymentRequest::create([
+            LogRequest::create([
+                'source' => 'listener',
                 'gateway' => $inputData->gateway,
                 'service' => $inputData->service,
                 'payload' => $inputData
@@ -93,9 +94,11 @@ class LoanPaymentListener
         if ($result['type'] === 'danger') {
             $code = 400;
 
-            LogPaymentRequestError::create([
+            LogError::create([
+                'source' => 'listener',
                 'gateway' => $inputData->gateway,
-                'payload' => $result['message']
+                'message' => $result['message'],
+                'payload' => $result
             ]);
 
             Log::info($result);
