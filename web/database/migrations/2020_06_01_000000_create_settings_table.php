@@ -13,7 +13,7 @@ class CreatePaymentSettingsTable extends Migration
      */
     public function up()
     {
-        Schema::create('payment_settings', function (Blueprint $table) {
+        Schema::create('settings', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
             $table->string('key');
@@ -36,6 +36,6 @@ class CreatePaymentSettingsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('payment_settings');
+        Schema::dropIfExists('settings');
     }
 }

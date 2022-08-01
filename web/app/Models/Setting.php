@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
-class PaymentSetting extends Model
+class Setting extends Model
 {
     use HasFactory;
     use OwnerTrait;
@@ -26,13 +26,6 @@ class PaymentSetting extends Model
         'value',
         'payment_service_id',
     ];
-
-    /**
-     * The attributes excluded from the model's JSON form.
-     *
-     * @var array
-     */
-    protected $hidden = [];
 
     /**
      * Get the payment system that owns the settings.

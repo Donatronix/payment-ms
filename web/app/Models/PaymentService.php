@@ -38,8 +38,8 @@ class PaymentService extends Model
     /**
      * Get the payment settings for the payment system
      */
-    public function payment_settings(): HasMany
+    public function settings(): HasMany
     {
-        return $this->hasMany(PaymentSetting::class);
+        return $this->hasMany(Setting::class);
     }
 }

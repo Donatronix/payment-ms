@@ -18,7 +18,7 @@ $router->group([
         /**
          * Payment systems list
          */
-        $router->get('payment-systems', 'PaymentSystemController');
+        $router->get('payment-services', 'PaymentServiceController');
     });
 
     /**
@@ -58,7 +58,7 @@ $router->group([
          */
         $router->group([
             'prefix' => 'transactions'
-        ], function($router) {
+        ], function ($router) {
             $router->get('/', 'TransactionController@index');
             $router->post('/', 'TransactionController@store');
             $router->get('/{id}', 'TransactionController@show');
@@ -90,26 +90,28 @@ $router->group([
         });
 
         /**
+         * Payment services
+         */
+        $router->group([
+            'prefix' => 'payment-services'
+        ], function ($router) {
+            $router->get('/', 'PaymentServiceController@index');
+            $router->post('/', 'PaymentServiceController@store');
+            $router->get('{id}', 'PaymentServiceController@show');
+            $router->put('/{id}', 'PaymentServiceController@update');
+            $router->delete('/{id}', 'PaymentServiceController@destroy');
+        });
+
+        /**
          * Transactions
          */
         $router->group([
             'prefix' => 'transactions'
-        ], function($router) {
+        ], function ($router) {
             $router->get('/', 'TransactionController@index');
-            $router->get('/{id}', 'TransactionController@show');
             $router->post('/', 'TransactionController@store');
+            $router->get('/{id}', 'TransactionController@show');
         });
-
-        //Manage all payment system
-        $router->get('/payment-system',          'PaymentSystemController@index');
-        $router->get('/payment-system/{id}',     'PaymentSystemController@show');
-        $router->post('/payment-system',         'PaymentSystemController@store');
-        $router->put('/payment-system/{id}',     'PaymentSystemController@update');
-        $router->delete('/payment-system/{id}',  'PaymentSystemController@destroy');
-
-        //Manage all payment setting
-        $router->get('/payment-setting',          'PaymentSettingController@index');
-        $router->post('/payment-setting',         'PaymentSettingController@index');
     });
 
     /**

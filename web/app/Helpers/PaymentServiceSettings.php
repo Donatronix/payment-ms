@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-use App\Models\PaymentSetting;
+use App\Models\Setting;
 
 class PaymentServiceSettings
 {
@@ -13,7 +13,7 @@ class PaymentServiceSettings
             $getKey = strtolower($getKey);
 
             if ($getKey) {
-                $getValue = PaymentSetting::where('key', $getKey)->value('value');
+                $getValue = Setting::where('key', $getKey)->value('value');
 
                 return ($getValue ? $getValue : $default);
             } else {

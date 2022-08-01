@@ -7,17 +7,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Class PaymentSystemController
+ * Class PaymentServiceController
  *
  * @package App\Api\V1\Controllers
  */
-class PaymentSystemController extends Controller
+class PaymentServiceController extends Controller
 {
     const CACHE_ID = "PAYSYSTEMLIST";
 
     /**
      * @OA\Get(
-     *     path="/payment-systems",
+     *     path="/payment-services",
      *     description="List of payment systems",
      *     tags={"Public | Payment Systems"},
      *

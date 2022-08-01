@@ -135,7 +135,7 @@ class PaymentOrderController extends Controller
     {
         $newStatuses = [];
 
-        $ctrl = new PaymentSystemController();
+        $ctrl = new PaymentServiceController();
         $systems = $ctrl->catalog();
 
         foreach ($systems as $system) {

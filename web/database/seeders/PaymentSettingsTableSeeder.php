@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\PaymentSetting;
+use App\Models\Setting;
 use Illuminate\Database\Seeder;
 use App\Models\PaymentService;
 use BitPaySDK\Env;
@@ -152,10 +152,10 @@ class PaymentSettingsTableSeeder extends Seeder
 
             // Loop all values
             foreach ($values as $key => $value){
-                $setting = new PaymentSetting();
+                $setting = new Setting();
                 $setting->fill($value);
                 $setting->id = (string)Str::orderedUuid();
-                $provider->payment_settings()->save($setting);
+                $provider->settings()->save($setting);
             }
         }
     }
