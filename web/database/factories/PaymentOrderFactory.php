@@ -11,13 +11,13 @@ class PaymentOrderFactory extends Factory
 
     public function definition(): array
     {
-    	return [
-    	    'type' => rand(1,3),
+        return [
+            'type' => rand(1, 3),
             'gateway' => $this->faker->randomElement(['bitpay', 'coinbase', 'openpayd', 'paypal', 'stripe']),
             'amount' => rand(20, 1200),
             'currency' => $this->faker->randomElement(['usd', 'eur', 'gpd']),
-    	    'user_id' =>  $this->faker->randomElement(config('settings.default_users_ids')),
+            'user_id' => $this->faker->randomElement(config('settings.default_users_ids')),
             'check_code' => $this->faker->word,
-    	];
+        ];
     }
 }

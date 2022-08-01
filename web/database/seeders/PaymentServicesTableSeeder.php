@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\PaymentService;
+use Illuminate\Database\Seeder;
 
-class PaymentSystemsTableSeeder extends Seeder
+class PaymentServicesTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.

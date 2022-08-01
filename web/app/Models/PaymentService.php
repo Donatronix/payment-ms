@@ -36,7 +36,7 @@ class PaymentService extends Model
     protected $hidden = [];
 
     /**
-     * Get the payment settings for the payment system
+     * Get the payment settings for the payment service
      */
     public function settings(): HasMany
     {

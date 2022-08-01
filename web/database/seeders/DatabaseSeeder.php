@@ -17,16 +17,16 @@ class DatabaseSeeder extends Seeder
     {
         // Common seeds
         $this->call([
-            PaymentSystemsTableSeeder::class,
-            PaymentSettingsTableSeeder::class
+            PaymentServicesTableSeeder::class,
+            SettingsTableSeeder::class
         ]);
 
         // Seeds for local and staging
         if (App::environment(['local', 'staging'])) {
-           $this->call([
-               PaymentOrderSeeder::class,
-                TransactionSeeder::class
-           ]);
+            $this->call([
+                PaymentOrderSeeder::class,
+                TransactionsTableSeeder::class
+            ]);
         }
 
         // Seeds for production

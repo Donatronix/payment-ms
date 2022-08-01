@@ -3,8 +3,9 @@
 namespace App\Api\V1\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Models\PaymentService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 
 /**
  * Class PaymentServiceController
@@ -13,13 +14,11 @@ use Illuminate\Support\Facades\Cache;
  */
 class PaymentServiceController extends Controller
 {
-    const CACHE_ID = "PAYSYSTEMLIST";
-
     /**
      * @OA\Get(
      *     path="/payment-services",
-     *     description="List of payment systems",
-     *     tags={"Public | Payment Systems"},
+     *     description="List of Payment services",
+     *     tags={"Public | Payment Services"},
      *
      *     @OA\Response(
      *         response="200",
@@ -27,72 +26,23 @@ class PaymentServiceController extends Controller
      *     )
      * )
      *
+     * @param Request $request
      * @return JsonResponse
      */
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
-        $systems = Cache::get(self::CACHE_ID, []);
+        try {
+            $resp['data'] = PaymentService::where('status', true)->orderBy('name', 'Asc');
 
-        if (!is_array($systems) || count($systems) == 0) {
-            $systems = $this->catalog();
-
-            Cache::put(self::CACHE_ID, $systems);
+            return response()->jsonApi([
+                'title' => 'Display all payment service',
+                'message' => 'List of all payment service'
+            ]);
+        } catch (\Exception $e) {
+            return response()->jsonApi([
+                'title' => 'Display all payment service',
+                'message' => $e->getMessage()
+            ], 400);
         }
-
-        return response()->jsonApi([
-            'type' => 'success',
-            'title' => "Get payment systems list",
-            'message' => "Payment systems data successfully",
-            'data' => $systems
-        ]);
-    }
-
-    public function clear_cache()
-    {
-        Cache::forget(self::CACHE_ID);
-    }
-
-    public function catalog(): array
-    {
-        $systems = [];
-
-        $dir = base_path('app/Services/PaymentServiceProviders');
-
-        if ($handle = opendir($dir)) {
-            /* Именно такой способ чтения элементов каталога является правильным. */
-            while (false !== ($entry = readdir($handle))) {
-                if (($entry == '.') || ($entry == '..'))
-                    continue;
-
-                $class = '\App\Services\PaymentServiceProviders\\' . preg_replace('/\.php/', '', $entry);
-
-                if (!class_exists($class))
-                    continue;
-
-                try {
-                    $gateway = $class::gateway();
-                    $name = $class::name();
-                    $description = $class::description();
-                    $new_status = $class::newStatus();
-                } catch (\Exception $e) {
-                    $gateway = 'error';
-                    $name = 'error';
-                    $description = $entry . ' ' . $e->getMessage();
-                    $new_status = null;
-                }
-
-                $systems[] = [
-                    'label' => $name,
-                    'value' => $gateway,
-                    'icon' => 'yyy',
-                    'description' => $description,
-                    'new_status' => $new_status
-                ];
-            }
-
-            closedir($handle);
-        }
-
-        return $systems;
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePaymentSystemsTable extends Migration
+class CreatePaymentServicesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -18,8 +18,11 @@ class CreatePaymentSystemsTable extends Migration
 
             $table->string('name');
             $table->string('gateway', 30);
+
             $table->string('description')->nullable();
             $table->string('new_status')->default(1);
+
+            $table->boolean('status')->default(false);
 
             $table->timestamps();
             $table->softDeletes();

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateLogPaymentRequestErrorsTable extends Migration
+class CreateLogErrorsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -17,7 +17,7 @@ class CreateLogPaymentRequestErrorsTable extends Migration
             $table->uuid('id')->primary();
             $table->string('source', 10);
             $table->string('gateway', 30);
-            $table->string('message',255);
+            $table->string('message', 255);
             $table->text('payload')->nullable();
             $table->timestamps();
         });

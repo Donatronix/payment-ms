@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\PaymentOrder;
 use Illuminate\Database\Seeder;
 
 class PaymentOrderSeeder extends Seeder
@@ -13,6 +14,6 @@ class PaymentOrderSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\PaymentOrder::factory()->count(10)->create();
+        PaymentOrder::factory()->count(10)->create();
     }
 }

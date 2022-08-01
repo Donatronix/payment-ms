@@ -28,7 +28,7 @@ class Setting extends Model
     ];
 
     /**
-     * Get the payment system that owns the settings.
+     * Get the payment service that owns the settings.
      */
     public function payment_service(): BelongsTo
     {

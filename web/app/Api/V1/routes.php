@@ -16,7 +16,7 @@ $router->group([
         'namespace' => 'Public'
     ], function ($router) {
         /**
-         * Payment systems list
+         * Payment services list
          */
         $router->get('payment-services', 'PaymentServiceController');
     });
