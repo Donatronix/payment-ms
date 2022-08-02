@@ -32,15 +32,20 @@ class PaymentServiceController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         try {
-            $resp['data'] = PaymentService::where('status', true)->orderBy('name', 'Asc');
+            $services = PaymentService::query()
+                ->select(['title', 'key', 'description', 'icon'])
+                ->where('status', true)
+                ->orderBy('title')
+                ->get();
 
             return response()->jsonApi([
-                'title' => 'Display all payment service',
-                'message' => 'List of all payment service'
+                'title' => 'Payment service list',
+                'message' => 'List of payment service successfully received',
+                'data' => $services
             ]);
         } catch (\Exception $e) {
             return response()->jsonApi([
-                'title' => 'Display all payment service',
+                'title' => 'Payment service list',
                 'message' => $e->getMessage()
             ], 400);
         }

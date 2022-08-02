@@ -14,7 +14,7 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            'gateway' => PaymentService::all()->random()->gateway,
+            'gateway' => PaymentService::all()->random()->key,
             'trx_id' => uniqid('PAY_INT_ULTRA'),
             'payment_order_id' => PaymentOrder::all()->random()->id,
             'status' => $this->faker->boolean

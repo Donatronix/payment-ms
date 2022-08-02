@@ -6,13 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
 class Setting extends Model
 {
     use HasFactory;
-    use OwnerTrait;
     use UuidTrait;
     use SoftDeletes;
 
@@ -28,10 +26,23 @@ class Setting extends Model
     ];
 
     /**
-     * Get the payment service that owns the settings.
+     * The attributes excluded from the model's JSON form.
+     *
+     * @var array
      */
-    public function payment_service(): BelongsTo
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
+
+    /**
+     * @param $query
+     * @param string|null $service
+     * @return mixed
+     */
+    public function scopeByService($query, string $service = null): mixed
     {
-        return $this->belongsTo(PaymentService::class);
+        return $query->where('key', 'LIKE', "{$service}_%");
     }
 }

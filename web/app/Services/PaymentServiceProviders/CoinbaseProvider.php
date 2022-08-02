@@ -3,7 +3,7 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
-use App\Helpers\PaymentServiceSettings as PaymentSetting;
+use App\Helpers\PaymentServiceSettings;
 use App\Models\PaymentOrder;
 use CoinbaseCommerce\ApiClient;
 use CoinbaseCommerce\Resources\Charge;
@@ -51,12 +51,20 @@ class CoinbaseProvider implements PaymentServiceContract
     private ApiClient $service;
 
     /**
+     * @var string
+     */
+    private $settings;
+
+    /**
      * CoinbaseProvider constructor.
      */
     public function __construct()
     {
         try {
-            $this->service = ApiClient::init(PaymentSetting::settings('coinbase_api_key'));
+
+            $this->settings = PaymentServiceSettings::get(self::key());
+
+            $this->service = ApiClient::init($this->settings->api_key);
             $this->service->setTimeout(3);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -66,7 +74,7 @@ class CoinbaseProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function service(): string
+    public static function key(): string
     {
         return 'coinbase';
     }
@@ -74,9 +82,9 @@ class CoinbaseProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function name(): string
+    public static function title(): string
     {
-        return 'Coinbase Payment Provider';
+        return 'Coinbase payment service provider';
     }
 
     /**
@@ -90,7 +98,7 @@ class CoinbaseProvider implements PaymentServiceContract
     /**
      * @return int
      */
-    public static function newStatus(): int
+    public static function newOrderStatus(): int
     {
         return self::STATUS_CHARGE_CREATED;
     }
@@ -130,7 +138,7 @@ class CoinbaseProvider implements PaymentServiceContract
 
             // Return result
             return [
-                'gateway' => self::service(),
+                'gateway' => self::key(),
                 'payment_order_id' => $payment->id,
                 'invoice_url' => $chargeObj->hosted_url
             ];
@@ -167,7 +175,7 @@ class CoinbaseProvider implements PaymentServiceContract
             $event = Webhook::buildEvent(
                 trim(file_get_contents('php://input')),
                 $signature,
-                PaymentSetting::settings('coinbase_webhook_key')
+                $this->settings->webhook_key
             );
             $paymentData = [
                 "id" => $event->data->id,
@@ -200,7 +208,7 @@ class CoinbaseProvider implements PaymentServiceContract
             ->where('id', $paymentData["metadata"]['payment_order_id'])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["metadata"]['code'])
-            ->where('gateway', self::service())
+            ->where('gateway', self::key())
             ->first();
 
         if (!$payment) {
@@ -219,7 +227,7 @@ class CoinbaseProvider implements PaymentServiceContract
         // Return result
         return [
             'status' => 'success',
-            'gateway' => self::service(),
+            'gateway' => self::key(),
             'payment_order_id' => $payment->id,
             'amount' => $payment->amount,
             'currency' => $payment->currency,

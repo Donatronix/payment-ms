@@ -84,7 +84,8 @@ class PaymentOrder extends Model
         });
     }
 
-    public function transactions(){
+    public function transactions()
+    {
         return $this->hasMany(Transaction::class, 'payment_order_id', 'id');
     }
 }

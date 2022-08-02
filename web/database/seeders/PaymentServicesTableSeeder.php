@@ -15,46 +15,50 @@ class PaymentServicesTableSeeder extends Seeder
     public function run()
     {
         $data = [
-            [
-                'name' => 'Bitpay',
-                'gateway' => 'bitpay',
-                'description' => 'Bitpay payment gateway provider',
-                'new_status' => 1
+            'bitpay' => [
+                'status' => true,
             ],
-            [
-                'name' => 'Coinbase',
-                'gateway' => 'coinbase',
-                'description' => 'Coinbase payment gateway provider',
-                'new_status' => 1
+            'coinbase' => [
+                'status' => false,
             ],
-            [
-                'name' => 'Openpayd',
-                'gateway' => 'openpayd',
-                'description' => 'Openpayd payment gateway provider',
-                'new_status' => 1
+            'openpayd' => [
+                'status' => false,
             ],
-            [
-                'name' => 'Paypal',
-                'gateway' => 'paypal',
-                'description' => 'Paypal payment gateway provider',
-                'new_status' => 1
+            'paypal' => [
+                'status' => false,
             ],
-            [
-                'name' => 'Stripe',
-                'gateway' => 'stripe',
-                'description' => 'Stripe payment gateway provider',
-                'new_status' => 1
+            'stripe' => [
+                'status' => true,
+                'amount_min' => 250,
+                'amount_max' => 1000
             ],
-            [
-                'name' => 'Payment',
-                'gateway' => 'payment',
-                'description' => 'Payment common setting',
-                'new_status' => 1
+            'nuvei' => [
+                'status' => false,
             ],
-
+            'bitcoin-network' => [
+                'status' => true,
+            ],
+            'bnb-beacon-chain-network' => [
+                'status' => true,
+            ],
+            'bnb-smart-chain-network' => [
+                'status' => true,
+            ],
+            'cardano-network' => [
+                'status' => true,
+            ],
+            'ethereum-network' => [
+                'status' => true,
+            ],
+            'solana-network' => [
+                'status' => true,
+            ]
         ];
-        foreach ($data as $key => $value) {
-            PaymentService::create($value);
+
+        $services = PaymentService::catalog();
+
+        foreach ($services as $key => $value) {
+            PaymentService::create(array_merge($value, $data[$key]));
         }
     }
 }

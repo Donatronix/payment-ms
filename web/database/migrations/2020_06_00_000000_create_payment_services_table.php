@@ -16,11 +16,15 @@ class CreatePaymentServicesTable extends Migration
         Schema::create('payment_services', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-            $table->string('name');
-            $table->string('gateway', 30);
+            $table->string('title');
+            $table->string('key', 30);
+            $table->mediumText('description')->nullable();
+            $table->text('icon')->nullable();
 
-            $table->string('description')->nullable();
-            $table->string('new_status')->default(1);
+            $table->string('new_order_status')->default(1);
+
+            $table->double('amount_min', 15, 9, true)->default(0);
+            $table->double('amount_max', 15, 9, true)->default(0);
 
             $table->boolean('status')->default(false);
 

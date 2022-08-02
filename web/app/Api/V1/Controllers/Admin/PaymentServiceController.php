@@ -23,7 +23,7 @@ class PaymentServiceController extends Controller
      *
      * @OA\Get(
      *     path="/admin/payment-services",
-     *     description="Display list of all payment gateway settings",
+     *     description="Display list of all payment service",
      *     tags={"Admin | Payment Services"},
      *
      *     security={{
@@ -64,139 +64,18 @@ class PaymentServiceController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $resp['data'] = PaymentService::orderBy('name', 'Asc')
-                ->paginate($request->get('limit', 20));
+            $services = PaymentService::query()
+                ->orderBy('title')
+                ->paginate($request->get('limit', config('settings.pagination_limit')));
 
             return response()->jsonApi([
                 'title' => 'Display all payment service',
-                'message' => 'List of all payment service'
+                'message' => 'List of all payment service successfully received',
+                'data' => $services
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'title' => 'Display all payment service',
-                'message' => $e->getMessage()
-            ], 400);
-        }
-    }
-
-
-    const CACHE_ID = "PAYSYSTEMLIST";
-
-    public function __invoke2(): JsonResponse
-    {
-        $systems = Cache::get(self::CACHE_ID, []);
-
-        if (!is_array($systems) || count($systems) == 0) {
-            $systems = $this->catalog();
-
-            Cache::put(self::CACHE_ID, $systems);
-        }
-
-        return response()->jsonApi([
-            'type' => 'success',
-            'title' => "Get Payment services list",
-            'message' => "Payment services data successfully",
-            'data' => $systems
-        ]);
-    }
-
-    public function clear_cache()
-    {
-        Cache::forget(self::CACHE_ID);
-    }
-
-    public function catalog(): array
-    {
-        $systems = [];
-
-        $dir = base_path('app/Services/PaymentServiceProviders');
-
-        if ($handle = opendir($dir)) {
-            /* Именно такой способ чтения элементов каталога является правильным. */
-            while (false !== ($entry = readdir($handle))) {
-                if (($entry == '.') || ($entry == '..'))
-                    continue;
-
-                $class = '\App\Services\PaymentServiceProviders\\' . preg_replace('/\.php/', '', $entry);
-
-                if (!class_exists($class))
-                    continue;
-
-                try {
-                    $gateway = $class::service();
-                    $name = $class::name();
-                    $description = $class::description();
-                    $new_status = $class::newStatus();
-                } catch (\Exception $e) {
-                    $gateway = 'error';
-                    $name = 'error';
-                    $description = $entry . ' ' . $e->getMessage();
-                    $new_status = null;
-                }
-
-                $systems[] = [
-                    'label' => $name,
-                    'value' => $gateway,
-                    'icon' => 'yyy',
-                    'description' => $description,
-                    'new_status' => $new_status
-                ];
-            }
-
-            closedir($handle);
-        }
-
-        return $systems;
-    }
-
-
-
-
-    /**
-     * Display payment service details
-     *
-     * @OA\Get(
-     *     path="/admin/{id}/payment-services",
-     *     description="show payment service details",
-     *     tags={"Admin | Payment Services"},
-     *
-     *     security={{
-     *         "bearerAuth": {},
-     *         "apiKey": {}
-     *     }},
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *            @OA\Property(
-     *                 property="id",
-     *                 type="string",
-     *                 description="primary key to the record",
-     *             ),
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response="200",
-     *         description="Success",
-     *     )
-     * )
-     *
-     * @return JsonResponse
-     */
-    public function show($id): JsonResponse
-    {
-        try {
-            $paymentService = PaymentService::with('settings')->findOrFail($id);
-
-            return response()->jsonApi([
-                'title' => 'Payment service details',
-                'message' => 'Payment service details',
-                'data' => $paymentService
-            ]);
-        } catch (Exception $e) {
-            return response()->jsonApi([
-                'title' => 'Payment service Details',
                 'message' => $e->getMessage()
             ], 400);
         }
@@ -225,17 +104,17 @@ class PaymentServiceController extends Controller
      *                 description="Name of the payment service",
      *             ),
      *             @OA\Property(
-     *                 property="gateway",
+     *                 property="key",
      *                 type="string",
-     *                 description="The payment service gateway",
+     *                 description="The payment service processing key",
      *             ),
      *             @OA\Property(
      *                 property="description",
      *                 type="string",
-     *                 description="details of the payment service",
+     *                 description="Details of the payment service",
      *             ),
      *             @OA\Property(
-     *                 property="new_status",
+     *                 property="new_order_status",
      *                 type="integer",
      *                 description="Currently in use settings",
      *             ),
@@ -243,6 +122,7 @@ class PaymentServiceController extends Controller
      *                 property="settings",
      *                 type="array",
      *                 description="Payment service configuration",
+     *
      *                 @OA\Items(
      *                     type="object",
      *
@@ -276,9 +156,9 @@ class PaymentServiceController extends Controller
             // Validate inputs
             $this->validate($request, [
                 'name' => 'required|string',
-                'gateway' => 'required|string',
+                'key' => 'required|string',
                 'description' => 'required|string',
-                //'new_status'  => 'required|integer',
+                //'new_order_status'  => 'required|integer',
             ]);
 
 //            $this->validate($request, [
@@ -323,10 +203,68 @@ class PaymentServiceController extends Controller
     }
 
     /**
+     * Display payment service details
+     *
+     * @OA\Get(
+     *     path="/admin/payment-services/{id}",
+     *     description="show payment service details",
+     *     tags={"Admin | Payment Services"},
+     *
+     *     security={{
+     *         "bearerAuth": {},
+     *         "apiKey": {}
+     *     }},
+     *
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Payment service provider ID",
+     *         required=true,
+     *         example="96c890e5-7246-4714-a4db-70b63b16c8ef"
+     *     ),
+     *
+     *     @OA\Response(
+     *         response="200",
+     *         description="Success",
+     *     )
+     * )
+     *
+     * @param $id
+     * @return JsonResponse
+     */
+    public function show($id): JsonResponse
+    {
+        try {
+            $paymentService = PaymentService::query()
+                ->with('settings')
+                ->where('id', $id)
+                ->first();
+
+            if ($paymentService) {
+                return response()->jsonApi([
+                    'title' => 'Payment service details',
+                    'message' => 'Payment service details',
+                    'data' => $paymentService
+                ]);
+            } else {
+                return response()->jsonApi([
+                    'title' => 'Payment service details',
+                    'message' => 'Payment service with given ID not found',
+                ], 404);
+            }
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'title' => 'Payment service details',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
      * Method to update payment System
      *
      * @OA\Put(
-     *     path="/admin/{id}/payment-services",
+     *     path="/admin/payment-services/{id}",
      *     description="method to update payment service",
      *     tags={"Admin | Payment Services"},
      *
@@ -335,24 +273,27 @@ class PaymentServiceController extends Controller
      *         "apiKey": {}
      *     }},
      *
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Payment service provider ID",
+     *         required=true,
+     *         example="96c890e5-7246-4714-a4db-70b63b16c8ef"
+     *     ),
+     *
      *     @OA\RequestBody(
      *         required=true,
      *
      *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="id",
-     *                 type="string",
-     *                 description="primary key to the record",
-     *             ),
      *             @OA\Property(
      *                 property="name",
      *                 type="string",
      *                 description="Name of the payment service",
      *             ),
      *             @OA\Property(
-     *                 property="gateway",
+     *                 property="key",
      *                 type="string",
-     *                 description="The payment service gateway",
+     *                 description="The payment service processing key",
      *             ),
      *             @OA\Property(
      *                 property="description",
@@ -360,7 +301,7 @@ class PaymentServiceController extends Controller
      *                 description="details of the payment service",
      *             ),
      *             @OA\Property(
-     *                 property="new_status",
+     *                 property="new_order_status",
      *                 type="integer",
      *                 description="Currently in use settings",
      *             )
@@ -377,18 +318,18 @@ class PaymentServiceController extends Controller
      *
      * @throws ValidationException
      */
-
     public function update($id, Request $request)
     {
         $saved = null;
         $resp['data'] = [];
+
         // Validate inputs
         try {
             $this->validate($request, [
                 'name' => 'required|string',
-                'gateway' => 'required|string',
+                'key' => 'required|string',
                 'description' => 'required|string',
-                //'new_status'  => 'required|integer',
+                //'new_order_status'  => 'required|integer',
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([
@@ -407,6 +348,7 @@ class PaymentServiceController extends Controller
                 $resp['title'] = "Payment service";
 
                 $resp['data'] = PaymentService::findOrFail($id);
+
                 return response()->jsonApi($resp, 200);
             } else {
                 $resp['message'] = "Unable to update payment service";
@@ -426,8 +368,8 @@ class PaymentServiceController extends Controller
      * Method to delete payment service
      *
      * @OA\Delete(
-     *     path="/admin/{id}/payment-services",
-     *     description="method to delete payment gateway settings",
+     *     path="/admin/payment-services/{id}",
+     *     description="Delete payment service",
      *     tags={"Admin | Payment Services"},
      *
      *     security={{
@@ -435,67 +377,29 @@ class PaymentServiceController extends Controller
      *         "apiKey": {}
      *     }},
      *
-     *     @OA\RequestBody(
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Payment service provider ID",
      *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="id",
-     *                 type="string",
-     *                 description="payment service id",
-     *             ),
-     *             @OA\Parameter(
-     *             name="limit",
-     *             description="Count of orders in response",
-     *             in="query",
-     *             required=false,
-     *             @OA\Schema(
-     *              type="integer",
-     *              default=20,
-     *           )
-     *        ),
-     *        @OA\Parameter(
-     *           name="page",
-     *           description="Page of list",
-     *           in="query",
-     *           required=false,
-     *           @OA\Schema(
-     *              type="integer",
-     *              default=1,
-     *           )
-     *           ),
-     *         )
+     *         example="96c890e5-7246-4714-a4db-70b63b16c8ef"
      *     ),
+     *
      *     @OA\Response(
      *         response="200",
      *         description="Success",
      *     )
      * )
-     * @param Request $request
-     * @param                          $id
-     *
-     * @throws ValidationException
      */
-
-    public function destroy($id, Request $request)
+    public function destroy($id)
     {
-        $saved = null;
-
         try {
-            $deleted = PaymentService::findOrFail($id)->delete();
-            if ($deleted) {
-                $resp['message'] = "Payment service was deleted";
-                $resp['title'] = "Payment service";
+            PaymentService::findOrFail($id)->delete();
 
-                $resp['data'] = PaymentService::orderBy('name', 'Asc')
-                    ->paginate($request->get('limit', 20));
-                return response()->jsonApi($resp, 200);
-            } else {
-                $resp['message'] = "Unable to delete payment service";
-                $resp['title'] = "Payment service";
-
-                return response()->jsonApi($resp, 400);
-            }
+            return response()->jsonApi([
+                'title' => 'Delete payment service',
+                'message' => 'Payment service was deleted'
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'title' => 'Delete payment service',

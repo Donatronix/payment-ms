@@ -29,8 +29,17 @@ class LogRequest extends Model
      * @var array
      */
     protected $fillable = [
-        'gateway',
-        'payment_order_id',
+        'source',
+        'service',
         'payload'
+    ];
+
+    /**
+     * The attributes excluded from the model's JSON form.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'updated_at'
     ];
 }

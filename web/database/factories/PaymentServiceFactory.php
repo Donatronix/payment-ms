@@ -13,7 +13,7 @@ class PaymentServiceFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'gateway' => $this->faker->name,
+            'key' => $this->faker->slug(1),
             'description' => $this->faker->paragraph,
         ];
     }

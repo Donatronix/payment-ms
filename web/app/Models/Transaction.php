@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
 /**
@@ -68,9 +69,10 @@ use Sumra\SDK\Traits\UuidTrait;
  */
 class Transaction extends Model
 {
-    use UuidTrait;
     use HasFactory;
+    use OwnerTrait;
     use SoftDeletes;
+    use UuidTrait;
 
     public function paymentOrders(): BelongsTo
     {

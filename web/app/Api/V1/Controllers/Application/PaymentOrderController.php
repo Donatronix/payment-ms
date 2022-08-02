@@ -42,7 +42,7 @@ class PaymentOrderController extends Controller
      *             @OA\Property(
      *                 property="gateway",
      *                 type="string",
-     *                 description="Payment service provider",
+     *                 description="Payment service provider key",
      *                 default="stripe",
      *             ),
      *             @OA\Property(
@@ -148,8 +148,7 @@ class PaymentOrderController extends Controller
         try {
             LogRequest::create([
                 'source' => 'charge',
-                'gateway' => $request->get('gateway'),
-                'service' => $request->get('document.service', null),
+                'service' => $request->get('gateway'),
                 'payload' => $request->all()
             ]);
         } catch (\Exception $e) {
@@ -183,15 +182,16 @@ class PaymentOrderController extends Controller
         } catch (\Exception $e) {
             LogError::create([
                 'source' => 'charge',
-                'gateway' => $request->get('gateway'),
-                'message' => $e->getMessage()
+                'service' => $request->get('gateway'),
+                'message' => $e->getMessage(),
+                'payload' => ''
             ]);
 
             // Return response
             return response()->jsonApi([
                 'title' => $responseTitle,
                 'message' => sprintf("Unable to create an payment session. Error: %s \n", $e->getMessage())
-            ], $e->getCode());
+            ], 500);
         }
     }
 
@@ -216,7 +216,7 @@ class PaymentOrderController extends Controller
      *             @OA\Property(
      *                 property="gateway",
      *                 type="string",
-     *                 description="Payment gateway",
+     *                 description="Payment service provider key",
      *                 default="bitpay"
      *             )
      *         )

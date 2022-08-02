@@ -30,7 +30,7 @@ class LogError extends Model
      */
     protected $fillable = [
         'source',
-        'gateway',
+        'service',
         'message',
         'payload'
     ];
@@ -40,5 +40,7 @@ class LogError extends Model
      *
      * @var array
      */
-    protected $hidden = [];
+    protected $hidden = [
+        'updated_at'
+    ];
 }

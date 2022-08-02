@@ -4,9 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\PaymentService;
 use App\Models\Setting;
-use BitPaySDK\Env;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class SettingsTableSeeder extends Seeder
 {
@@ -20,8 +18,8 @@ class SettingsTableSeeder extends Seeder
         $data = [
             'bitpay' => [
                 [
-                    'key' => 'bitpay_environment',
-                    'value' => Env::Test
+                    'key' => 'bitpay_mode',
+                    'value' => 'test'
                 ],
                 [
                     'key' => 'bitpay_api_token_merchant',
@@ -143,18 +141,85 @@ class SettingsTableSeeder extends Seeder
                     'key' => 'stripe_secret_key',
                     'value' => 'sk_test_51HcoG6KkrmrXUD8mrFuqkBKnPfFlsfh51HpDQ6gR3eI0uhQfxU24ayd1TqP47UiMGEDRRCB7mC6P6UPsvFcaSMX600IMaVUrZb'
                 ]
+            ],
+            'nuvei' => [
+                [
+                    'key' => 'nuvei_mode',
+                    'value' => 'test'
+                ],
+            ],
+
+            'bitcoin-network' => [
+                [
+                    'key' => 'recipient_wallet_mainnet',
+                    'value' => 'bc1.....52255'
+                ],
+                [
+                    'key' => 'recipient_wallet_testnet',
+                    'value' => 'bc1.....52255'
+                ],
+            ],
+            'bnb-beacon-chain-network' => [
+                [
+                    'key' => 'recipient_wallet_mainnet',
+                    'value' => ''
+                ],
+                [
+                    'key' => 'recipient_wallet_testnet',
+                    'value' => ''
+                ],
+            ],
+            'bnb-smart-chain-network' => [
+                [
+                    'key' => 'recipient_wallet_mainnet',
+                    'value' => ''
+                ],
+                [
+                    'key' => 'recipient_wallet_testnet',
+                    'value' => ''
+                ],
+            ],
+            'cardano-network' => [
+                [
+                    'key' => 'recipient_wallet_mainnet',
+                    'value' => ''
+                ],
+                [
+                    'key' => 'recipient_wallet_testnet',
+                    'value' => ''
+                ],
+            ],
+            'ethereum-network' => [
+                [
+                    'key' => 'recipient_wallet_mainnet',
+                    'value' => ''
+                ],
+                [
+                    'key' => 'recipient_wallet_testnet',
+                    'value' => ''
+                ],
+            ],
+            'solana-network' => [
+                [
+                    'key' => 'recipient_wallet_mainnet',
+                    'value' => ''
+                ],
+                [
+                    'key' => 'recipient_wallet_testnet',
+                    'value' => ''
+                ],
             ]
         ];
 
         foreach ($data as $gateway => $values) {
             // Get provider by key
-            $provider = PaymentService::where('gateway', $gateway)->first();
+            $provider = PaymentService::where('key', $gateway)->first();
 
             // Loop all values
             foreach ($values as $key => $value) {
                 $setting = new Setting();
                 $setting->fill($value);
-                $setting->id = (string)Str::orderedUuid();
+
                 $provider->settings()->save($setting);
             }
         }

@@ -3,7 +3,7 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
-use App\Helpers\PaymentServiceSettings as PaymentSetting;
+use App\Helpers\PaymentServiceSettings;
 use App\Models\PaymentOrder;
 use Exception;
 use GuzzleHttp\Client;
@@ -34,16 +34,23 @@ class OpenpaydProvider implements PaymentServiceContract
     private Client $service;
 
     /**
+     * @var string
+     */
+    private $settings;
+
+    /**
      * OpenpaydProvider constructor.
      * @throws Exception
      */
     public function __construct()
     {
         try {
-            $this->service = new Client(['base_uri' => PaymentSetting::settings('openpayd_url')]);
+            $this->settings = PaymentServiceSettings::get(self::key());
 
-            $username = PaymentSetting::settings('openpayd_username');
-            $password = PaymentSetting::settings('openpayd_password');
+            $this->service = new Client(['base_uri' => $this->settings->url]);
+
+            $username = $this->settings->username;
+            $password = $this->settings->password;
             $salt = $username . ":" . $password;
 
             $code = base64_encode($salt);
@@ -67,7 +74,7 @@ class OpenpaydProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function service(): string
+    public static function key(): string
     {
         return 'openpayd';
     }
@@ -75,9 +82,9 @@ class OpenpaydProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function name(): string
+    public static function title(): string
     {
-        return 'OpenPayd';
+        return 'OpenPayd - Embedded Finance for the digital economy';
     }
 
     /**
@@ -85,13 +92,13 @@ class OpenpaydProvider implements PaymentServiceContract
      */
     public static function description(): string
     {
-        return 'OpenPayd is..';
+        return 'Embedded Finance for the digital economy. Accounts, FX, domestic and international payments, acquiring, open banking, and more - all delivered through a single, developer-first API.';
     }
 
     /**
      * @return integer
      */
-    public static function newStatus(): int
+    public static function newOrderStatus(): int
     {
         return 0;
     }
@@ -133,11 +140,11 @@ class OpenpaydProvider implements PaymentServiceContract
         if ($transactionType == self::TRANSACTION_TYPE_PAYIN) {
             //  retrieve payment and update status
             // TODO find a way to access webhook metadata.
-            $payment = PaymentOrder::where('type', PaymentOrder::TYPE_INVOICE)
+            $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
                 ->where('id', $webhookPayload["metadata"]['orderId'])
                 ->where('document_id', $webhookPayload["metadata"]['documentId'])
                 ->where('check_code', $webhookPayload["metadata"]['check_code'])
-                ->where('gateway', self::service())
+                ->where('gateway', self::key())
                 ->first();
 
             if (!$payment) {
@@ -173,7 +180,7 @@ class OpenpaydProvider implements PaymentServiceContract
 
     private function isValidSignature($signature, $data): bool
     {
-        $pubKeyPath = PaymentSetting::settings('openpayd_public_key_path');
+        $pubKeyPath = $this->settings->public_key_path;
 
         if ($signature == hash_hmac_file('sha256', $data, $pubKeyPath)) {
 

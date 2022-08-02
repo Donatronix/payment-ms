@@ -60,8 +60,7 @@ class LoanPaymentListener
         try {
             LogRequest::create([
                 'source' => 'listener',
-                'gateway' => $inputData->gateway,
-                'service' => $inputData->service,
+                'service' => $inputData->gateway,
                 'payload' => $inputData
             ]);
         } catch (\Exception $e) {

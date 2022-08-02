@@ -6,13 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
 class PaymentService extends Model
 {
     use HasFactory;
-    use OwnerTrait;
     use UuidTrait;
     use SoftDeletes;
 
@@ -25,7 +23,7 @@ class PaymentService extends Model
         'name',
         'gateway',
         'description',
-        'new_status'
+        'new_order_status'
     ];
 
     /**
@@ -33,7 +31,11 @@ class PaymentService extends Model
      *
      * @var array
      */
-    protected $hidden = [];
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
 
     /**
      * Get the payment settings for the payment service
@@ -41,5 +43,44 @@ class PaymentService extends Model
     public function settings(): HasMany
     {
         return $this->hasMany(Setting::class);
+    }
+
+    /**
+     * @return array
+     */
+    public static function catalog(): array
+    {
+        $systems = [];
+
+        $dir = base_path('app/Services/PaymentServiceProviders');
+
+        if ($handle = opendir($dir)) {
+            /* Именно такой способ чтения элементов каталога является правильным. */
+            while (false !== ($entry = readdir($handle))) {
+                if (($entry == '.') || ($entry == '..'))
+                    continue;
+
+                $class = '\App\Services\PaymentServiceProviders\\' . preg_replace('/\.php/', '', $entry);
+
+                if (!class_exists($class))
+                    continue;
+
+                try {
+                    $systems[$class::key()] = [
+                        'title' => $class::title(),
+                        'key' => $class::key(),
+                        'description' => $class::description(),
+                        'icon' => null,
+                        'new_order_status' => $class::newOrderStatus()
+                    ];
+                } catch (\Exception $e) {
+                    throw new \Exception($entry . ' ' . $e->getMessage());
+                }
+            }
+
+            closedir($handle);
+        }
+
+        return $systems;
     }
 }

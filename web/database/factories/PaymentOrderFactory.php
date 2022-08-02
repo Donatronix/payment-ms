@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\PaymentOrder;
+use App\Models\PaymentService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PaymentOrderFactory extends Factory
@@ -13,7 +14,7 @@ class PaymentOrderFactory extends Factory
     {
         return [
             'type' => rand(1, 3),
-            'gateway' => $this->faker->randomElement(['bitpay', 'coinbase', 'openpayd', 'paypal', 'stripe']),
+            'gateway' => PaymentService::all()->random()->key,
             'amount' => rand(20, 1200),
             'currency' => $this->faker->randomElement(['usd', 'eur', 'gpd']),
             'user_id' => $this->faker->randomElement(config('settings.default_users_ids')),

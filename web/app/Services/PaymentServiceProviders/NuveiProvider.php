@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use SafeCharge\Api\Environment;
 use SafeCharge\Api\RestClient;
 
-class NumeiProvider implements PaymentServiceContract
+class NuveiProvider implements PaymentServiceContract
 {
     protected $config = [];
 
@@ -17,7 +17,7 @@ class NumeiProvider implements PaymentServiceContract
     public function __construct()
     {
         $this->config = [
-            'enviroment' => Environment::INT,
+            'enviroment' => Environment::TEST,
             'merchantId' => '<your merchantId>',
             'merchantSiteId' => '<your merchantSiteId>',
             'merchantSecretKey' => '<your merchantSecretKey>',
@@ -27,22 +27,34 @@ class NumeiProvider implements PaymentServiceContract
         $this->service->initialize($this->config);
     }
 
-    public static function service(): string
+    /**
+     * @return string
+     */
+    public static function key(): string
     {
-        return 'Bitcoin Network';
+        return 'nuvei';
     }
 
-    public static function name(): string
+    /**
+     * @return string
+     */
+    public static function title(): string
     {
-        return 'Bitcoin Network';
+        return 'Nuvei Payment Technology Partner';
     }
 
+    /**
+     * @return string
+     */
     public static function description(): string
     {
-        return 'Bitcoin Network';
+        return 'We are the payment technology partner of thriving brands. We provide the payment intelligence and technology businesses need to succeed locally and globally, through one integration — propelling them further, faster';
     }
 
-    public static function newStatus(): int
+    /**
+     * @return int
+     */
+    public static function newOrderStatus(): int
     {
         return 0;
     }
@@ -107,7 +119,6 @@ class NumeiProvider implements PaymentServiceContract
                 "ipAddress" => $data['ipAddress'],
             ],
         ]);
-
     }
 
     public function payment(array $data)

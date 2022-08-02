@@ -3,24 +3,26 @@
 namespace App\Helpers;
 
 use App\Models\Setting;
+use Illuminate\Support\Str;
 
 class PaymentServiceSettings
 {
-    //Get Payment Gateway settings manager
-    public static function settings($getKey = null, $default = null): string
+    // Get payment service settings
+    public static function get($service = null): mixed
     {
         try {
-            $getKey = strtolower($getKey);
+            $settings = Setting::byService($service)->get();
 
-            if ($getKey) {
-                $getValue = Setting::where('key', $getKey)->value('value');
+            $list = [];
+            foreach ($settings as $row) {
+                $key = Str::replaceFirst("{$service}_", '', $row->key);
 
-                return ($getValue ? $getValue : $default);
-            } else {
-                return $default;
+                $list[$key] = $row->value ?? null;
             }
+
+            return (object) $list;
         } catch (\Exception $e) {
-            return $default;
+            throw new \Exception($e->getMessage(), $e->getCode());
         }
     }
 }

@@ -10,12 +10,12 @@ interface PaymentServiceContract
     /**
      * @return string
      */
-    public static function service(): string;
+    public static function key(): string;
 
     /**
      * @return string
      */
-    public static function name(): string;
+    public static function title(): string;
 
     /**
      * @return string
@@ -25,7 +25,7 @@ interface PaymentServiceContract
     /**
      * @return integer
      */
-    public static function newStatus(): int;
+    public static function newOrderStatus(): int;
 
     /**
      * Make one-time charge money to system

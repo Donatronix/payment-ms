@@ -4,6 +4,7 @@ namespace App\Api\V1\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PaymentOrder;
+use App\Models\PaymentService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -113,7 +114,7 @@ class PaymentOrderController extends Controller
      *     ),
      *     @OA\Parameter(
      *         name="gateway",
-     *         description="filter by gateway",
+     *         description="filter by payment service",
      *         in="query",
      *         required=false,
      *         @OA\Schema(
@@ -133,13 +134,11 @@ class PaymentOrderController extends Controller
      */
     public function lost(Request $request)
     {
+        $services = PaymentService::catalog();
+
         $newStatuses = [];
-
-        $ctrl = new PaymentServiceController();
-        $systems = $ctrl->catalog();
-
-        foreach ($systems as $system) {
-            $newStatuses[$system['gateway']] = $system['new_status'];
+        foreach ($services as $system) {
+            $newStatuses[$system['key']] = $system['new_order_status'];
         }
 
         $limit = intval($request->get('limit', 20));

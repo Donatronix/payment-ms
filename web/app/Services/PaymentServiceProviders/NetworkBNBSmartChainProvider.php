@@ -15,7 +15,7 @@ class NetworkBNBSmartChainProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function service(): string
+    public static function key(): string
     {
         return 'bnb-smart-chain-network';
     }
@@ -23,7 +23,7 @@ class NetworkBNBSmartChainProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function name(): string
+    public static function title(): string
     {
         return 'BNB Smart Chain Network';
     }
@@ -39,7 +39,7 @@ class NetworkBNBSmartChainProvider implements PaymentServiceContract
     /**
      * @return int
      */
-    public static function newStatus(): int
+    public static function newOrderStatus(): int
     {
         return 0;
     }
@@ -50,7 +50,6 @@ class NetworkBNBSmartChainProvider implements PaymentServiceContract
      * @param PaymentOrder $payment
      * @param object $inputData
      * @return array
-     * @throws Exception
      */
     public function charge(PaymentOrder $payment, object $inputData): array
     {

@@ -16,8 +16,7 @@ class CreateLogRequestsTable extends Migration
         Schema::create('log_requests', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('source', 10);
-            $table->string('gateway', 30);
-            $table->string('service');
+            $table->string('service', 30);
             $table->text('payload')->nullable();
             $table->timestamps();
         });

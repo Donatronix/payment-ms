@@ -3,7 +3,7 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
-use App\Helpers\PaymentServiceSettings as PaymentSetting;
+use App\Helpers\PaymentServiceSettings;
 use App\Models\PaymentOrder;
 use Exception;
 use Illuminate\Http\Request;
@@ -14,6 +14,10 @@ use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 
+/**
+ * Class PaypalProvider
+ * @package App\Services\PaymentServiceProviders
+ */
 class PaypalProvider implements PaymentServiceContract
 {
     /**
@@ -47,19 +51,26 @@ class PaypalProvider implements PaymentServiceContract
     private PayPalHttpClient $service;
 
     /**
+     * @var string
+     */
+    private $settings;
+
+    /**
      * PaypalProvider constructor.
      */
     public function __construct()
     {
-        if (PaymentSetting::settings('paypal_mode') === 'sandbox') {
+        $this->settings = PaymentServiceSettings::get(self::key());
+
+        if ($this->settings->mode === 'sandbox') {
             $environment = new SandboxEnvironment(
-                PaymentSetting::settings('paypal_sandbox_client_id'),
-                PaymentSetting::settings('paypal_sandbox_client_secret')
+                $this->settings->sandbox_client_id,
+                $this->settings->sandbox_client_secret
             );
         } else {
             $environment = new ProductionEnvironment(
-                PaymentSetting::settings('paypal_live_client_id'),
-                PaymentSetting::settings('paypal_live_client_secret')
+                $this->settings->live_client_id,
+                $this->settings->live_client_secret
             );
         }
 
@@ -69,7 +80,7 @@ class PaypalProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function service(): string
+    public static function key(): string
     {
         return 'paypal';
     }
@@ -77,9 +88,9 @@ class PaypalProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function name(): string
+    public static function title(): string
     {
-        return 'PayPal Payment Provider';
+        return 'PayPal payment service provider';
     }
 
     /**
@@ -93,7 +104,7 @@ class PaypalProvider implements PaymentServiceContract
     /**
      * @return int
      */
-    public static function newStatus(): int
+    public static function newOrderStatus(): int
     {
         return self::STATUS_ORDER_CREATED;
     }
@@ -154,7 +165,7 @@ class PaypalProvider implements PaymentServiceContract
             }
 
             return [
-                'gateway' => self::service(),
+                'gateway' => self::key(),
                 'payment_order_id' => $payment->id,
                 'invoice_url' => $invoiceUrl
             ];
@@ -194,7 +205,7 @@ class PaypalProvider implements PaymentServiceContract
             ->where('id', $paymentData["purchase_units"][0]["invoice_id"])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["purchase_units"][0]["custom_id"])
-            ->where('gateway', self::service())
+            ->where('gateway', self::key())
             ->first();
 
         if (!$payment) {

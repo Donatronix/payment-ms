@@ -16,7 +16,7 @@ class CreateLogErrorsTable extends Migration
         Schema::create('log_errors', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('source', 10);
-            $table->string('gateway', 30);
+            $table->string('service', 30);
             $table->string('message', 255);
             $table->text('payload')->nullable();
             $table->timestamps();

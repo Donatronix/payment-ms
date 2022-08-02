@@ -15,6 +15,7 @@ class CreatePaymentOrdersTable extends Migration
     {
         Schema::create('payment_orders', function (Blueprint $table) {
             $table->uuid('id')->primary();
+
             $table->tinyInteger('type');
             $table->string('gateway', 30);
 
@@ -36,10 +37,6 @@ class CreatePaymentOrdersTable extends Migration
             $table->softDeletes();
         });
     }
-
-//            $table->tinyInteger('payment_method');
-//            $table->tinyInteger('payment_service');
-//            $table->unsignedTinyInteger('payment_currency_id')->nullable();
 
     /**
      * Reverse the migrations.

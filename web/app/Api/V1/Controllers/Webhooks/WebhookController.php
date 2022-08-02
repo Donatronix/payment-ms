@@ -4,6 +4,8 @@ namespace App\Api\V1\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Models\LogError;
+use App\Models\LogRequest;
+use App\Models\PaymentOrder;
 use App\Services\PaymentServiceManager;
 use Exception;
 use Illuminate\Http\Request;
@@ -21,12 +23,12 @@ class WebhookController extends Controller
      *
      * @OA\Post(
      *     path="/webhooks/{gateway}",
-     *     description="Webhooks Notifications about invoices",
+     *     description="Webhooks notifications from payment service provider",
      *     tags={"Webhooks"},
      *
      *     @OA\Parameter(
      *         name="gateway",
-     *         description="Payment gateway",
+     *         description="Payment service provider key",
      *         in="path",
      *         required=true,
      *         @OA\Schema(
@@ -95,7 +97,7 @@ class WebhookController extends Controller
 
 
         // Find order
-        $payment = Payment::where('id', $orderData->payment_order)
+        $payment = PaymentOrder::where('id', $orderData->payment_order)
             ->where('check_code', $orderData->check_code)
             ->first();
 
@@ -122,9 +124,9 @@ class WebhookController extends Controller
 
         // Logging success request content
         try {
-            LogPaymentWebhook::create([
-                'gateway' => $gateway,
-                'payment_order_id' => $result['payment_order_id'],
+            LogRequest::create([
+                'source' => 'webhook',
+                'service' => $gateway,
                 'payload' => $request->all(),
             ]);
         } catch (\Exception $e) {

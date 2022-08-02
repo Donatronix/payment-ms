@@ -63,8 +63,7 @@ class RechargeBalanceRequestListener
         try {
             LogRequest::create([
                 'source' => 'listener',
-                'gateway' => $inputData['gateway'],
-                'service' => $inputData['replay_to'],
+                'service' => $inputData['gateway'],
                 'payload' => $inputData
             ]);
         }

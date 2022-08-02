@@ -15,7 +15,7 @@ class NetworkSolanaProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function service(): string
+    public static function key(): string
     {
         return 'solana-network';
     }
@@ -23,7 +23,7 @@ class NetworkSolanaProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function name(): string
+    public static function title(): string
     {
         return 'Solana Network';
     }
@@ -39,7 +39,7 @@ class NetworkSolanaProvider implements PaymentServiceContract
     /**
      * @return int
      */
-    public static function newStatus(): int
+    public static function newOrderStatus(): int
     {
         return 0;
     }

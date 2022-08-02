@@ -3,7 +3,7 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
-use App\Helpers\PaymentServiceSettings as PaymentSetting;
+use App\Helpers\PaymentServiceSettings;
 use App\Models\PaymentOrder;
 use Exception;
 use Illuminate\Http\Request;
@@ -37,20 +37,31 @@ class StripeProvider implements PaymentServiceContract
     private $service;
 
     /**
+     * @var string
+     */
+    private $settings;
+
+    /**
      * StripeProvider constructor.
      */
     public function __construct()
     {
-        $this->service = null;
+        try {
+            $this->service = null;
 
-        // Set your secret API key
-        Stripe::setApiKey(PaymentSetting::settings('stripe_secret_key'));
+            $this->settings = PaymentServiceSettings::get(self::key());
+
+            // Set your secret API key
+            Stripe::setApiKey($this->settings->secret_key);
+        } catch (\Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
      * @return string
      */
-    public static function service(): string
+    public static function key(): string
     {
         return 'stripe';
     }
@@ -58,9 +69,9 @@ class StripeProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function name(): string
+    public static function title(): string
     {
-        return 'Stripe Payment Provider';
+        return 'Stripe payment service provider';
     }
 
     /**
@@ -74,7 +85,7 @@ class StripeProvider implements PaymentServiceContract
     /**
      * @return int
      */
-    public static function newStatus(): int
+    public static function newOrderStatus(): int
     {
         return self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
     }
@@ -90,49 +101,44 @@ class StripeProvider implements PaymentServiceContract
     public function charge(PaymentOrder $payment, object $inputData): array
     {
         try {
+            // Support payment methods from different currency
+            $methods = [
+                'usd' => [
+                    'alipay',
+                    'acss_debit',
+                    'affirm',
+                    'afterpay_clearpay',
+                    'card_present',
+                    'klarna',
+                    'link',
+                    'us_bank_account',
+                    'wechat_pay'
+                ],
+                'eur' => [
+                    'bancontact',
+                    'eps',
+                    'giropay',
+                    'ideal',
+                    'p24',
+                    'sepa_debit',
+                    'sofort'
+                ],
+                'gbp' => [
+                    'bacs_debit'
+                ]
+            ];
+
+            // do low case for currency
+            $currency = mb_strtolower($inputData->currency);
+
             // Create a PaymentIntent with amount and currency
             $stripeDocument = PaymentIntent::create([
                 'amount' => $inputData->amount * 100,
-                'currency' => mb_strtolower($inputData->currency),
-                'automatic_payment_methods' => [
-                    'enabled' => true,
-                ],
-                'payment_method_types' => [
-                    'acss_debit',
-                    'affirm',
-
-                    'afterpay_clearpay',
-                    'alipay',
-
-                    'au_becs_debit',
-                    'bacs_debit',
-                    'bancontact',
-                    'blik',
-                    'boleto',
-
-                    'card',
-
-                    'card_present',
-                    'eps',
-                    'fpx',
-                    'giropay',
-                    'grabpay',
-                    'ideal',
-
-                    'klarna',
-
-                    'konbini',
-                    'link',
-                    'oxxo',
-                    'p24',
-                    'paynow',
-                    'promptpay',
-                    'sepa_debit',
-                    'sofort',
-                    'us_bank_account',
-
-                    'wechat_pay'
-                ],
+                'currency' => $currency,
+//                'automatic_payment_methods' => [
+//                    'enabled' => true,
+//                ],
+                'payment_method_types' => ['card'] + $methods[$currency],
                 'metadata' => [
                     'code' => $payment->check_code,
                     'payment_order_id' => $payment->id
@@ -147,10 +153,10 @@ class StripeProvider implements PaymentServiceContract
 
             // Return result
             return [
-                'gateway' => self::service(),
+                'gateway' => self::key(),
                 'payment_order_id' => $payment->id,
                 'session_id' => $stripeDocument->id,
-                'public_key' => PaymentSetting::settings('stripe_public_key'),
+                'public_key' => $this->settings->public_key,
                 'clientSecret' => $stripeDocument->client_secret,
             ];
         } catch (Exception $e) {
@@ -177,7 +183,7 @@ class StripeProvider implements PaymentServiceContract
             $event = Webhook::constructEvent(
                 $payload,
                 ($_SERVER['HTTP_STRIPE_SIGNATURE'] ?? null),
-                PaymentSetting::settings('stripe_webhook_secret')
+                $this->settings->webhook_secret
             );
         } catch (UnexpectedValueException $e) {
             // Invalid payload

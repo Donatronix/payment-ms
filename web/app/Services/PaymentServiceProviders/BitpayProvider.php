@@ -3,7 +3,7 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
-use App\Helpers\PaymentServiceSettings as PaymentSetting;
+use App\Helpers\PaymentServiceSettings;
 use App\Models\PaymentOrder;
 use BitPaySDK\Client;
 use BitPaySDK\Exceptions\BitPayException;
@@ -13,6 +13,10 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Class BitpayProvider
+ * @package App\Services\PaymentServiceProviders
+ */
 class BitpayProvider implements PaymentServiceContract
 {
     // New Invoice statuses
@@ -42,20 +46,27 @@ class BitpayProvider implements PaymentServiceContract
     private Client $service;
 
     /**
+     * @var string
+     */
+    private $settings;
+
+    /**
      * BitPayProvider constructor.
      */
     public function __construct()
     {
         try {
+            $this->settings = PaymentServiceSettings::get(self::key());
+
             // Initialize with separate variables and Private Key stored in file.
             $this->service = Client::create()->withData(
-                PaymentSetting::settings('bitpay_environment'),
-                storage_path(PaymentSetting::settings('bitpay_key_path')),
+                ucfirst($this->settings->mode),
+                storage_path($this->settings->key_path),
                 new Tokens(
-                    PaymentSetting::settings('bitpay_api_token_merchant'), //merchant
-                    PaymentSetting::settings('bitpay_api_token_payroll') //payroll
+                    $this->settings->api_token_merchant, //merchant
+                    $this->settings->api_token_payroll //payroll
                 ),
-                PaymentSetting::settings('bitpay_private_key_password')
+                $this->settings->private_key_password
             );
         } catch (BitPayException $e) {
             throw new Exception($e->getMessage());
@@ -65,7 +76,7 @@ class BitpayProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function service(): string
+    public static function key(): string
     {
         return 'bitpay';
     }
@@ -73,9 +84,9 @@ class BitpayProvider implements PaymentServiceContract
     /**
      * @return string
      */
-    public static function name(): string
+    public static function title(): string
     {
-        return 'BitPay Payment Provider';
+        return 'BitPay payment service provider';
     }
 
     /**
@@ -89,7 +100,7 @@ class BitpayProvider implements PaymentServiceContract
     /**
      * @return int
      */
-    public static function newStatus(): int
+    public static function newOrderStatus(): int
     {
         return self::STATUS_INVOICE_NEW;
     }
@@ -112,7 +123,7 @@ class BitpayProvider implements PaymentServiceContract
 
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
-            $invoice->setNotificationURL( config('settings.api.payments') . '/' . self::service());
+            $invoice->setNotificationURL( config('settings.api.payments') . '/' . self::key());
 
             $invoice->setRedirectURL($inputData->redirect_url ?? null);
 
@@ -129,7 +140,7 @@ class BitpayProvider implements PaymentServiceContract
 
             // Return result
             return [
-                'gateway' => self::service(),
+                'gateway' => self::key(),
                 'payment_order_id' => $payment->id,
                 'payment_order_url' => $chargeObj->getURL()
             ];
@@ -170,7 +181,7 @@ class BitpayProvider implements PaymentServiceContract
             ->where('id', $paymentData['orderId'])
             ->where('document_id', $paymentData['id'])
             ->where('check_code', $paymentData['posData']->code)
-            ->where('gateway', self::service())
+            ->where('gateway', self::key())
             ->first();
 
         if (!$payment) {
@@ -188,7 +199,7 @@ class BitpayProvider implements PaymentServiceContract
         // Return result
         return [
             'status' => 'success',
-            'gateway' => self::service(),
+            'gateway' => self::key(),
             'payment_order_id' => $payment->id,
             'amount' => $payment->amount,
             'currency' => $payment->currency,
