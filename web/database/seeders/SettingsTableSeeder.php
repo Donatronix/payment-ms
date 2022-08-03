@@ -142,6 +142,7 @@ class SettingsTableSeeder extends Seeder
                     'value' => 'sk_test_51HcoG6KkrmrXUD8mrFuqkBKnPfFlsfh51HpDQ6gR3eI0uhQfxU24ayd1TqP47UiMGEDRRCB7mC6P6UPsvFcaSMX600IMaVUrZb'
                 ]
             ],
+
             'nuvei' => [
                 [
                     'key' => 'nuvei_mode',

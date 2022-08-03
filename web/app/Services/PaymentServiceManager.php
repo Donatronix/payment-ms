@@ -54,6 +54,8 @@ class PaymentServiceManager
     // Get payment service settings
     public static function get($settings, $service = null): mixed
     {
+        $service = Str::lower($service);
+
         $list = [];
         foreach ($settings as $row) {
             $key = Str::replaceFirst("{$service}_", '', $row->key);

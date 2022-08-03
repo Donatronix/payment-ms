@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 /**
  * Class NetworkSolanaProvider
  * @package App\Services\PaymentServiceProviders
+ *
+ * https://github.com/verze-app/solana-php-sdk
+ * https://github.com/tighten/php-package-skeleton
+ *
+ * https://solscan.io/account/8UuRLvWGtLpYK9QCamc2NUyohQFygA8sQouymbinwYHP
  */
 class NetworkSolanaProvider implements PaymentServiceContract
 {

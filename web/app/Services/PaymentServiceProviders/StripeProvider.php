@@ -144,7 +144,8 @@ class StripeProvider implements PaymentServiceContract
                     'code' => $order->check_code,
                     'payment_order_id' => $order->id
                 ],
-                'return_url' => $inputData->redirect_url ?? null
+//                'confirm' => true,
+//                'return_url' => $inputData->redirect_url ?? null
             ]);
 
             // Update payment order
@@ -154,7 +155,6 @@ class StripeProvider implements PaymentServiceContract
 
             // Return result
             return [
-                'session_id' => $stripeDocument->id,
                 'public_key' => $this->settings->public_key,
                 'clientSecret' => $stripeDocument->client_secret,
             ];
