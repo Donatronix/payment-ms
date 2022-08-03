@@ -30,11 +30,11 @@ interface PaymentServiceContract
     /**
      * Make one-time charge money to system
      *
-     * @param PaymentOrder $payment
+     * @param PaymentOrder $order
      * @param object $inputData
      * @return mixed
      */
-    public function charge(PaymentOrder $payment, object $inputData): mixed;
+    public function charge(PaymentOrder $order, object $inputData): mixed;
 
     /**
      * @param \Illuminate\Http\Request $request

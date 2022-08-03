@@ -3,7 +3,6 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
-use App\Helpers\PaymentServiceSettings;
 use App\Models\PaymentOrder;
 use Exception;
 use Illuminate\Http\Request;
@@ -13,6 +12,8 @@ use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
+use PayPalHttp\HttpException;
+use PayPalHttp\IOException;
 
 /**
  * Class PaypalProvider
@@ -53,14 +54,16 @@ class PaypalProvider implements PaymentServiceContract
     /**
      * @var string
      */
-    private $settings;
+    private object $settings;
 
     /**
-     * PaypalProvider constructor.
+     * StripeProvider constructor.
+     * @param Object $settings
+     * @throws Exception
      */
-    public function __construct()
+    public function __construct(object $settings)
     {
-        $this->settings = PaymentServiceSettings::get(self::key());
+        $this->settings = $settings;
 
         if ($this->settings->mode === 'sandbox') {
             $environment = new SandboxEnvironment(
@@ -75,14 +78,6 @@ class PaypalProvider implements PaymentServiceContract
         }
 
         $this->service = new PayPalHttpClient($environment);
-    }
-
-    /**
-     * @return string
-     */
-    public static function key(): string
-    {
-        return 'paypal';
     }
 
     /**
@@ -112,12 +107,13 @@ class PaypalProvider implements PaymentServiceContract
     /**
      * Wrapper for create payment order for charge money
      *
-     * @param PaymentOrder $payment
+     * @param PaymentOrder $order
      * @param object $inputData
      * @return array
-     * @throws Exception
+     * @throws HttpException
+     * @throws IOException
      */
-    public function charge(PaymentOrder $payment, object $inputData): array
+    public function charge(PaymentOrder $order, object $inputData): array
     {
         try {
             // Create new charge
@@ -128,8 +124,8 @@ class PaypalProvider implements PaymentServiceContract
                 'purchase_units' => [
                     [
                         'description' => 'Charge Balance for Sumra User',
-                        'custom_id' => $payment->check_code,
-                        'invoice_id' => $payment->id,
+                        'custom_id' => $order->check_code,
+                        'invoice_id' => $order->id,
                         'amount' => [
                             'value' => $inputData->amount,
                             'currency_code' => $inputData->currency,
@@ -153,9 +149,9 @@ class PaypalProvider implements PaymentServiceContract
             $chargeObj = $this->service->execute($request);
 
             // Update Payment Order data
-            $payment->status = self::STATUS_ORDER_CREATED;
-            $payment->document_id = $chargeObj->result->id;
-            $payment->save();
+            $order->status = self::STATUS_ORDER_CREATED;
+            $order->document_id = $chargeObj->result->id;
+            $order->save();
 
             $invoiceUrl = '';
             foreach ($chargeObj->result->links as $link) {
@@ -164,13 +160,12 @@ class PaypalProvider implements PaymentServiceContract
                 }
             }
 
+            // Return result
             return [
-                'gateway' => self::key(),
-                'payment_order_id' => $payment->id,
-                'invoice_url' => $invoiceUrl
+                'payment_order_url' => $invoiceUrl
             ];
         } catch (Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode());
+            throw $e;
         }
     }
 
@@ -201,14 +196,14 @@ class PaypalProvider implements PaymentServiceContract
         }
 
         // Find Payment Order
-        $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
+        $order = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
             ->where('id', $paymentData["purchase_units"][0]["invoice_id"])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["purchase_units"][0]["custom_id"])
             ->where('gateway', self::key())
             ->first();
 
-        if (!$payment) {
+        if (!$order) {
             return [
                 'type' => 'danger',
                 'message' => 'Payment Order not found in Payment Microservice database'
@@ -217,19 +212,27 @@ class PaypalProvider implements PaymentServiceContract
 
         // Update Payment Order status
         $status = 'STATUS_ORDER_' . mb_strtoupper($paymentData["status"]);
-        $payment->status = constant("self::{$status}");
-        // $payment->payload = $paymentData;
-        $payment->save();
+        $order->status = constant("self::{$status}");
+        // $order->payload = $paymentData;
+        $order->save();
 
         // Return result
         return [
             'status' => 'success',
-            'payment_order_id' => $payment->id,
-            'service' => $payment->service,
-            'amount' => $payment->amount,
-            'currency' => $payment->currency,
-            'user_id' => $payment->user_id,
-            'payment_completed' => (self::STATUS_ORDER_COMPLETED === $payment->status),
+            'payment_order_id' => $order->id,
+            'service' => $order->service,
+            'amount' => $order->amount,
+            'currency' => $order->currency,
+            'user_id' => $order->user_id,
+            'payment_completed' => (self::STATUS_ORDER_COMPLETED === $order->status),
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public static function key(): string
+    {
+        return 'paypal';
     }
 }

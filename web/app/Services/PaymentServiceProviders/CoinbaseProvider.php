@@ -3,7 +3,6 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
-use App\Helpers\PaymentServiceSettings;
 use App\Models\PaymentOrder;
 use CoinbaseCommerce\ApiClient;
 use CoinbaseCommerce\Resources\Charge;
@@ -13,6 +12,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
+/**
+ * Class CoinbaseProvider
+ * @package App\Services\PaymentServiceProviders
+ */
 class CoinbaseProvider implements PaymentServiceContract
 {
     // New charge is created
@@ -53,30 +56,21 @@ class CoinbaseProvider implements PaymentServiceContract
     /**
      * @var string
      */
-    private $settings;
+    private object $settings;
 
     /**
      * CoinbaseProvider constructor.
      */
-    public function __construct()
+    public function __construct(object $settings)
     {
+        $this->settings = $settings;
+
         try {
-
-            $this->settings = PaymentServiceSettings::get(self::key());
-
             $this->service = ApiClient::init($this->settings->api_key);
             $this->service->setTimeout(3);
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            throw $e;
         }
-    }
-
-    /**
-     * @return string
-     */
-    public static function key(): string
-    {
-        return 'coinbase';
     }
 
     /**
@@ -106,12 +100,12 @@ class CoinbaseProvider implements PaymentServiceContract
     /**
      * Wrapper for create payment order for charge money
      *
-     * @param PaymentOrder $payment
+     * @param PaymentOrder $order
      * @param object $inputData
      * @return array
      * @throws Exception
      */
-    public function charge(PaymentOrder $payment, object $inputData): array
+    public function charge(PaymentOrder $order, object $inputData): array
     {
         try {
             // Create new charge
@@ -124,26 +118,24 @@ class CoinbaseProvider implements PaymentServiceContract
                     'currency' => $inputData->currency
                 ],
                 'metadata' => [
-                    'code' => $payment->check_code,
-                    'payment_order_id' => $payment->id
+                    'code' => $order->check_code,
+                    'payment_order_id' => $order->id
                 ],
                 'redirect_url' => $inputData->redirect_url ?? null,
                 'cancel_url' => $inputData->cancel_url ?? null
             ]);
 
             // Update payment order
-            $payment->status = self::STATUS_CHARGE_CREATED;
-            $payment->document_id = $chargeObj->id;
-            $payment->save();
+            $order->status = self::STATUS_CHARGE_CREATED;
+            $order->document_id = $chargeObj->id;
+            $order->save();
 
             // Return result
             return [
-                'gateway' => self::key(),
-                'payment_order_id' => $payment->id,
-                'invoice_url' => $chargeObj->hosted_url
+                'payment_order_url' => $chargeObj->hosted_url
             ];
         } catch (Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode());
+            throw $e;
         }
     }
 
@@ -204,14 +196,14 @@ class CoinbaseProvider implements PaymentServiceContract
         }
 
         // Find Payment Order
-        $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
+        $order = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
             ->where('id', $paymentData["metadata"]['payment_order_id'])
             ->where('document_id', $paymentData["id"])
             ->where('check_code', $paymentData["metadata"]['code'])
             ->where('gateway', self::key())
             ->first();
 
-        if (!$payment) {
+        if (!$order) {
             return [
                 'type' => 'danger',
                 'message' => sprintf("Payment Order not found in database: payment_order_id=%s, document_id=%s, code=%s", $paymentData->metadata['payment_order_id'], $paymentData->id, $paymentData->metadata['code'])
@@ -220,20 +212,28 @@ class CoinbaseProvider implements PaymentServiceContract
 
         // Update Payment Order status
         $status = 'STATUS_' . mb_strtoupper(Str::snake(str_replace(':', ' ', $event["type"])));
-        $payment->status = intval(constant("self::{$status}"));
-        //$payment->payload = $paymentData;
-        $payment->save();
+        $order->status = intval(constant("self::{$status}"));
+        //$order->payload = $paymentData;
+        $order->save();
 
         // Return result
         return [
             'status' => 'success',
             'gateway' => self::key(),
-            'payment_order_id' => $payment->id,
-            'amount' => $payment->amount,
-            'currency' => $payment->currency,
-            'service' => $payment->service,
-            'user_id' => $payment->user_id,
-            'payment_completed' => (self::STATUS_CHARGE_CONFIRMED === $payment->status),
+            'payment_order_id' => $order->id,
+            'amount' => $order->amount,
+            'currency' => $order->currency,
+            'service' => $order->service,
+            'user_id' => $order->user_id,
+            'payment_completed' => (self::STATUS_CHARGE_CONFIRMED === $order->status),
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public static function key(): string
+    {
+        return 'coinbase';
     }
 }

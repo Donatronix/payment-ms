@@ -149,7 +149,7 @@ class SettingsTableSeeder extends Seeder
                 ],
             ],
 
-            'bitcoin-network' => [
+            'network-bitcoin' => [
                 [
                     'key' => 'recipient_wallet_mainnet',
                     'value' => 'bc1.....52255'
@@ -159,7 +159,7 @@ class SettingsTableSeeder extends Seeder
                     'value' => 'bc1.....52255'
                 ],
             ],
-            'bnb-beacon-chain-network' => [
+            'network-bnb-beacon-chain' => [
                 [
                     'key' => 'recipient_wallet_mainnet',
                     'value' => ''
@@ -169,7 +169,7 @@ class SettingsTableSeeder extends Seeder
                     'value' => ''
                 ],
             ],
-            'bnb-smart-chain-network' => [
+            'network-bnb-smart-chain' => [
                 [
                     'key' => 'recipient_wallet_mainnet',
                     'value' => ''
@@ -179,7 +179,7 @@ class SettingsTableSeeder extends Seeder
                     'value' => ''
                 ],
             ],
-            'cardano-network' => [
+            'network-cardano' => [
                 [
                     'key' => 'recipient_wallet_mainnet',
                     'value' => ''
@@ -189,7 +189,7 @@ class SettingsTableSeeder extends Seeder
                     'value' => ''
                 ],
             ],
-            'ethereum-network' => [
+            'network-ethereum' => [
                 [
                     'key' => 'recipient_wallet_mainnet',
                     'value' => ''
@@ -199,7 +199,7 @@ class SettingsTableSeeder extends Seeder
                     'value' => ''
                 ],
             ],
-            'solana-network' => [
+            'network-solana' => [
                 [
                     'key' => 'recipient_wallet_mainnet',
                     'value' => ''

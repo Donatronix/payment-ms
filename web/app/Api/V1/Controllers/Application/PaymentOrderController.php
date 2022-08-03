@@ -112,14 +112,15 @@ class PaymentOrderController extends Controller
      */
     public function charge(Request $request): JsonResponse
     {
+        // Response title
         $responseTitle = 'Creating a charge payment order';
 
         // Validate input
         try {
             $rules = [
-                'gateway' => 'required|string',
-                'amount' => 'required|integer',
-                'currency' => 'required|string',
+                'gateway' => 'required|string|min:4',
+                'amount' => 'required|numeric',
+                'currency' => 'required|string|min:3',
                 'redirect_url' => 'sometimes|url',
                 'cancel_url' => 'sometimes|url'
             ];
@@ -135,7 +136,7 @@ class PaymentOrderController extends Controller
                 ];
             }
 
-            $this->validate($request, $rules);
+            $inputData = (object)$this->validate($request, $rules);
         } catch (ValidationException $e) {
             return response()->jsonApi([
                 'title' => $responseTitle,
@@ -169,9 +170,12 @@ class PaymentOrderController extends Controller
                 'user_id' => Auth::user()->getAuthIdentifier()
             ]);
 
-            // Create invoice
-            $inputData = (object)$request->all();
+            // Create payment session
             $result = $service->charge($order, $inputData);
+
+            // Add to result
+            $result['gateway'] = $inputData->gateway;
+            $result['payment_order_id'] = $order->id;
 
             // Return result
             return response()->jsonApi([
@@ -182,7 +186,7 @@ class PaymentOrderController extends Controller
         } catch (\Exception $e) {
             LogError::create([
                 'source' => 'charge',
-                'service' => $request->get('gateway'),
+                'service' => $inputData->gateway,
                 'message' => $e->getMessage(),
                 'payload' => ''
             ]);
@@ -190,7 +194,7 @@ class PaymentOrderController extends Controller
             // Return response
             return response()->jsonApi([
                 'title' => $responseTitle,
-                'message' => sprintf("Unable to create an payment session. Error: %s \n", $e->getMessage())
+                'message' => sprintf("Unable to create an payment session: %s", $e->getMessage())
             ], 500);
         }
     }

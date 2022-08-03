@@ -22,7 +22,7 @@ class PaymentServiceSettings
 
             return (object) $list;
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), $e->getCode());
+            throw $e;
         }
     }
 }

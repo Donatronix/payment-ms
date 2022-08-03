@@ -19,12 +19,15 @@ class CreatePaymentOrdersTable extends Migration
             $table->tinyInteger('type');
             $table->string('gateway', 30);
 
-            $table->decimal('amount');
+            $table->float('amount', 20, 10);
             $table->char('currency', 3);
 
             $table->string('document_id')->nullable();
+
             $table->string('service', 36)->nullable();
+
             $table->smallInteger('status')->nullable();
+
             $table->boolean('transaction_created')->default(false);
 
             $table->uuid('user_id')->index();

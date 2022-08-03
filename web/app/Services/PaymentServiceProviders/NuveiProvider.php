@@ -4,27 +4,45 @@ namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
+use Exception;
 use Illuminate\Http\Request;
 use SafeCharge\Api\Environment;
 use SafeCharge\Api\RestClient;
 
+/**
+ * Class NuveiProvider
+ * @package App\Services\PaymentServiceProviders
+ */
 class NuveiProvider implements PaymentServiceContract
 {
-    protected $config = [];
-
+    /**
+     * @var RestClient
+     */
     protected $service;
 
+    /**
+     * @var string
+     */
+    private $settings;
+
+    /**
+     * NuveiProvider constructor.
+     */
     public function __construct()
     {
-        $this->config = [
-            'enviroment' => Environment::TEST,
-            'merchantId' => '<your merchantId>',
-            'merchantSiteId' => '<your merchantSiteId>',
-            'merchantSecretKey' => '<your merchantSecretKey>',
-        ];
+        $this->settings = $settings;
 
-        $this->service = new RestClient();
-        $this->service->initialize($this->config);
+        try {
+            $this->service = new RestClient();
+            $this->service->initialize([
+                'enviroment' => Environment::TEST,
+                'merchantId' => '<your merchantId>',
+                'merchantSiteId' => '<your merchantSiteId>',
+                'merchantSecretKey' => '<your merchantSecretKey>',
+            ]);
+        } catch (Exception $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -59,7 +77,7 @@ class NuveiProvider implements PaymentServiceContract
         return 0;
     }
 
-    public function charge(PaymentOrder $payment, object $inputData): mixed
+    public function charge(PaymentOrder $order, object $inputData): mixed
     {
         // TODO: Implement charge() method.
     }

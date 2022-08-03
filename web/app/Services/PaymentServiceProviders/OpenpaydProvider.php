@@ -3,22 +3,23 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
-use App\Helpers\PaymentServiceSettings;
 use App\Models\PaymentOrder;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 
+/**
+ * Class OpenpaydProvider
+ * @package App\Services\PaymentServiceProviders
+ */
 class OpenpaydProvider implements PaymentServiceContract
 {
-    // https://apidocs.openpayd.com/docs/transaction-status-updated-webhook#transaction-types
     // Transaction statuses
+    // https://apidocs.openpayd.com/docs/transaction-status-updated-webhook#transaction-types
 
     const TRANSACTION_TYPE_PAYIN = "PAYIN";
     const TRANSACTION_TYPE_PAYOUT = "PAYOUT";
     const TRANSACTION_TYPE_FEE = "FEE";
-    const TRANSACTION_TYPE_TRANSFER = "TRANSFER";
-    const TRANSACTION_TYPE_EXCHANGE = "EXCHANGE";
     const TRANSACTION_TYPE_RETURN_IN = "RETURN_IN";
     const TRANSACTION_TYPE_RETURN_OUT = "RETURN_OUT";
 
@@ -36,17 +37,18 @@ class OpenpaydProvider implements PaymentServiceContract
     /**
      * @var string
      */
-    private $settings;
+    private object $settings;
 
     /**
-     * OpenpaydProvider constructor.
+     * StripeProvider constructor.
+     * @param Object $settings
      * @throws Exception
      */
-    public function __construct()
+    public function __construct(object $settings)
     {
-        try {
-            $this->settings = PaymentServiceSettings::get(self::key());
+        $this->settings = $settings;
 
+        try {
             $this->service = new Client(['base_uri' => $this->settings->url]);
 
             $username = $this->settings->username;
@@ -67,16 +69,8 @@ class OpenpaydProvider implements PaymentServiceContract
 
             return $this->service->post("oauth/token?grant_type=client_credentials", $payload);
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            throw $e;
         }
-    }
-
-    /**
-     * @return string
-     */
-    public static function key(): string
-    {
-        return 'openpayd';
     }
 
     /**
@@ -106,11 +100,11 @@ class OpenpaydProvider implements PaymentServiceContract
     /**
      * Make one-time charge money to system
      *
-     * @param PaymentOrder $payment
+     * @param PaymentOrder $order
      * @param object $inputData
      * @return mixed
      */
-    public function charge(PaymentOrder $payment, object $inputData): mixed
+    public function charge(PaymentOrder $order, object $inputData): mixed
     {
         // TODO not yet provided by openpayd
     }
@@ -140,34 +134,34 @@ class OpenpaydProvider implements PaymentServiceContract
         if ($transactionType == self::TRANSACTION_TYPE_PAYIN) {
             //  retrieve payment and update status
             // TODO find a way to access webhook metadata.
-            $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
+            $order = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
                 ->where('id', $webhookPayload["metadata"]['orderId'])
                 ->where('document_id', $webhookPayload["metadata"]['documentId'])
                 ->where('check_code', $webhookPayload["metadata"]['check_code'])
                 ->where('gateway', self::key())
                 ->first();
 
-            if (!$payment) {
+            if (!$order) {
                 return [
                     'type' => 'danger',
                     'message' => 'Payment Order not found in Payment Microservice database'
                 ];
             }
 
-            $payment->status = $transactionStatus;
+            $order->status = $transactionStatus;
 
-            // $payment->payload = $paymentData;
-            $payment->save();
+            // $order->payload = $paymentData;
+            $order->save();
 
             // Return result
             return [
                 'status' => 'success',
-                'payment_order_id' => $payment->id,
-                'amount' => $payment->amount,
-                'currency' => $payment->currency,
-                'service' => $payment->service,
-                'user_id' => $payment->user_id,
-                'payment_completed' => (self::TRANSACTION_STATUS_COMPLETED === $payment->status),
+                'payment_order_id' => $order->id,
+                'amount' => $order->amount,
+                'currency' => $order->currency,
+                'service' => $order->service,
+                'user_id' => $order->user_id,
+                'payment_completed' => (self::TRANSACTION_STATUS_COMPLETED === $order->status),
             ];
         } else {
             //  we are not yet interested in other account webhooks not PAYIN
@@ -188,5 +182,13 @@ class OpenpaydProvider implements PaymentServiceContract
         }
 
         return false;
+    }
+
+    /**
+     * @return string
+     */
+    public static function key(): string
+    {
+        return 'openpayd';
     }
 }

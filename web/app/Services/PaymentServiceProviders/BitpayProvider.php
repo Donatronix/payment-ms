@@ -3,7 +3,6 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
-use App\Helpers\PaymentServiceSettings;
 use App\Models\PaymentOrder;
 use BitPaySDK\Client;
 use BitPaySDK\Exceptions\BitPayException;
@@ -48,16 +47,18 @@ class BitpayProvider implements PaymentServiceContract
     /**
      * @var string
      */
-    private $settings;
+    private object $settings;
 
     /**
-     * BitPayProvider constructor.
+     * StripeProvider constructor.
+     * @param Object $settings
+     * @throws Exception
      */
-    public function __construct()
+    public function __construct(object $settings)
     {
-        try {
-            $this->settings = PaymentServiceSettings::get(self::key());
+        $this->settings = $settings;
 
+        try {
             // Initialize with separate variables and Private Key stored in file.
             $this->service = Client::create()->withData(
                 ucfirst($this->settings->mode),
@@ -69,16 +70,8 @@ class BitpayProvider implements PaymentServiceContract
                 $this->settings->private_key_password
             );
         } catch (BitPayException $e) {
-            throw new Exception($e->getMessage());
+            throw $e;
         }
-    }
-
-    /**
-     * @return string
-     */
-    public static function key(): string
-    {
-        return 'bitpay';
     }
 
     /**
@@ -108,45 +101,51 @@ class BitpayProvider implements PaymentServiceContract
     /**
      * Wrapper for create payment order for charge money
      *
-     * @param PaymentOrder $payment
+     * @param PaymentOrder $order
      * @param object $inputData
      * @return array
-     * @throws Exception
+     * @throws BitPayException
      */
-    public function charge(PaymentOrder $payment, object $inputData): array
+    public function charge(PaymentOrder $order, object $inputData): array
     {
         try {
             // Set invoice detail
             $invoice = new Invoice($inputData->amount, $inputData->currency);
 
-            $invoice->setOrderId($payment->id);
+            $invoice->setOrderId($order->id);
 
             $invoice->setFullNotifications(true);
             $invoice->setExtendedNotifications(true);
-            $invoice->setNotificationURL( config('settings.api.payments') . '/' . self::key());
+            $invoice->setNotificationURL(config('settings.api.payments') . '/' . self::key());
 
             $invoice->setRedirectURL($inputData->redirect_url ?? null);
 
-            $invoice->setPosData(json_encode(['code' => $payment->check_code]));
+            $invoice->setPosData(json_encode(['code' => $order->check_code]));
             $invoice->setItemDesc("Charge user wallet balance");
 
             // Send data to bitpay and get created invoice
             $chargeObj = $this->service->createInvoice($invoice);
 
             // Update payment order
-            $payment->status = self::STATUS_INVOICE_NEW;
-            $payment->document_id = $chargeObj->getId();
-            $payment->save();
+            $order->status = self::STATUS_INVOICE_NEW;
+            $order->document_id = $chargeObj->getId();
+            $order->save();
 
             // Return result
             return [
-                'gateway' => self::key(),
-                'payment_order_id' => $payment->id,
                 'payment_order_url' => $chargeObj->getURL()
             ];
         } catch (Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode());
+            throw $e;
         }
+    }
+
+    /**
+     * @return string
+     */
+    public static function key(): string
+    {
+        return 'bitpay';
     }
 
     /**
@@ -177,35 +176,35 @@ class BitpayProvider implements PaymentServiceContract
         $paymentData['posData'] = json_decode($paymentData['posData']);
 
         // Find Payment Order
-        $payment = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
+        $order = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
             ->where('id', $paymentData['orderId'])
             ->where('document_id', $paymentData['id'])
             ->where('check_code', $paymentData['posData']->code)
             ->where('gateway', self::key())
             ->first();
 
-        if (!$payment) {
+        if (!$order) {
             return [
                 'type' => 'danger',
                 'message' => 'Payment Order not found in Payment Microservice database'
             ];
         }
 
-        $payment->status = $request->event['code'];
+        $order->status = $request->event['code'];
 
-        // $payment->payload = $paymentData;
-        $payment->save();
+        // $order->payload = $paymentData;
+        $order->save();
 
         // Return result
         return [
             'status' => 'success',
             'gateway' => self::key(),
-            'payment_order_id' => $payment->id,
-            'amount' => $payment->amount,
-            'currency' => $payment->currency,
-            'service' => $payment->service,
-            'user_id' => $payment->user_id,
-            'payment_completed' => (self::STATUS_INVOICE_COMPLETED === $payment->status),
+            'payment_order_id' => $order->id,
+            'amount' => $order->amount,
+            'currency' => $order->currency,
+            'service' => $order->service,
+            'user_id' => $order->user_id,
+            'payment_completed' => (self::STATUS_INVOICE_COMPLETED === $order->status),
         ];
     }
 }

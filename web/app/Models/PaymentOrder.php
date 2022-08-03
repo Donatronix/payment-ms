@@ -21,11 +21,10 @@ class PaymentOrder extends Model
     use SoftDeletes;
 
     /**
-     * Type of the Transaction
+     * Payment Order Type
      */
     const TYPE_PAYIN = 1;
     const TYPE_PAYOUT = 2;
-    const TYPE_TRANSFER = 3;
     const TYPE_ADJUSTMENT = 4;
     const TYPE_RETURN_IN = 5;
     const TYPE_RETURN_OUT = 6;

@@ -72,6 +72,7 @@ class LoanPaymentListener
             $system = PaymentServiceManager::getInstance($inputData->gateway);
         } catch (\Exception $e) {
             Log::info($e->getMessage());
+
             exit;
         }
 

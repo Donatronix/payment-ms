@@ -3,11 +3,11 @@
 namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
-use App\Helpers\PaymentServiceSettings;
 use App\Models\PaymentOrder;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Stripe\Exception\ApiErrorException;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
 use Stripe\PaymentIntent;
@@ -39,22 +39,23 @@ class StripeProvider implements PaymentServiceContract
     /**
      * @var string
      */
-    private $settings;
+    private object $settings;
 
     /**
      * StripeProvider constructor.
+     * @param Object $settings
+     * @throws Exception
      */
-    public function __construct()
+    public function __construct(object $settings)
     {
+        $this->settings = $settings;
+
         try {
-            $this->service = null;
-
-            $this->settings = PaymentServiceSettings::get(self::key());
-
             // Set your secret API key
+            $this->service = null;
             Stripe::setApiKey($this->settings->secret_key);
-        } catch (\Exception $e) {
-            throw new Exception($e->getMessage());
+        } catch (Exception $e) {
+            throw $e;
         }
     }
 
@@ -93,12 +94,12 @@ class StripeProvider implements PaymentServiceContract
     /**
      * Wrapper for create payment order for charge money
      *
-     * @param PaymentOrder $payment
+     * @param PaymentOrder $order
      * @param object $inputData
      * @return array
-     * @throws Exception
+     * @throws ApiErrorException
      */
-    public function charge(PaymentOrder $payment, object $inputData): array
+    public function charge(PaymentOrder $order, object $inputData): array
     {
         try {
             // Support payment methods from different currency
@@ -108,9 +109,9 @@ class StripeProvider implements PaymentServiceContract
                     'acss_debit',
                     'affirm',
                     'afterpay_clearpay',
-                    'card_present',
+                    // 'card_present', // mode stripe terminal with physical card
                     'klarna',
-                    'link',
+                    //'link',
                     'us_bank_account',
                     'wechat_pay'
                 ],
@@ -140,27 +141,25 @@ class StripeProvider implements PaymentServiceContract
 //                ],
                 'payment_method_types' => ['card'] + $methods[$currency],
                 'metadata' => [
-                    'code' => $payment->check_code,
-                    'payment_order_id' => $payment->id
+                    'code' => $order->check_code,
+                    'payment_order_id' => $order->id
                 ],
-                'return_url' => $payment->redirect_url ?? null
+                'return_url' => $inputData->redirect_url ?? null
             ]);
 
             // Update payment order
-            $payment->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
-            $payment->document_id = $stripeDocument->id;
-            $payment->save();
+            $order->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
+            $order->document_id = $stripeDocument->id;
+            $order->save();
 
             // Return result
             return [
-                'gateway' => self::key(),
-                'payment_order_id' => $payment->id,
                 'session_id' => $stripeDocument->id,
                 'public_key' => $this->settings->public_key,
                 'clientSecret' => $stripeDocument->client_secret,
             ];
         } catch (Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode());
+            throw $e;
         }
     }
 
@@ -243,12 +242,12 @@ class StripeProvider implements PaymentServiceContract
                 return [
                     'type' => 'success',
                     'stripeDocument' => $stripeDocument
-//                    'payment_order_id' => $payment->id,
-//                    'service' => $payment->service,
-//                    'amount' => $payment->amount,
-//                    'currency' => $payment->currency,
-//                    'user_id' => $payment->user_id,
-//                    'payment_completed' => (self::STATUS_ORDER_SUCCEEDED === $payment->status),
+//                    'payment_order_id' => $order->id,
+//                    'service' => $order->service,
+//                    'amount' => $order->amount,
+//                    'currency' => $order->currency,
+//                    'user_id' => $order->user_id,
+//                    'payment_completed' => (self::STATUS_ORDER_SUCCEEDED === $order->status),
                 ];
 
             default:

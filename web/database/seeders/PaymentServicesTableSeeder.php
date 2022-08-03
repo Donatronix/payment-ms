@@ -35,22 +35,22 @@ class PaymentServicesTableSeeder extends Seeder
             'nuvei' => [
                 'status' => false,
             ],
-            'bitcoin-network' => [
+            'network-bitcoin' => [
                 'status' => true,
             ],
-            'bnb-beacon-chain-network' => [
+            'network-bnb-beacon-chain' => [
                 'status' => true,
             ],
-            'bnb-smart-chain-network' => [
+            'network-bnb-smart-chain' => [
                 'status' => true,
             ],
-            'cardano-network' => [
+            'network-cardano' => [
                 'status' => true,
             ],
-            'ethereum-network' => [
+            'network-ethereum' => [
                 'status' => true,
             ],
-            'solana-network' => [
+            'network-solana' => [
                 'status' => true,
             ]
         ];

@@ -2,12 +2,12 @@
 
 namespace App\Listeners;
 
-use App\Models\LogRequest;
 use App\Models\LogError;
-use App\Services\PaymentServiceManager;
+use App\Models\LogRequest;
 use App\Models\PaymentOrder as PayModel;
-use Illuminate\Support\Facades\Validator;
+use App\Services\PaymentServiceManager;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * Class RechargeBalanceRequestListener
@@ -66,8 +66,7 @@ class RechargeBalanceRequestListener
                 'service' => $inputData['gateway'],
                 'payload' => $inputData
             ]);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::info('Log of invoice failed: ' . $e->getMessage());
         }
 
@@ -84,8 +83,7 @@ class RechargeBalanceRequestListener
             ]);
 
             $paymentGateway = PaymentServiceManager::getInstance($inputData['gateway']);
-        }
-        catch(\Exception $e) {
+        } catch (\Exception $e) {
             \PubSub::publish(self::RECEIVER_LISTENER, [
                 'status' => 'error',
                 'order_id' => $inputData['order_id'],
@@ -96,7 +94,7 @@ class RechargeBalanceRequestListener
         }
 
         // Create invoice
-        $result = $paymentGateway->charge($payment, (object) $inputData);
+        $result = $paymentGateway->charge($payment, (object)$inputData);
 
         // Return response
         if ($result['type'] === 'error') {
