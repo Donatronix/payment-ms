@@ -151,62 +151,66 @@ class SettingsTableSeeder extends Seeder
 
             'network-bitcoin' => [
                 [
-                    'key' => 'recipient_wallet_mainnet',
+                    'key' => 'recipient_address_mainnet',
                     'value' => 'bc1.....52255'
                 ],
                 [
-                    'key' => 'recipient_wallet_testnet',
+                    'key' => 'recipient_address_testnet',
                     'value' => 'bc1.....52255'
                 ],
             ],
             'network-bnb-beacon-chain' => [
                 [
-                    'key' => 'recipient_wallet_mainnet',
-                    'value' => ''
+                    'key' => 'recipient_address_mainnet',
+                    'value' => 'bnb1d772cqh85vcudvpmfwm9kepuqkzr269rkw28gl'
                 ],
                 [
-                    'key' => 'recipient_wallet_testnet',
-                    'value' => ''
+                    'key' => 'recipient_address_testnet',
+                    'value' => 'tbnb1d772cqh85vcudvpmfwm9kepuqkzr269rcmrrgw'
                 ],
             ],
             'network-bnb-smart-chain' => [
                 [
-                    'key' => 'recipient_wallet_mainnet',
-                    'value' => ''
+                    'key' => 'recipient_address_mainnet',
+                    'value' => '0x930A0cBf1728b5bd2a2A81Fd191D9AB1Cf5a13b2'
                 ],
                 [
-                    'key' => 'recipient_wallet_testnet',
-                    'value' => ''
+                    'key' => 'recipient_address_testnet',
+                    'value' => '0x930A0cBf1728b5bd2a2A81Fd191D9AB1Cf5a13b2'
                 ],
             ],
             'network-cardano' => [
                 [
-                    'key' => 'recipient_wallet_mainnet',
+                    'key' => 'recipient_address_mainnet',
                     'value' => ''
                 ],
                 [
-                    'key' => 'recipient_wallet_testnet',
+                    'key' => 'recipient_address_testnet',
                     'value' => ''
                 ],
             ],
             'network-ethereum' => [
                 [
-                    'key' => 'recipient_wallet_mainnet',
-                    'value' => ''
+                    'key' => 'recipient_address_mainnet',
+                    'value' => '0x8d921F90F66F1ef63f7fD94829d385864F5B70ec'
                 ],
                 [
-                    'key' => 'recipient_wallet_testnet',
-                    'value' => ''
+                    'key' => 'recipient_address_testnet',
+                    'value' => '0x8d921F90F66F1ef63f7fD94829d385864F5B70ec'
                 ],
             ],
             'network-solana' => [
                 [
-                    'key' => 'recipient_wallet_mainnet',
-                    'value' => ''
+                    'key' => 'recipient_address_mainnet',
+                    'value' => '8UuRLvWGtLpYK9QCamc2NUyohQFygA8sQouymbinwYHP'
                 ],
                 [
-                    'key' => 'recipient_wallet_testnet',
-                    'value' => ''
+                    'key' => 'recipient_address_testnet',
+                    'value' => '8UuRLvWGtLpYK9QCamc2NUyohQFygA8sQouymbinwYHP'
+                ],
+                [
+                    'key' => 'recipient_address_devnet',
+                    'value' => '8UuRLvWGtLpYK9QCamc2NUyohQFygA8sQouymbinwYHP'
                 ],
             ]
         ];

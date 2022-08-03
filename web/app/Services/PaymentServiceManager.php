@@ -32,9 +32,6 @@ class PaymentServiceManager
             $class = (string) $service->append('Provider')
                 ->prepend('\App\Services\PaymentServiceProviders\\');
             $reflector = new \ReflectionClass($class);
-
-//            $instance = $class->newInstanceArgs(array('substr'));
-
         } catch (\Exception $e) {
             throw $e;
         }
@@ -47,12 +44,9 @@ class PaymentServiceManager
             throw new \Exception("Can't init service [$service].");
         }
 
-
+        // Get providers settings
         $settings = self::get($object->settings, $service);
-        $settings->mode = $object->is_develop;
-
-      //  dd($settings);
-
+        $settings->is_develop = $object->is_develop;
 
         return $reflector->newInstance($settings);
     }

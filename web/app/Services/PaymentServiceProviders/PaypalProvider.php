@@ -65,7 +65,7 @@ class PaypalProvider implements PaymentServiceContract
     {
         $this->settings = $settings;
 
-        if ($this->settings->mode === 'sandbox') {
+        if ($this->settings->is_develop === 'sandbox') {
             $environment = new SandboxEnvironment(
                 $this->settings->sandbox_client_id,
                 $this->settings->sandbox_client_secret

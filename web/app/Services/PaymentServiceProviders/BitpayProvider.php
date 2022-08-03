@@ -61,7 +61,7 @@ class BitpayProvider implements PaymentServiceContract
         try {
             // Initialize with separate variables and Private Key stored in file.
             $this->service = Client::create()->withData(
-                ucfirst($this->settings->mode),
+                ucfirst($this->settings->is_develop),
                 storage_path($this->settings->key_path),
                 new Tokens(
                     $this->settings->api_token_merchant, //merchant

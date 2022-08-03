@@ -116,10 +116,17 @@ class NetworkSolanaProvider implements PaymentServiceContract
             $order->document_id = null;
             $order->save();
 
+            $result = [];
+            if($this->settings->is_develop){
+                $result['recipient_address'] = $this->settings->recipient_address_devnet;
+                $result['network_type'] = 'devnet';
+            }else{
+                $result['recipient_address'] = $this->settings->recipient_address_mainnet;
+                $result['network_type'] = 'mainnet';
+            }
+
             // Return result
-            return [
-                'public_key' => $this->settings->public_key
-            ];
+            return $result;
         } catch (Exception $e) {
             throw $e;
         }
