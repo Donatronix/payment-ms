@@ -149,7 +149,7 @@ class PaymentOrderController extends Controller
         try {
             LogRequest::create([
                 'source' => 'charge',
-                'service' => $request->get('gateway'),
+                'service' => $inputData->gateway,
                 'payload' => $request->all()
             ]);
         } catch (\Exception $e) {
@@ -158,15 +158,20 @@ class PaymentOrderController extends Controller
 
         try {
             // Init payment service session
-            $service = PaymentServiceManager::getInstance($request->get('gateway'));
+            $service = PaymentServiceManager::getInstance($inputData->gateway);
 
             // Create internal payment order
             $order = PaymentOrder::create([
                 'type' => PaymentOrder::TYPE_PAYIN,
-                'gateway' => $request->get('gateway'),
-                'amount' => $request->get('amount'),
-                'currency' => mb_strtoupper($request->get('currency')),
-                'service' => $request->get('document.service', null),
+                'gateway' => $inputData->gateway,
+                'amount' => $inputData->amount,
+                'currency' => mb_strtoupper($inputData->currency),
+
+                'based_id' => $inputData->document['id'] ?? config('settings.empty_uuid'),
+                'based_type' => $inputData->document['object'] ?? null,
+                'based_service' => $inputData->document['service'] ?? null,
+                'based_meta' => $inputData->document['meta'] ?? null,
+
                 'user_id' => Auth::user()->getAuthIdentifier()
             ]);
 

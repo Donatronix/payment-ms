@@ -16,13 +16,14 @@ class CreateTransactionsTable extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
+            $table->string('gateway', 30);
+
             $table->foreignUuid('payment_order_id')
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->string('trx_id', 200);
 
-            $table->string('gateway', 30);
+            $table->mediumText('meta');
             $table->smallInteger('status')->nullable();
 
             $table->timestamps();

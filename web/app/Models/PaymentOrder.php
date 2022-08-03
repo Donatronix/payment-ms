@@ -37,6 +37,7 @@ class PaymentOrder extends Model
      */
     protected $casts = [
         'payload' => 'array',
+        'based_meta' => 'array'
     ];
 
     /**
@@ -49,10 +50,13 @@ class PaymentOrder extends Model
         'gateway',
         'amount',
         'currency',
-        'service',
-        'document_id',
-        'user_id',
+        'based_id',
+        'based_type',
+        'based_service',
+        'based_meta',
         'status',
+        'user_id',
+        'document_id',
         'payload'
     ];
 

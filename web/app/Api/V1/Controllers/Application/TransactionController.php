@@ -123,12 +123,10 @@ class TransactionController extends Controller
                 'meta.payment_intent_client_secret' => 'sometimes|string'
             ]);
 
+            // Save transaction data
             $transaction = new Transaction();
-            $transaction->payment_order_id = $request->payment_order_id;
-            $transaction->trx_id = $request->trx_id;
-
+            $transaction->fill($request->all());
             $transaction->save();
-
 
             return response()->jsonApi([
                 'title' => 'Store transaction',
@@ -143,7 +141,7 @@ class TransactionController extends Controller
         }
     }
 
-     /**
+    /**
      *  Display a listing of the band
      *
      * @OA\Get(
@@ -192,8 +190,7 @@ class TransactionController extends Controller
      *     ),
      * )
      *
-     * @param Request $request
-     *
+     * @param $id
      * @return mixed
      */
     public function show($id)

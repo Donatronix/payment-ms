@@ -53,7 +53,7 @@ class RechargeBalanceTransactionListener
         }
 
         // Update payment/ Set flag, transaction is created
-        $payment->transaction_created = true;
+       // $payment->status = true;
         $payment->save();
     }
 }

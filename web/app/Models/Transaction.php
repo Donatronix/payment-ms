@@ -74,6 +74,29 @@ class Transaction extends Model
     use SoftDeletes;
     use UuidTrait;
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'meta' => 'array',
+    ];
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'gateway',
+        'payment_order_id',
+        'meta'
+    ];
+
+    /**
+     * @return BelongsTo
+     */
     public function paymentOrders(): BelongsTo
     {
         return $this->belongsTo(PaymentOrder::class);

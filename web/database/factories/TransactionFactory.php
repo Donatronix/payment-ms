@@ -15,8 +15,11 @@ class TransactionFactory extends Factory
     {
         return [
             'gateway' => PaymentService::all()->random()->key,
-            'trx_id' => uniqid('PAY_INT_ULTRA'),
             'payment_order_id' => PaymentOrder::all()->random()->id,
+            'meta' => [
+                'trx_id' => uniqid('PAY_INT_ULTRA'),
+                'wallet' => uniqid('PAY_INT_ULTRA')
+            ],
             'status' => $this->faker->boolean
         ];
     }

@@ -82,7 +82,7 @@ class LoanPaymentListener
             'gateway' => $inputData->gateway,
             'amount' => $inputData->amount,
             'currency' => mb_strtoupper($inputData->currency),
-            'service' => $inputData->service,
+            'based_service' => $inputData->service,
             'user_id' => $inputData->user_id,
         ]);
 
