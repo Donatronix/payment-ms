@@ -60,6 +60,8 @@ class CoinbaseProvider implements PaymentServiceContract
 
     /**
      * CoinbaseProvider constructor.
+     * @param object $settings
+     * @throws Exception
      */
     public function __construct(object $settings)
     {
@@ -71,6 +73,14 @@ class CoinbaseProvider implements PaymentServiceContract
         } catch (Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     * @return string
+     */
+    public static function key(): string
+    {
+        return 'coinbase';
     }
 
     /**
@@ -118,7 +128,7 @@ class CoinbaseProvider implements PaymentServiceContract
                     'currency' => $inputData->currency
                 ],
                 'metadata' => [
-                    'code' => $order->check_code,
+                    'check_code' => $order->check_code,
                     'payment_order_id' => $order->id
                 ],
                 'redirect_url' => $inputData->redirect_url ?? null,
@@ -127,7 +137,7 @@ class CoinbaseProvider implements PaymentServiceContract
 
             // Update payment order
             $order->status = self::STATUS_CHARGE_CREATED;
-            $order->document_id = $chargeObj->id;
+            $order->service_document_id = $chargeObj->id;
             $order->save();
 
             // Return result
@@ -172,7 +182,7 @@ class CoinbaseProvider implements PaymentServiceContract
             $paymentData = [
                 "id" => $event->data->id,
                 "metadata" => [
-                    "code" => $event->data->metadata->code,
+                    "check_code" => $event->data->metadata->check_code,
                     "payment_order_id" => $event->data->metadata->payment_order_id
                 ]
             ];
@@ -196,17 +206,17 @@ class CoinbaseProvider implements PaymentServiceContract
         }
 
         // Find Payment Order
-        $order = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
+        $order = PaymentOrder::where('type', PaymentOrder::TYPE_CHARGE)
             ->where('id', $paymentData["metadata"]['payment_order_id'])
-            ->where('document_id', $paymentData["id"])
-            ->where('check_code', $paymentData["metadata"]['code'])
-            ->where('gateway', self::key())
+            ->where('service_document_id', $paymentData["id"])
+            ->where('check_code', $paymentData["metadata"]['check_code'])
+            ->where('service_key', self::key())
             ->first();
 
         if (!$order) {
             return [
                 'type' => 'danger',
-                'message' => sprintf("Payment Order not found in database: payment_order_id=%s, document_id=%s, code=%s", $paymentData->metadata['payment_order_id'], $paymentData->id, $paymentData->metadata['code'])
+                'message' => sprintf("Payment Order not found in database: payment_order_id=%s, service_document_id=%s, check_code=%s", $paymentData->metadata['payment_order_id'], $paymentData->id, $paymentData->metadata['check_code'])
             ];
         }
 
@@ -218,8 +228,8 @@ class CoinbaseProvider implements PaymentServiceContract
 
         // Return result
         return [
-            'status' => 'success',
-            'gateway' => self::key(),
+            'type' => 'success',
+            'service_key' => self::key(),
             'payment_order_id' => $order->id,
             'amount' => $order->amount,
             'currency' => $order->currency,
@@ -230,10 +240,11 @@ class CoinbaseProvider implements PaymentServiceContract
     }
 
     /**
-     * @return string
+     * @param object $payload
+     * @return mixed
      */
-    public static function key(): string
+    public function checkTransaction(object $payload): mixed
     {
-        return 'coinbase';
+        // TODO: Implement checkTransaction() method.
     }
 }

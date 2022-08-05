@@ -78,8 +78,8 @@ class LoanPaymentListener
 
         // Create internal order
         $payment = PaymentOrder::create([
-            'type' => PaymentOrder::TYPE_PAYIN,
-            'gateway' => $inputData->gateway,
+            'type' => PaymentOrder::TYPE_CHARGE,
+            'service_key' => $inputData->gateway,
             'amount' => $inputData->amount,
             'currency' => mb_strtoupper($inputData->currency),
             'based_service' => $inputData->service,
@@ -96,7 +96,7 @@ class LoanPaymentListener
 
             LogError::create([
                 'source' => 'listener',
-                'gateway' => $inputData->gateway,
+                'service' => $inputData->gateway,
                 'message' => $result['message'],
                 'payload' => $result
             ]);

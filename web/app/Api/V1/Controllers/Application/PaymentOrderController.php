@@ -162,17 +162,17 @@ class PaymentOrderController extends Controller
 
             // Create internal payment order
             $order = PaymentOrder::create([
-                'type' => PaymentOrder::TYPE_PAYIN,
-                'gateway' => $inputData->gateway,
+                'type' => PaymentOrder::TYPE_CHARGE,
                 'amount' => $inputData->amount,
                 'currency' => mb_strtoupper($inputData->currency),
+                'user_id' => Auth::user()->getAuthIdentifier(),
 
                 'based_id' => $inputData->document['id'] ?? config('settings.empty_uuid'),
                 'based_type' => $inputData->document['object'] ?? null,
                 'based_service' => $inputData->document['service'] ?? null,
-                'based_meta' => $inputData->document['meta'] ?? null,
+                'based_metadata' => $inputData->document['meta'] ?? null,
 
-                'user_id' => Auth::user()->getAuthIdentifier()
+                'service_key' => $inputData->gateway
             ]);
 
             // Create payment session

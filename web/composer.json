@@ -13,6 +13,7 @@
         "laravel/lumen-framework": "~8",
         "paypal/paypal-checkout-sdk": "~1",
         "safecharge-international/safecharge-php": "~2",
+        "ultainfinity/solana-php-sdk": "*",
         "stripe/stripe-php": "~7",
         "sumra/sdk": "*"
     },
@@ -37,6 +38,13 @@
         {
             "type": "path",
             "url": "../sumra-sdk",
+            "options": {
+                "symlink": false
+            }
+        },
+        {
+            "type": "path",
+            "url": "../solana-php-sdk",
             "options": {
                 "symlink": false
             }

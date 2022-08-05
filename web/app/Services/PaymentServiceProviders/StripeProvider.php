@@ -6,12 +6,11 @@ use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
-use Stripe\PaymentIntent;
-use Stripe\Stripe;
 use Stripe\Webhook;
 
 /**
@@ -52,8 +51,7 @@ class StripeProvider implements PaymentServiceContract
 
         try {
             // Set your secret API key
-            $this->service = null;
-            Stripe::setApiKey($this->settings->secret_key);
+            $this->service = new \Stripe\StripeClient($this->settings->secret_key);
         } catch (Exception $e) {
             throw $e;
         }
@@ -102,6 +100,23 @@ class StripeProvider implements PaymentServiceContract
     public function charge(PaymentOrder $order, object $inputData): array
     {
         try {
+            // Search and create customer
+            $customerSearch = $this->service->customers->search([
+                'query' => sprintf("metadata['user_id']: '%s'", Auth::user()->getAuthIdentifier()),
+            ]);
+
+            // If not found, then create new one
+            if (empty($customerSearch['data'])) {
+                $customer = $this->service->customers->create([
+                    'description' => '',
+                    'metadata' => [
+                        'user_id' => Auth::user()->getAuthIdentifier()
+                    ]
+                ]);
+            } else {
+                $customer = $customerSearch['data'][0];
+            }
+
             // Support payment methods from different currency
             $methods = [
                 'usd' => [
@@ -133,7 +148,8 @@ class StripeProvider implements PaymentServiceContract
             $currency = mb_strtolower($inputData->currency);
 
             // Create a PaymentIntent with amount and currency
-            $stripeDocument = PaymentIntent::create([
+            $stripeDocument = $this->service->paymentIntents->create([
+                'customer' => $customer->id,
                 'amount' => $inputData->amount * 100,
                 'currency' => $currency,
 //                'automatic_payment_methods' => [
@@ -141,8 +157,9 @@ class StripeProvider implements PaymentServiceContract
 //                ],
                 'payment_method_types' => ['card'] + $methods[$currency],
                 'metadata' => [
-                    'code' => $order->check_code,
-                    'payment_order_id' => $order->id
+                    'check_code' => $order->check_code,
+                    'payment_order_id' => $order->id,
+                    'user_id' => Auth::user()->getAuthIdentifier()
                 ],
 //                'confirm' => true,
 //                'return_url' => $inputData->redirect_url ?? null
@@ -150,7 +167,8 @@ class StripeProvider implements PaymentServiceContract
 
             // Update payment order
             $order->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
-            $order->document_id = $stripeDocument->id;
+            $order->service_document_id = $stripeDocument->id;
+            $order->service_document_type = $stripeDocument->object;
             $order->save();
 
             // Return result
@@ -187,29 +205,12 @@ class StripeProvider implements PaymentServiceContract
         } catch (UnexpectedValueException $e) {
             // Invalid payload
             $result = [
-                'type' => 'danger',
-                'message' => "Stripe Webhook: Invalid payload: " . $e->getMessage(),
-                'payload' => $payload
+                'message' => "Stripe Webhook invalid payload: " . $e->getMessage(),
             ];
-
-            if (env("APP_DEBUG", 0)) {
-                Log::error($result);
-            }
 
             return $result;
         } catch (SignatureVerificationException $e) {
-            // Invalid signature
-            $result = [
-                'type' => 'danger',
-                'message' => "Stripe Webhook: Invalid signature: " . $e->getMessage(),
-                'payload' => $payload
-            ];
-
-            if (env("APP_DEBUG", 0)) {
-                Log::error($result);
-            }
-
-            return $result;
+            throw new Exception("Stripe Webhook invalid signature: " . $e->getMessage());
         }
 
         if (env("APP_DEBUG", 0)) {
@@ -220,10 +221,16 @@ class StripeProvider implements PaymentServiceContract
 
         // Handle the event
         switch ($event->type) {
+            /**
+             *
+             */
             case 'checkout.session.completed':
             case 'checkout.session.async_payment_succeeded':
             case 'checkout.session.async_payment_failed':
-
+                break;
+            /**
+             * Payment Intent
+             */
             case 'payment_intent.amount_capturable_updated':
             case 'payment_intent.canceled':
             case 'payment_intent.created':
@@ -261,5 +268,14 @@ class StripeProvider implements PaymentServiceContract
 
                 return $result;
         }
+    }
+
+    /**
+     * @param object $payload
+     * @return mixed
+     */
+    public function checkTransaction(object $payload): mixed
+    {
+        // TODO: Implement checkTransaction() method.
     }
 }

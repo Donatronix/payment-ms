@@ -17,7 +17,7 @@ class OpenpaydProvider implements PaymentServiceContract
     // Transaction statuses
     // https://apidocs.openpayd.com/docs/transaction-status-updated-webhook#transaction-types
 
-    const TRANSACTION_TYPE_PAYIN = "PAYIN";
+    const TRANSACTION_TYPE_CHARGE = "PAYIN";
     const TRANSACTION_TYPE_PAYOUT = "PAYOUT";
     const TRANSACTION_TYPE_FEE = "FEE";
     const TRANSACTION_TYPE_RETURN_IN = "RETURN_IN";
@@ -71,6 +71,14 @@ class OpenpaydProvider implements PaymentServiceContract
         } catch (Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     * @return string
+     */
+    public static function key(): string
+    {
+        return 'openpayd';
     }
 
     /**
@@ -131,14 +139,14 @@ class OpenpaydProvider implements PaymentServiceContract
         $transactionStatus = strtoupper($webhookPayload["status"]);
         $transactionType = strtoupper($webhookPayload["type"]);
 
-        if ($transactionType == self::TRANSACTION_TYPE_PAYIN) {
+        if ($transactionType == self::TRANSACTION_TYPE_CHARGE) {
             //  retrieve payment and update status
             // TODO find a way to access webhook metadata.
-            $order = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
+            $order = PaymentOrder::where('type', PaymentOrder::TYPE_CHARGE)
                 ->where('id', $webhookPayload["metadata"]['orderId'])
-                ->where('document_id', $webhookPayload["metadata"]['documentId'])
+                ->where('service_document_id', $webhookPayload["id"])
                 ->where('check_code', $webhookPayload["metadata"]['check_code'])
-                ->where('gateway', self::key())
+                ->where('service_key', self::key())
                 ->first();
 
             if (!$order) {
@@ -155,7 +163,7 @@ class OpenpaydProvider implements PaymentServiceContract
 
             // Return result
             return [
-                'status' => 'success',
+                'type' => 'success',
                 'payment_order_id' => $order->id,
                 'amount' => $order->amount,
                 'currency' => $order->currency,
@@ -185,10 +193,11 @@ class OpenpaydProvider implements PaymentServiceContract
     }
 
     /**
-     * @return string
+     * @param object $payload
+     * @return mixed
      */
-    public static function key(): string
+    public function checkTransaction(object $payload): mixed
     {
-        return 'openpayd';
+        // TODO: Implement checkTransaction() method.
     }
 }

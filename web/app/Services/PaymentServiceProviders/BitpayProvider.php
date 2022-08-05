@@ -77,6 +77,14 @@ class BitpayProvider implements PaymentServiceContract
     /**
      * @return string
      */
+    public static function key(): string
+    {
+        return 'bitpay';
+    }
+
+    /**
+     * @return string
+     */
     public static function title(): string
     {
         return 'BitPay payment service provider';
@@ -118,7 +126,7 @@ class BitpayProvider implements PaymentServiceContract
             $invoice->setExtendedNotifications(true);
             $invoice->setNotificationURL(config('settings.api.payments') . '/' . self::key());
 
-            $invoice->setRedirectURL($inputData->redirect_url ?? null);
+            $invoice->setRedirectURL($inputData->redirect_url ?? '');
 
             $invoice->setPosData(json_encode(['code' => $order->check_code]));
             $invoice->setItemDesc("Charge user wallet balance");
@@ -128,7 +136,7 @@ class BitpayProvider implements PaymentServiceContract
 
             // Update payment order
             $order->status = self::STATUS_INVOICE_NEW;
-            $order->document_id = $chargeObj->getId();
+            $order->service_document_id = $chargeObj->getId();
             $order->save();
 
             // Return result
@@ -138,14 +146,6 @@ class BitpayProvider implements PaymentServiceContract
         } catch (Exception $e) {
             throw $e;
         }
-    }
-
-    /**
-     * @return string
-     */
-    public static function key(): string
-    {
-        return 'bitpay';
     }
 
     /**
@@ -176,11 +176,11 @@ class BitpayProvider implements PaymentServiceContract
         $paymentData['posData'] = json_decode($paymentData['posData']);
 
         // Find Payment Order
-        $order = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
+        $order = PaymentOrder::where('type', PaymentOrder::TYPE_CHARGE)
             ->where('id', $paymentData['orderId'])
-            ->where('document_id', $paymentData['id'])
+            ->where('service_document_id', $paymentData['id'])
             ->where('check_code', $paymentData['posData']->code)
-            ->where('gateway', self::key())
+            ->where('service_key', self::key())
             ->first();
 
         if (!$order) {
@@ -197,8 +197,8 @@ class BitpayProvider implements PaymentServiceContract
 
         // Return result
         return [
-            'status' => 'success',
-            'gateway' => self::key(),
+            'type' => 'success',
+            'service_key' => self::key(),
             'payment_order_id' => $order->id,
             'amount' => $order->amount,
             'currency' => $order->currency,
@@ -206,5 +206,14 @@ class BitpayProvider implements PaymentServiceContract
             'user_id' => $order->user_id,
             'payment_completed' => (self::STATUS_INVOICE_COMPLETED === $order->status),
         ];
+    }
+
+    /**
+     * @param object $payload
+     * @return mixed
+     */
+    public function checkTransaction(object $payload): mixed
+    {
+        // TODO: Implement checkTransaction() method.
     }
 }

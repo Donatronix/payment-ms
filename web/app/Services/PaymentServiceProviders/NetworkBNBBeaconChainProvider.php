@@ -113,14 +113,14 @@ class NetworkBNBBeaconChainProvider implements PaymentServiceContract
         try {
             // Update payment order
             $order->status = self::STATUS_CHARGE_CREATED;
-            $order->document_id = null;
+            $order->service_document_id = null;
             $order->save();
 
             $result = [];
-            if($this->settings->is_develop){
+            if ($this->settings->is_develop) {
                 $result['recipient_address'] = $this->settings->recipient_address_testnet;
                 $result['network_type'] = 'testnet';
-            }else{
+            } else {
                 $result['recipient_address'] = $this->settings->recipient_address_mainnet;
                 $result['network_type'] = 'mainnet';
             }
@@ -140,5 +140,14 @@ class NetworkBNBBeaconChainProvider implements PaymentServiceContract
     public function handlerWebhook(Request $request): array
     {
         return [];
+    }
+
+    /**
+     * @param object $payload
+     * @return mixed
+     */
+    public function checkTransaction(object $payload): mixed
+    {
+        // TODO: Implement checkTransaction() method.
     }
 }

@@ -1,3 +1,6 @@
 [submodule "sumra-sdk"]
     path = sumra-sdk
     url = git@bitbucket.org:sumraprague/sumra-sdk.git
+[submodule "solana-php-sdk"]
+	path = solana-php-sdk
+	url = git@bitbucket.org:sumraprague/solana-php-sdk.git

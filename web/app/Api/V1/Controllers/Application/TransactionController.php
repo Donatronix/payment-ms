@@ -3,8 +3,16 @@
 namespace App\Api\V1\Controllers\Application;
 
 use App\Http\Controllers\Controller;
+use App\Models\LogError;
+use App\Models\PaymentOrder;
 use App\Models\Transaction;
+use App\Services\PaymentServiceManager;
 use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use Ultainfinity\SolanaPhpSdk\Connection;
+use Ultainfinity\SolanaPhpSdk\SolanaRpcClient;
 
 /**
  * Class TransactionController
@@ -70,12 +78,12 @@ class TransactionController extends Controller
     }
 
     /**
-     * Store payment order transaction result
+     * Store payment order transaction result for confirmation
      *
      * @OA\Post(
      *     path="/app/transactions",
-     *     summary="Store payment order transaction result",
-     *     description="Store payment order transaction result",
+     *     summary="Store payment order transaction result for confirmation",
+     *     description="Store payment order transaction result for confirmation",
      *     tags={"Application | Payment Orders Transactions"},
      *
      *     security={{
@@ -113,7 +121,7 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         try {
-            $this->validate($request, [
+            $inputData = (object)$this->validate($request, [
                 'gateway' => 'required|string',
                 'payment_order_id' => 'required|string',
                 'meta' => 'required|array',
@@ -123,20 +131,46 @@ class TransactionController extends Controller
                 'meta.payment_intent_client_secret' => 'sometimes|string'
             ]);
 
+            // Get payment order
+            $order = PaymentOrder::findOrFail($inputData->payment_order_id);
+
+
+            // Init payment service session
+            $service = PaymentServiceManager::getInstance($inputData->gateway);
+
+            // Create payment session
+            $result = $service->checkTransaction($inputData);
+
+
+            $order->fill([
+                'status' => 1,
+                'metadata' => $inputData->meta
+            ]);
+            $order->save();
+
+
             // Save transaction data
-            $transaction = new Transaction();
-            $transaction->fill($request->all());
-            $transaction->save();
+//            $transaction = new Transaction();
+//            $transaction->fill($request->all());
+//            $transaction->save();
+
+
+
 
             return response()->jsonApi([
                 'title' => 'Store transaction',
-                'message' => 'transaction saved',
-                'data' => $transaction
+                'message' => 'transaction saved'
             ]);
-        } catch (\Throwable $th) {
+        }  catch (ValidationException $e) {
             return response()->jsonApi([
                 'title' => 'Store transaction',
-                'message' => $th->getMessage()
+                'message' => "Field validation error: " . $e->getMessage(),
+                'data' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->jsonApi([
+                'title' => 'Store transaction',
+                'message' => $e->getMessage()
             ], 500);
         }
     }

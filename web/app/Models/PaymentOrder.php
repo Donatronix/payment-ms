@@ -23,7 +23,7 @@ class PaymentOrder extends Model
     /**
      * Payment Order Type
      */
-    const TYPE_PAYIN = 1;
+    const TYPE_CHARGE = 1;
     const TYPE_PAYOUT = 2;
     const TYPE_ADJUSTMENT = 4;
     const TYPE_RETURN_IN = 5;
@@ -37,7 +37,7 @@ class PaymentOrder extends Model
      */
     protected $casts = [
         'payload' => 'array',
-        'based_meta' => 'array'
+        'based_metadata' => 'array'
     ];
 
     /**
@@ -47,17 +47,19 @@ class PaymentOrder extends Model
      */
     protected $fillable = [
         'type',
-        'gateway',
         'amount',
         'currency',
+        'user_id',
+        'status',
         'based_id',
         'based_type',
         'based_service',
-        'based_meta',
-        'status',
-        'user_id',
-        'document_id',
-        'payload'
+        'based_metadata',
+        'service_key',
+        'service_document_id',
+        'service_document_type',
+        'service_payload',
+        'metadata'
     ];
 
     /**

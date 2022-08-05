@@ -167,12 +167,12 @@ class PaymentOrderController extends Controller
             if ($gateway == "") {
                 foreach ($newStatuses as $gateway => $newstatus) {
                     $payments = $payments->orWhere(function ($query) use ($gateway, $newstatus) {
-                        $query->where("gateway", $gateway)
+                        $query->where("service_key", $gateway)
                             ->where("status", $newstatus);
                     });
                 }
             } else {
-                $payments = $payments->where('gateway', "=", $gateway)
+                $payments = $payments->where('service_key', "=", $gateway)
                     ->where('status', $newStatuses[$gateway]);
             }
 

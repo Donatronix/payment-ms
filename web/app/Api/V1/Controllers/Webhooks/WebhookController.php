@@ -54,31 +54,40 @@ class WebhookController extends Controller
         if (!$request->isJson()) {
             LogError::create([
                 'source' => 'webhook',
-                'gateway' => $gateway,
+                'service' => $gateway,
                 'message' => 'Is not JSON content',
                 'payload' => $request->getContent()
             ]);
 
-            return response('', 400);
+            return response('Is not JSON content', 400);
         }
 
-        // Init manager
         try {
+            // Init manager
             $system = PaymentServiceManager::getInstance($gateway);
+
+            // Handle webhook
+            $result = $system->handlerWebhook($request);
+
+
+
         } catch (Exception $e) {
             Log::info($e->getMessage());
+
+            if (env("APP_DEBUG", 0)) {
+                Log::error($result);
+            }
 
             exit;
         }
 
-        // Handle webhook
-        $result = $system->handlerWebhook($request);
+
 
         // If error, logging and send status 400
         if ($result['type'] === 'danger') {
             LogError::create([
                 'source' => 'webhook',
-                'gateway' => $gateway,
+                'service' => $gateway,
                 'message' => $result['message'],
                 'payload' => $result['payload']
             ]);

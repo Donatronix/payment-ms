@@ -16,22 +16,27 @@ class CreatePaymentOrdersTable extends Migration
         Schema::create('payment_orders', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
+            // PO detail
             $table->tinyInteger('type');
-            $table->string('gateway', 30);
             $table->float('amount', 20, 10);
             $table->char('currency', 3);
+            $table->uuid('user_id')->index();
+            $table->smallInteger('status')->default(0);
+            $table->text('metadata')->nullable();
 
             // Based on document
             $table->uuid('based_id')->default(config('settings.empty_uuid'));
             $table->string('based_type', 30)->nullable();
             $table->string('based_service', 36)->nullable();
-            $table->mediumText('based_meta')->nullable();
+            $table->mediumText('based_metadata')->nullable();
 
-            $table->smallInteger('status')->default(0);
-            $table->uuid('user_id')->index();
+            // Service provider data
+            $table->string('service_key', 30);
+            $table->string('service_document_id')->nullable();
+            $table->string('service_document_type')->nullable();
+            $table->text('service_payload')->nullable();
 
-            $table->string('document_id')->nullable();
-            $table->text('payload')->nullable();
+            // Transaction check code
             $table->string('check_code');
 
             $table->timestamps();

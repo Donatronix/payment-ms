@@ -83,6 +83,14 @@ class PaypalProvider implements PaymentServiceContract
     /**
      * @return string
      */
+    public static function key(): string
+    {
+        return 'paypal';
+    }
+
+    /**
+     * @return string
+     */
     public static function title(): string
     {
         return 'PayPal payment service provider';
@@ -150,7 +158,7 @@ class PaypalProvider implements PaymentServiceContract
 
             // Update Payment Order data
             $order->status = self::STATUS_ORDER_CREATED;
-            $order->document_id = $chargeObj->result->id;
+            $order->service_document_id = $chargeObj->result->id;
             $order->save();
 
             $invoiceUrl = '';
@@ -168,6 +176,9 @@ class PaypalProvider implements PaymentServiceContract
             throw $e;
         }
     }
+
+
+
 
     /**
      * @param Request $request
@@ -196,11 +207,11 @@ class PaypalProvider implements PaymentServiceContract
         }
 
         // Find Payment Order
-        $order = PaymentOrder::where('type', PaymentOrder::TYPE_PAYIN)
+        $order = PaymentOrder::where('type', PaymentOrder::TYPE_CHARGE)
             ->where('id', $paymentData["purchase_units"][0]["invoice_id"])
-            ->where('document_id', $paymentData["id"])
+            ->where('service_document_id', $paymentData["id"])
             ->where('check_code', $paymentData["purchase_units"][0]["custom_id"])
-            ->where('gateway', self::key())
+            ->where('service_key', self::key())
             ->first();
 
         if (!$order) {
@@ -218,7 +229,7 @@ class PaypalProvider implements PaymentServiceContract
 
         // Return result
         return [
-            'status' => 'success',
+            'type' => 'success',
             'payment_order_id' => $order->id,
             'service' => $order->service,
             'amount' => $order->amount,
@@ -229,10 +240,11 @@ class PaypalProvider implements PaymentServiceContract
     }
 
     /**
-     * @return string
+     * @param object $payload
+     * @return mixed
      */
-    public static function key(): string
+    public function checkTransaction(object $payload): mixed
     {
-        return 'paypal';
+        // TODO: Implement checkTransaction() method.
     }
 }

@@ -24,7 +24,7 @@ class CreateTransactionsTable extends Migration
                 ->onDelete('cascade');
 
             $table->mediumText('meta');
-            $table->smallInteger('status')->nullable();
+            $table->smallInteger('status')->default(0);
 
             $table->timestamps();
             $table->softDeletes();

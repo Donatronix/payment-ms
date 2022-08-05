@@ -37,6 +37,12 @@ interface PaymentServiceContract
     public function charge(PaymentOrder $order, object $inputData): mixed;
 
     /**
+     * @param object $payload
+     * @return mixed
+     */
+    public function checkTransaction(object $payload): mixed;
+
+    /**
      * @param \Illuminate\Http\Request $request
      *
      * @return mixed

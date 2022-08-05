@@ -23,12 +23,14 @@ class NuveiProvider implements PaymentServiceContract
     /**
      * @var string
      */
-    private $settings;
+    private object $settings;
 
     /**
-     * NuveiProvider constructor.
+     * StripeProvider constructor.
+     * @param Object $settings
+     * @throws Exception
      */
-    public function __construct()
+    public function __construct(object $settings)
     {
         $this->settings = $settings;
 
@@ -43,48 +45,6 @@ class NuveiProvider implements PaymentServiceContract
         } catch (Exception $e) {
             throw $e;
         }
-    }
-
-    /**
-     * @return string
-     */
-    public static function key(): string
-    {
-        return 'nuvei';
-    }
-
-    /**
-     * @return string
-     */
-    public static function title(): string
-    {
-        return 'Nuvei Payment Technology Partner';
-    }
-
-    /**
-     * @return string
-     */
-    public static function description(): string
-    {
-        return 'We are the payment technology partner of thriving brands. We provide the payment intelligence and technology businesses need to succeed locally and globally, through one integration — propelling them further, faster';
-    }
-
-    /**
-     * @return int
-     */
-    public static function newOrderStatus(): int
-    {
-        return 0;
-    }
-
-    public function charge(PaymentOrder $order, object $inputData): mixed
-    {
-        // TODO: Implement charge() method.
-    }
-
-    public function handlerWebhook(Request $request): mixed
-    {
-        // TODO: Implement handlerWebhook() method.
     }
 
     public function getPaymentStatus($paymentId)
@@ -166,5 +126,63 @@ class NuveiProvider implements PaymentServiceContract
         ]);
 
         return $payment;
+    }
+
+    /**
+     * @return string
+     */
+    public static function key(): string
+    {
+        return 'nuvei';
+    }
+
+    /**
+     * @return string
+     */
+    public static function title(): string
+    {
+        return 'Nuvei Payment Technology Partner';
+    }
+
+    /**
+     * @return string
+     */
+    public static function description(): string
+    {
+        return 'We are the payment technology partner of thriving brands. We provide the payment intelligence and technology businesses need to succeed locally and globally, through one integration — propelling them further, faster';
+    }
+
+    /**
+     * @return int
+     */
+    public static function newOrderStatus(): int
+    {
+        return 0;
+    }
+
+    /**
+     * Make one-time charge money to system
+     *
+     * @param PaymentOrder $order
+     * @param object $inputData
+     * @return mixed
+     */
+    public function charge(PaymentOrder $order, object $inputData): mixed
+    {
+        // TODO: Implement charge() method.
+    }
+
+    public function handlerWebhook(Request $request): mixed
+    {
+        // TODO: Implement handlerWebhook() method.
+    }
+
+    /**
+     * @param object $payload
+     * @return mixed
+     */
+    public function checkTransaction(object $payload): mixed
+    {
+        // TODO: Implement checkTransaction() method.
     }
 }

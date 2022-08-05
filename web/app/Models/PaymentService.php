@@ -20,10 +20,15 @@ class PaymentService extends Model
      * @var array
      */
     protected $fillable = [
-        'name',
-        'gateway',
+        'title',
+        'key',
         'description',
-        'new_order_status'
+        'icon',
+        'new_order_status',
+        'amount_min',
+        'amount_max',
+        'is_develop',
+        'status'
     ];
 
     /**

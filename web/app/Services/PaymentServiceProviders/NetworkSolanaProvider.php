@@ -6,13 +6,12 @@ use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
 use Exception;
 use Illuminate\Http\Request;
+use Ultainfinity\SolanaPhpSdk\Connection;
+use Ultainfinity\SolanaPhpSdk\SolanaRpcClient;
 
 /**
  * Class NetworkSolanaProvider
  * @package App\Services\PaymentServiceProviders
- *
- * https://github.com/verze-app/solana-php-sdk
- * https://github.com/tighten/php-package-skeleton
  *
  * https://solscan.io/account/8UuRLvWGtLpYK9QCamc2NUyohQFygA8sQouymbinwYHP
  */
@@ -70,7 +69,18 @@ class NetworkSolanaProvider implements PaymentServiceContract
     public function __construct(object $settings)
     {
         $this->settings = $settings;
-        $this->service = null;
+
+        try{
+            if ($this->settings->is_develop) {
+                $endpoint = SolanaRpcClient::DEVNET_ENDPOINT;
+            }else{
+                $endpoint = SolanaRpcClient::MAINNET_ENDPOINT;
+            }
+
+            $this->service = new Connection(new SolanaRpcClient($endpoint));
+        }catch (Exception $e){
+            throw $e;
+        }
     }
 
     /**
@@ -118,14 +128,14 @@ class NetworkSolanaProvider implements PaymentServiceContract
         try {
             // Update payment order
             $order->status = self::STATUS_CHARGE_CREATED;
-            $order->document_id = null;
+            $order->service_document_id = null;
             $order->save();
 
             $result = [];
-            if($this->settings->is_develop){
+            if ($this->settings->is_develop) {
                 $result['recipient_address'] = $this->settings->recipient_address_devnet;
                 $result['network_type'] = 'devnet';
-            }else{
+            } else {
                 $result['recipient_address'] = $this->settings->recipient_address_mainnet;
                 $result['network_type'] = 'mainnet';
             }
@@ -145,5 +155,23 @@ class NetworkSolanaProvider implements PaymentServiceContract
     public function handlerWebhook(Request $request): array
     {
         return [];
+    }
+
+    /**
+     * @param object $payload
+     * @return mixed
+     */
+    public function checkTransaction(object $payload): mixed
+    {
+        try{
+            $accountInfo = $this->service->getTransaction($payload->meta->trx_id);
+
+            $status = $accountInfo['meta']['status'];
+
+
+
+        }catch (Exception $e){
+            throw $e;
+        }
     }
 }
