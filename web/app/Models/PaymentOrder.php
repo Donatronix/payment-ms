@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Sumra\SDK\Traits\NumeratorTrait;
 use Sumra\SDK\Traits\OwnerTrait;
 use Sumra\SDK\Traits\UuidTrait;
 
@@ -19,11 +21,12 @@ class PaymentOrder extends Model
     use OwnerTrait;
     use UuidTrait;
     use SoftDeletes;
+    use NumeratorTrait;
 
     /**
      * Payment Order Type
      */
-    const TYPE_ORDER = 1;
+    const TYPE_CHARGE = 1;
     const TYPE_PAYOUT = 2;
     const TYPE_ADJUSTMENT = 4;
     const TYPE_RETURN_IN = 5;
@@ -42,6 +45,12 @@ class PaymentOrder extends Model
     // Occurs when a Payment Order has processing and partially funded
     const STATUS_ORDER_PARTIALLY_FUNDED = 2010;
 
+    // Occurs when been confirmed and the associated payment is completed
+    const STATUS_ORDER_CONFIRMED = 2020;
+
+    // Occurs when received a payment after it had been expired
+    const STATUS_ORDER_DELAYED = 2030;
+
     // Occurs when a Payment Order has successfully completed payment
     const STATUS_ORDER_SUCCEEDED = 3000;
 
@@ -55,13 +64,14 @@ class PaymentOrder extends Model
      * @var int[]
      */
     public static array $statuses = [
-        '1' => self::STATUS_ORDER_CREATED,
-       // '' => self::STATUS_ORDER_PENDING,
-       // '' => self::STATUS_ORDER_CONFIRMED,
-        '2' => self::STATUS_ORDER_FAILED,
-       // '' => self::STATUS_ORDER_DELAYED,
-        '3' => self::STATUS_ORDER_SUCCEEDED,
-        '4' => self::STATUS_ORDER_CANCELED
+        'created' => self::STATUS_ORDER_CREATED,
+        'processing' => self::STATUS_ORDER_PROCESSING,
+        'partially_funded' => self::STATUS_ORDER_PARTIALLY_FUNDED,
+        'confirmed' => self::STATUS_ORDER_CONFIRMED,
+        'delayed' => self::STATUS_ORDER_DELAYED,
+        'failed' => self::STATUS_ORDER_FAILED,
+        'succeeded' => self::STATUS_ORDER_SUCCEEDED,
+        'canceled' => self::STATUS_ORDER_CANCELED
     ];
 
     /**
@@ -104,6 +114,16 @@ class PaymentOrder extends Model
     protected $hidden = [];
 
     /**
+     * Get the numerator prefix for the model.
+     *
+     * @return string
+     */
+    protected function getNumeratorPrefix(): string
+    {
+        return 'PO';
+    }
+
+    /**
      * Boot the model.
      *
      * @return  void
@@ -123,7 +143,7 @@ class PaymentOrder extends Model
         });
     }
 
-    public function transactions()
+    public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'payment_order_id', 'id');
     }

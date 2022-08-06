@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\PaymentOrder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,11 +18,12 @@ class CreatePaymentOrdersTable extends Migration
             $table->uuid('id')->primary();
 
             // PO detail
+            $table->string('number', 15);
             $table->tinyInteger('type');
             $table->float('amount', 20, 10);
             $table->char('currency', 3);
             $table->uuid('user_id')->index();
-            $table->smallInteger('status')->default(0);
+            $table->unsignedSmallInteger('status')->default(PaymentOrder::STATUS_ORDER_CREATED);
             $table->text('metadata')->nullable();
 
             // Based on document

@@ -23,11 +23,6 @@ interface PaymentServiceContract
     public static function description(): string;
 
     /**
-     * @return integer
-     */
-    public static function newOrderStatus(): int;
-
-    /**
      * Make one-time charge money to system
      *
      * @param PaymentOrder $order

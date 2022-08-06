@@ -99,14 +99,6 @@ class BitpayProvider implements PaymentServiceContract
     }
 
     /**
-     * @return int
-     */
-    public static function newOrderStatus(): int
-    {
-        return self::STATUS_INVOICE_NEW;
-    }
-
-    /**
      * Wrapper for create payment order for charge money
      *
      * @param PaymentOrder $order

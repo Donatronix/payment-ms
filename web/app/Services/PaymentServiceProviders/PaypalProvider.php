@@ -105,14 +105,6 @@ class PaypalProvider implements PaymentServiceContract
     }
 
     /**
-     * @return int
-     */
-    public static function newOrderStatus(): int
-    {
-        return self::STATUS_ORDER_CREATED;
-    }
-
-    /**
      * Wrapper for create payment order for charge money
      *
      * @param PaymentOrder $order

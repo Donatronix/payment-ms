@@ -20,32 +20,44 @@ use Stripe\Webhook;
 class StripeProvider implements PaymentServiceContract
 {
     // Occurs when a new PaymentIntent is created.
-    const STATUS_PAYMENT_INTENT_CREATED = 1;
+    const STATUS_PAYMENT_INTENT_CREATED = 'created';
 
     // Occurs when a PaymentIntent has started processing.
-    const STATUS_PAYMENT_INTENT_PROCESSING = 2;
+    const STATUS_PAYMENT_INTENT_PROCESSING = 'processing';
 
     // Occurs when a PaymentIntent has successfully completed payment.
-    const STATUS_PAYMENT_INTENT_SUCCEEDED = 3;
+    const STATUS_PAYMENT_INTENT_SUCCEEDED = 'succeeded';
 
     // Occurs when a PaymentIntent is canceled.
-    const STATUS_PAYMENT_INTENT_CANCELED = 4;
+    const STATUS_PAYMENT_INTENT_CANCELED = 'canceled';
 
     // Occurs when a PaymentIntent has failed the attempt to create a payment method or a payment.
-    const STATUS_PAYMENT_INTENT_PAYMENT_FAILED = 3;
+    const STATUS_PAYMENT_INTENT_PAYMENT_FAILED = 'failed';
 
     // Occurs when funds are applied to a customer_balance PaymentIntent and the ‘amount_remaining’ changes.
-    const STATUS_PAYMENT_INTENT_PARTIALLY_FUNDED = 4;
+    const STATUS_PAYMENT_INTENT_PARTIALLY_FUNDED = 'partially_funded';
 
     // Occurs when a PaymentIntent transitions to requires_action state
-    const STATUS_PAYMENT_INTENT_REQUIRES_ACTION = 6;
+    const STATUS_PAYMENT_INTENT_REQUIRES_ACTION = 'failed';
 
     // Occurs when a PaymentIntent has funds to be captured.
     // Check the amount_capturable property on the PaymentIntent to determine the amount that can be captured.
     // You may capture the PaymentIntent with an amount_to_capture value up to the specified amount. Learn more about capturing PaymentIntents.
-    const STATUS_PAYMENT_INTENT_AMOUNT_CAPTURABLE_UPDATED = 7;
+    const STATUS_PAYMENT_INTENT_AMOUNT_CAPTURABLE_UPDATED = 'failed';
 
-
+    /**
+     * @var array
+     */
+    private static array $statuses = [
+        'created' => self::STATUS_PAYMENT_INTENT_CREATED,
+        'processing' => self::STATUS_PAYMENT_INTENT_PROCESSING,
+        'partially_funded' => self::STATUS_PAYMENT_INTENT_PARTIALLY_FUNDED,
+        'requires_action' => self::STATUS_PAYMENT_INTENT_REQUIRES_ACTION,
+        'amount_capturable_updated' => self::STATUS_PAYMENT_INTENT_AMOUNT_CAPTURABLE_UPDATED,
+        'failed' => self::STATUS_PAYMENT_INTENT_PAYMENT_FAILED,
+        'succeeded' => self::STATUS_PAYMENT_INTENT_SUCCEEDED,
+        'canceled' => self::STATUS_PAYMENT_INTENT_CANCELED
+    ];
 
     /**
      * @var
@@ -96,14 +108,6 @@ class StripeProvider implements PaymentServiceContract
     public static function description(): string
     {
         return 'Stripe Payment Processing Platform for the Internet';
-    }
-
-    /**
-     * @return int
-     */
-    public static function newOrderStatus(): int
-    {
-        return self::STATUS_PAYMENT_INTENT_CREATED;
     }
 
     /**
@@ -183,13 +187,14 @@ class StripeProvider implements PaymentServiceContract
             ]);
 
             // Update payment order
-            $order->status = self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
+            $order->status = PaymentOrder::$statuses[self::STATUS_PAYMENT_INTENT_PROCESSING];
             $order->service_document_id = $stripeDocument->id;
             $order->service_document_type = $stripeDocument->object;
             $order->save();
 
             // Return result
             return [
+                'status' => self::STATUS_PAYMENT_INTENT_PROCESSING,
                 'public_key' => $this->settings->public_key,
                 'clientSecret' => $stripeDocument->client_secret,
             ];
@@ -273,7 +278,7 @@ class StripeProvider implements PaymentServiceContract
 //                    'amount' => $order->amount,
 //                    'currency' => $order->currency,
 //                    'user_id' => $order->user_id,
-//                    'payment_completed' => (self::STATUS_ORDER_SUCCEEDED === $order->status),
+//                    'payment_completed' => (self::STATUS_PAYMENT_INTENT_SUCCEEDED === $order->status),
                 ];
 
             default:
@@ -307,12 +312,12 @@ class StripeProvider implements PaymentServiceContract
             $charges = collect($intent->charges['data']);
             if ($charges->count() == 1) {
                 $charge = (object)$charges->first();
-            }else{
+            } else {
                 // loop $charges->map(....);
             }
 
             $result = [
-                'status' => self::STATUS_PAYMENT_INTENT_PROCESSING
+                'status' => self::$statuses[$charge->status]
             ];
 
             if ($charge->status == 'succeeded' && $charge->paid) {
@@ -325,7 +330,6 @@ class StripeProvider implements PaymentServiceContract
                 }
 
                 $result['payment_method'] = $type;
-                $result['status'] = self::STATUS_PAYMENT_INTENT_SUCCEEDED;
                 $result['transaction_id'] = $charge->balance_transaction;
             }
 

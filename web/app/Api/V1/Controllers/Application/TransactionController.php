@@ -135,24 +135,24 @@ class TransactionController extends Controller
             // Checking transaction
             $result = $service->checkTransaction($inputData);
 
+            // If succeeded then add more data to response
+            if($result['status'] === 'succeeded'){
+                $result['amount'] = $order->amount;
+                $result['currency'] = $order->currency;
+                $result['date'] = $order->created_at;
+                $result['order_number'] = $order->number;
+                $result['payer_name'] = '';
+            }
+
             // Save transaction status and data
+            $metadata = $inputData->meta;
+            $metadata['transaction_id'] = $result['transaction_id'];
+
             $order->fill([
-                'status' => $result['status'],
-                'metadata' => $inputData->meta
+                'status' => PaymentOrder::$statuses[$result['status']],
+                'metadata' => $metadata
             ]);
             $order->save();
-
-            $result['amount'] = $order->amount;
-            $result['currency'] = $order->currency;
-            $result['date'] = $order->created_at;
-            $result['order_number'] = $order->id;
-            $result['payer_full_name'] = '';
-
-
-            // Save transaction data
-//            $transaction = new Transaction();
-//            $transaction->fill($request->all());
-//            $transaction->save();
 
             // Return response
             return response()->jsonApi([

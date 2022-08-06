@@ -153,14 +153,6 @@ class NuveiProvider implements PaymentServiceContract
     }
 
     /**
-     * @return int
-     */
-    public static function newOrderStatus(): int
-    {
-        return 0;
-    }
-
-    /**
      * Make one-time charge money to system
      *
      * @param PaymentOrder $order

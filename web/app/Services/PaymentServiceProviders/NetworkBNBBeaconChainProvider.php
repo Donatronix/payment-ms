@@ -14,37 +14,37 @@ use Illuminate\Http\Request;
 class NetworkBNBBeaconChainProvider implements PaymentServiceContract
 {
     // New charge is created
-    const STATUS_CHARGE_CREATED = 1;
+    const STATUS_CHARGE_CREATED = 'created';
 
     // Charge has been detected but has not been confirmed yet
-    const STATUS_CHARGE_PENDING = 2;
+    const STATUS_CHARGE_PROCESSING = 'processing';
 
     // Charge has been confirmed and the associated payment is completed
-    const STATUS_CHARGE_CONFIRMED = 3;
+    const STATUS_CHARGE_CONFIRMED = 'confirmed';
 
     // Charge failed to complete
-    const STATUS_CHARGE_FAILED = 4;
+    const STATUS_CHARGE_FAILED = 'failed';
 
     // Charge received a payment after it had been expired
-    const STATUS_CHARGE_DELAYED = 5;
+    const STATUS_CHARGE_DELAYED = 'delayed';
 
     // Charge has been payment successfully
-    const STATUS_CHARGE_SUCCEEDED = 6;
+    const STATUS_CHARGE_SUCCEEDED = 'succeeded';
 
     // Charge has been canceled
-    const STATUS_CHARGE_CANCELED = 7;
+    const STATUS_CHARGE_CANCELED = 'canceled';
 
     /**
-     * @var int[]
+     * @var array|string[]
      */
-    public static $statuses = [
-        self::STATUS_CHARGE_CREATED,
-        self::STATUS_CHARGE_PENDING,
-        self::STATUS_CHARGE_CONFIRMED,
-        self::STATUS_CHARGE_FAILED,
-        self::STATUS_CHARGE_DELAYED,
-        self::STATUS_CHARGE_SUCCEEDED,
-        self::STATUS_CHARGE_CANCELED
+    private static array $statuses = [
+        'created' => self::STATUS_CHARGE_CREATED,
+        'processing' => self::STATUS_CHARGE_PROCESSING,
+        'confirmed' => self::STATUS_CHARGE_CONFIRMED,
+        'delayed' => self::STATUS_CHARGE_DELAYED,
+        'failed' => self::STATUS_CHARGE_FAILED,
+        'succeeded' => self::STATUS_CHARGE_SUCCEEDED,
+        'canceled' => self::STATUS_CHARGE_CANCELED
     ];
 
     /**
@@ -93,14 +93,6 @@ class NetworkBNBBeaconChainProvider implements PaymentServiceContract
     }
 
     /**
-     * @return int
-     */
-    public static function newOrderStatus(): int
-    {
-        return self::STATUS_CHARGE_CREATED;
-    }
-
-    /**
      * Wrapper for create payment order for charge money
      *
      * @param PaymentOrder $order
@@ -112,7 +104,7 @@ class NetworkBNBBeaconChainProvider implements PaymentServiceContract
     {
         try {
             // Update payment order
-            $order->status = self::STATUS_CHARGE_CREATED;
+            $order->status = PaymentOrder::$statuses[self::STATUS_CHARGE_PROCESSING];
             $order->service_document_id = null;
             $order->save();
 

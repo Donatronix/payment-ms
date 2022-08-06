@@ -17,7 +17,7 @@ class PaymentOrderFactory extends Factory
             'amount' => rand(20, 1200),
             'currency' => $this->faker->randomElement(['usd', 'eur', 'gpd']),
             'user_id' => $this->faker->randomElement(config('settings.default_users_ids')),
-            'status' => 0,
+            'status' => $this->faker->randomElement(PaymentOrder::$statuses),
             'service_key' => PaymentService::all()->random()->key,
             'check_code' => $this->faker->word,
         ];

@@ -22,7 +22,7 @@ class CoinbaseProvider implements PaymentServiceContract
     const STATUS_CHARGE_CREATED = 1;
 
     //	Charge has been detected but has not been confirmed yet
-    const STATUS_CHARGE_PENDING = 2;
+    const STATUS_CHARGE_PROCESSING = 2;
 
     //	Charge has been confirmed and the associated payment is completed
     const STATUS_CHARGE_CONFIRMED = 3;
@@ -41,7 +41,7 @@ class CoinbaseProvider implements PaymentServiceContract
      */
     public static $statuses = [
         self::STATUS_CHARGE_CREATED,
-        self::STATUS_CHARGE_PENDING,
+        self::STATUS_CHARGE_PROCESSING,
         self::STATUS_CHARGE_CONFIRMED,
         self::STATUS_CHARGE_FAILED,
         self::STATUS_CHARGE_DELAYED,
@@ -97,14 +97,6 @@ class CoinbaseProvider implements PaymentServiceContract
     public static function description(): string
     {
         return 'Coinbase – Buy &amp; Sell Bitcoin, Ethereum, and more with trust';
-    }
-
-    /**
-     * @return int
-     */
-    public static function newOrderStatus(): int
-    {
-        return self::STATUS_CHARGE_CREATED;
     }
 
     /**
