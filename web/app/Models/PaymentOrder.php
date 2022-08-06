@@ -23,12 +23,46 @@ class PaymentOrder extends Model
     /**
      * Payment Order Type
      */
-    const TYPE_CHARGE = 1;
+    const TYPE_ORDER = 1;
     const TYPE_PAYOUT = 2;
     const TYPE_ADJUSTMENT = 4;
     const TYPE_RETURN_IN = 5;
     const TYPE_RETURN_OUT = 6;
     const TYPE_FEE = 7;
+
+    /**
+     * Payment Order Statuses
+     */
+    // Occurs when a new Payment Order is created.
+    const STATUS_ORDER_CREATED = 1000;
+
+    // Occurs when a Payment Order has started processing.
+    const STATUS_ORDER_PROCESSING = 2000;
+
+    // Occurs when a Payment Order has processing and partially funded
+    const STATUS_ORDER_PARTIALLY_FUNDED = 2010;
+
+    // Occurs when a Payment Order has successfully completed payment
+    const STATUS_ORDER_SUCCEEDED = 3000;
+
+    // Occurs when a Payment Order is canceled
+    const STATUS_ORDER_CANCELED = 4000;
+
+    // Occurs when a Payment Order has failed
+    const STATUS_ORDER_FAILED = 5000;
+
+    /**
+     * @var int[]
+     */
+    public static array $statuses = [
+        '1' => self::STATUS_ORDER_CREATED,
+       // '' => self::STATUS_ORDER_PENDING,
+       // '' => self::STATUS_ORDER_CONFIRMED,
+        '2' => self::STATUS_ORDER_FAILED,
+       // '' => self::STATUS_ORDER_DELAYED,
+        '3' => self::STATUS_ORDER_SUCCEEDED,
+        '4' => self::STATUS_ORDER_CANCELED
+    ];
 
     /**
      * The attributes that should be cast.

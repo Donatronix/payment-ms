@@ -3,16 +3,11 @@
 namespace App\Api\V1\Controllers\Application;
 
 use App\Http\Controllers\Controller;
-use App\Models\LogError;
 use App\Models\PaymentOrder;
 use App\Models\Transaction;
 use App\Services\PaymentServiceManager;
 use Illuminate\Http\Request;
-
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use Ultainfinity\SolanaPhpSdk\Connection;
-use Ultainfinity\SolanaPhpSdk\SolanaRpcClient;
 
 /**
  * Class TransactionController
@@ -134,19 +129,24 @@ class TransactionController extends Controller
             // Get payment order
             $order = PaymentOrder::findOrFail($inputData->payment_order_id);
 
-
-            // Init payment service session
+            // Init payment service client
             $service = PaymentServiceManager::getInstance($inputData->gateway);
 
-            // Create payment session
+            // Checking transaction
             $result = $service->checkTransaction($inputData);
 
-
+            // Save transaction status and data
             $order->fill([
-                'status' => 1,
+                'status' => $result['status'],
                 'metadata' => $inputData->meta
             ]);
             $order->save();
+
+            $result['amount'] = $order->amount;
+            $result['currency'] = $order->currency;
+            $result['date'] = $order->created_at;
+            $result['order_number'] = $order->id;
+            $result['payer_full_name'] = '';
 
 
             // Save transaction data
@@ -154,22 +154,21 @@ class TransactionController extends Controller
 //            $transaction->fill($request->all());
 //            $transaction->save();
 
-
-
-
+            // Return response
             return response()->jsonApi([
-                'title' => 'Store transaction',
-                'message' => 'transaction saved'
+                'title' => 'Saving and verifying transaction data',
+                'message' => 'Payment order transaction saved successfully',
+                'data' => $result
             ]);
-        }  catch (ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->jsonApi([
-                'title' => 'Store transaction',
+                'title' => 'Saving and verifying transaction data',
                 'message' => "Field validation error: " . $e->getMessage(),
                 'data' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->jsonApi([
-                'title' => 'Store transaction',
+                'title' => 'Saving and verifying transaction data',
                 'message' => $e->getMessage()
             ], 500);
         }

@@ -20,7 +20,6 @@ class CreatePaymentServicesTable extends Migration
             $table->string('key', 30);
             $table->mediumText('description')->nullable();
             $table->text('icon')->nullable();
-            $table->string('new_order_status')->default(1);
             $table->double('amount_min', 15, 9, true)->default(0);
             $table->double('amount_max', 15, 9, true)->default(0);
             $table->boolean('is_develop')->default(true);

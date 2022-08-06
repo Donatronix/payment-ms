@@ -106,11 +106,11 @@ class WebhookController extends Controller
 
 
         // Find order
-        $payment = PaymentOrder::where('id', $orderData->payment_order)
+        $order = PaymentOrder::where('id', $orderData->payment_order)
             ->where('check_code', $orderData->check_code)
             ->first();
 
-        if (!$payment) {
+        if (!$order) {
             \Log::error("Order not found: " . $payload);
             return [
                 'type' => 'danger',
@@ -127,9 +127,9 @@ class WebhookController extends Controller
             ];
         }
 
-        $payment->status = intval(constant("self::{$status}"));
-        // $payment->payload = $request;
-        $payment->save();
+        $order->status = intval(constant("self::{$status}"));
+        // $order->payload = $request;
+        $order->save();
 
         // Logging success request content
         try {

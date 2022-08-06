@@ -24,7 +24,6 @@ class PaymentService extends Model
         'key',
         'description',
         'icon',
-        'new_order_status',
         'amount_min',
         'amount_max',
         'is_develop',
@@ -75,8 +74,7 @@ class PaymentService extends Model
                         'title' => $class::title(),
                         'key' => $class::key(),
                         'description' => $class::description(),
-                        'icon' => null,
-                        'new_order_status' => $class::newOrderStatus()
+                        'icon' => null
                     ];
                 } catch (\Exception $e) {
                     throw new \Exception($entry . ' ' . $e->getMessage());

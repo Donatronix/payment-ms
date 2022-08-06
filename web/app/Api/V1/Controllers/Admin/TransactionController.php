@@ -93,8 +93,8 @@ class TransactionController extends Controller
      *
      * @OA\Post(
      *     path="/admin/transaction",
-     *     summary="store transaction Record",
-     *     description="store transaction Record",
+     *     summary="Saving and verifying transaction data Record",
+     *     description="Saving and verifying transaction data Record",
      *     tags={"Admin | transactions"},
      *
      *     @OA\RequestBody(
@@ -181,13 +181,13 @@ class TransactionController extends Controller
             $transaction->save();
 
             return response()->jsonApi([
-                'title' => 'Store transaction',
-                'message' => 'transaction saved',
+                'title' => 'Saving and verifying transaction data',
+                'message' => 'Payment order transaction saved successfully',
                 'data' => $transaction
             ]);
         } catch (\Throwable $th) {
             return response()->jsonApi([
-                'title' => 'Store transaction',
+                'title' => 'Saving and verifying transaction data',
                 'message' => $th->getMessage()
             ], 500);
         }

@@ -137,10 +137,6 @@ class PaymentOrderController extends Controller
         $services = PaymentService::catalog();
 
         $newStatuses = [];
-        foreach ($services as $system) {
-            $newStatuses[$system['key']] = $system['new_order_status'];
-        }
-
         $limit = intval($request->get('limit', 20));
         $page = intval($request->get('page', 1));
 

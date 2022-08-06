@@ -114,11 +114,6 @@ class PaymentServiceController extends Controller
      *                 description="Details of the payment service",
      *             ),
      *             @OA\Property(
-     *                 property="new_order_status",
-     *                 type="integer",
-     *                 description="Currently in use settings",
-     *             ),
-     *             @OA\Property(
      *                 property="settings",
      *                 type="array",
      *                 description="Payment service configuration",
@@ -157,8 +152,7 @@ class PaymentServiceController extends Controller
             $this->validate($request, [
                 'name' => 'required|string',
                 'key' => 'required|string',
-                'description' => 'required|string',
-                //'new_order_status'  => 'required|integer',
+                'description' => 'required|string'
             ]);
 
 //            $this->validate($request, [
@@ -299,11 +293,6 @@ class PaymentServiceController extends Controller
      *                 property="description",
      *                 type="string",
      *                 description="details of the payment service",
-     *             ),
-     *             @OA\Property(
-     *                 property="new_order_status",
-     *                 type="integer",
-     *                 description="Currently in use settings",
      *             )
      *         )
      *     ),
@@ -328,8 +317,7 @@ class PaymentServiceController extends Controller
             $this->validate($request, [
                 'name' => 'required|string',
                 'key' => 'required|string',
-                'description' => 'required|string',
-                //'new_order_status'  => 'required|integer',
+                'description' => 'required|string'
             ]);
         } catch (ValidationException $e) {
             return response()->jsonApi([

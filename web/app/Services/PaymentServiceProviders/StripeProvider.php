@@ -19,16 +19,33 @@ use Stripe\Webhook;
  */
 class StripeProvider implements PaymentServiceContract
 {
-    const STATUS_ORDER_REQUIRES_PAYMENT_METHOD = 1;
-    const STATUS_ORDER_REQUIRES_CONFIRMATION = 2;
-    const STATUS_ORDER_REQUIRES_ACTION = 3;
-    const STATUS_ORDER_PROCESSING = 4;
-    const STATUS_ORDER_REQUIRES_CAPTURE = 5;
-    const STATUS_ORDER_CANCELED = 6;
-    const STATUS_ORDER_SUCCEEDED = 7;
-    const STATUS_ORDER_PAID = 8;
-    const STATUS_ORDER_UNPAID = 9;
-    const STATUS_ORDER_NO_PAYMENT_REQUIRED = 10;
+    // Occurs when a new PaymentIntent is created.
+    const STATUS_PAYMENT_INTENT_CREATED = 1;
+
+    // Occurs when a PaymentIntent has started processing.
+    const STATUS_PAYMENT_INTENT_PROCESSING = 2;
+
+    // Occurs when a PaymentIntent has successfully completed payment.
+    const STATUS_PAYMENT_INTENT_SUCCEEDED = 3;
+
+    // Occurs when a PaymentIntent is canceled.
+    const STATUS_PAYMENT_INTENT_CANCELED = 4;
+
+    // Occurs when a PaymentIntent has failed the attempt to create a payment method or a payment.
+    const STATUS_PAYMENT_INTENT_PAYMENT_FAILED = 3;
+
+    // Occurs when funds are applied to a customer_balance PaymentIntent and the ‘amount_remaining’ changes.
+    const STATUS_PAYMENT_INTENT_PARTIALLY_FUNDED = 4;
+
+    // Occurs when a PaymentIntent transitions to requires_action state
+    const STATUS_PAYMENT_INTENT_REQUIRES_ACTION = 6;
+
+    // Occurs when a PaymentIntent has funds to be captured.
+    // Check the amount_capturable property on the PaymentIntent to determine the amount that can be captured.
+    // You may capture the PaymentIntent with an amount_to_capture value up to the specified amount. Learn more about capturing PaymentIntents.
+    const STATUS_PAYMENT_INTENT_AMOUNT_CAPTURABLE_UPDATED = 7;
+
+
 
     /**
      * @var
@@ -86,7 +103,7 @@ class StripeProvider implements PaymentServiceContract
      */
     public static function newOrderStatus(): int
     {
-        return self::STATUS_ORDER_REQUIRES_PAYMENT_METHOD;
+        return self::STATUS_PAYMENT_INTENT_CREATED;
     }
 
     /**
@@ -228,12 +245,14 @@ class StripeProvider implements PaymentServiceContract
             case 'checkout.session.async_payment_succeeded':
             case 'checkout.session.async_payment_failed':
                 break;
+
             /**
              * Payment Intent
              */
             case 'payment_intent.amount_capturable_updated':
             case 'payment_intent.canceled':
             case 'payment_intent.created':
+            case 'payment_intent.partially_funded':
             case 'payment_intent.payment_failed':
             case 'payment_intent.processing':
             case 'payment_intent.requires_action':
@@ -276,6 +295,43 @@ class StripeProvider implements PaymentServiceContract
      */
     public function checkTransaction(object $payload): mixed
     {
-        // TODO: Implement checkTransaction() method.
+        try {
+            // Get stripe payment intent data
+            $intent = (object)$this->service->paymentIntents->retrieve(
+                $payload->meta['payment_intent']
+            )->toArray();
+            // "payment_intent_client_secret": "pi_3LTVJ6KkrmrXUD8m1LiQNqQD_secret_blXgoRlk1I49X6uLsH97uyva5"
+
+            // Get charge detail
+            $charge = [];
+            $charges = collect($intent->charges['data']);
+            if ($charges->count() == 1) {
+                $charge = (object)$charges->first();
+            }else{
+                // loop $charges->map(....);
+            }
+
+            $result = [
+                'status' => self::STATUS_PAYMENT_INTENT_PROCESSING
+            ];
+
+            if ($charge->status == 'succeeded' && $charge->paid) {
+                $type = $charge->payment_method_details['type'];
+                $detail = $charge->payment_method_details[$type];
+
+                if ($type == 'card') {
+                    $result['card_last4'] = $detail['last4'];
+                    $result['card_brand'] = $detail['brand'];
+                }
+
+                $result['payment_method'] = $type;
+                $result['status'] = self::STATUS_PAYMENT_INTENT_SUCCEEDED;
+                $result['transaction_id'] = $charge->balance_transaction;
+            }
+
+            return $result;
+        } catch (Exception $e) {
+            throw $e;
+        }
     }
 }
