@@ -36,6 +36,7 @@ RUN chmod -R 755 /opt/docker/bin/service.d/*.sh
 ## Copy existing application contents to workdir
 COPY --chown=nginx:nginx ./web /var/www/html
 COPY --chown=nginx:nginx ./sumra-sdk /var/www/sumra-sdk
+COPY --chown=nginx:nginx ./solana-php-sdk /var/www/solana-php-sdk
 
 ## Set work directory
 WORKDIR /var/www/html
