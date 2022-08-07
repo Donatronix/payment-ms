@@ -6,6 +6,7 @@ use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Ultainfinity\SolanaPhpSdk\Connection;
 use Ultainfinity\SolanaPhpSdk\SolanaRpcClient;
 
@@ -46,8 +47,8 @@ class NetworkSolanaProvider implements PaymentServiceContract
         'processing' => self::STATUS_CHARGE_PROCESSING,
         'confirmed' => self::STATUS_CHARGE_CONFIRMED,
         'delayed' => self::STATUS_CHARGE_DELAYED,
-        'failed' => self::STATUS_CHARGE_FAILED,
-        'succeeded' => self::STATUS_CHARGE_SUCCEEDED,
+        'err' => self::STATUS_CHARGE_FAILED,
+        'ok' => self::STATUS_CHARGE_SUCCEEDED,
         'canceled' => self::STATUS_CHARGE_CANCELED
     ];
 
@@ -70,15 +71,15 @@ class NetworkSolanaProvider implements PaymentServiceContract
     {
         $this->settings = $settings;
 
-        try{
+        try {
             if ($this->settings->is_develop) {
                 $endpoint = SolanaRpcClient::DEVNET_ENDPOINT;
-            }else{
+            } else {
                 $endpoint = SolanaRpcClient::MAINNET_ENDPOINT;
             }
 
             $this->service = new Connection(new SolanaRpcClient($endpoint));
-        }catch (Exception $e){
+        } catch (Exception $e) {
             throw $e;
         }
     }
@@ -155,14 +156,37 @@ class NetworkSolanaProvider implements PaymentServiceContract
      */
     public function checkTransaction(object $payload): mixed
     {
-        try{
-            $accountInfo = $this->service->getTransaction($payload->meta->trx_id);
+        try {
+            // Get transaction info
+            $transactionInfo = $this->service->getTransaction($payload->meta['trx_id']);
+            //dd($transactionInfo);
 
-            $status = $accountInfo['meta']['status'];
+            $status = strtolower(array_key_first($transactionInfo['meta']['status']));
 
+            $result = [
+                'status' => self::$statuses[$status],
+                'transaction_id' => $payload->meta['trx_id'],
+                'block_time' => $transactionInfo['blockTime']
+            ];
 
+            if ($status == 'ok') {
+                // Get transaction amount
+                $postBalance = $transactionInfo['meta']['postBalances'][1];
+                $preBalance = $transactionInfo['meta']['preBalances'][1];
+                $result['amount'] = ($postBalance - $preBalance) / 1000000000;
 
-        }catch (Exception $e){
+                // Get transaction wallet
+                $result['wallet'] = $transactionInfo['transaction']['message']['accountKeys'][0];
+
+                // Add info
+                $result['network'] = ucfirst(Str::replace('network-', '', self::key()));;
+                $result['mode'] = $this->settings->is_develop ? 'devnet' : 'mainnet';
+                $result['payer_name'] = '';
+                $result['payer_email'] = '';
+            }
+
+            return $result;
+        } catch (Exception $e) {
             throw $e;
         }
     }

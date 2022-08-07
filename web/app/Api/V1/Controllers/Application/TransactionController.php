@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PaymentOrder;
 use App\Models\Transaction;
 use App\Services\PaymentServiceManager;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -135,15 +136,6 @@ class TransactionController extends Controller
             // Checking transaction
             $result = $service->checkTransaction($inputData);
 
-            // If succeeded then add more data to response
-            if($result['status'] === 'succeeded'){
-                $result['amount'] = $order->amount;
-                $result['currency'] = $order->currency;
-                $result['date'] = $order->created_at;
-                $result['order_number'] = $order->number;
-                $result['payer_name'] = '';
-            }
-
             // Save transaction status and data
             $metadata = $inputData->meta;
             $metadata['transaction_id'] = $result['transaction_id'];
@@ -153,6 +145,14 @@ class TransactionController extends Controller
                 'metadata' => $metadata
             ]);
             $order->save();
+
+            // If succeeded then add more data to response
+            if($result['status'] === 'succeeded'){
+                $result['amount'] = $order->amount;
+                $result['currency'] = $order->currency;
+                $result['date'] = Carbon::parse($order->created_at)->format('d M Y h:i A');
+                $result['order_number'] = $order->number;
+            }
 
             // Return response
             return response()->jsonApi([

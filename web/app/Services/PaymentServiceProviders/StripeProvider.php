@@ -317,20 +317,22 @@ class StripeProvider implements PaymentServiceContract
             }
 
             $result = [
-                'status' => self::$statuses[$charge->status]
+                'status' => self::$statuses[$charge->status],
+                'transaction_id' => $charge->balance_transaction
             ];
 
             if ($charge->status == 'succeeded' && $charge->paid) {
-                $type = $charge->payment_method_details['type'];
-                $detail = $charge->payment_method_details[$type];
+                $payment_method = $charge->payment_method_details['type'];
+                $payment_detail = $charge->payment_method_details[$payment_method];
 
-                if ($type == 'card') {
-                    $result['card_last4'] = $detail['last4'];
-                    $result['card_brand'] = $detail['brand'];
+                $result['payment_method'] = $payment_method;
+                $result['payer_name'] = $charge->billing_details['name'] ?? '';
+                $result['payer_email'] = $charge->billing_details['email'] ?? '';
+
+                if ($payment_method == 'card') {
+                    $result['card_last4'] = $payment_detail['last4'];
+                    $result['card_brand'] = $payment_detail['brand'];
                 }
-
-                $result['payment_method'] = $type;
-                $result['transaction_id'] = $charge->balance_transaction;
             }
 
             return $result;
