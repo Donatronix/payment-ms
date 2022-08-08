@@ -138,7 +138,7 @@ class TransactionController extends Controller
 
             // Save transaction status and data
             $metadata = $inputData->meta;
-            $metadata['transaction_id'] = $result['transaction_id'];
+            $metadata['transaction_id'] = $result['transaction_id'] ?? null;
 
             $order->fill([
                 'status' => PaymentOrder::$statuses[$result['status']],
@@ -153,6 +153,14 @@ class TransactionController extends Controller
                 $result['date'] = Carbon::parse($order->created_at)->format('d M Y h:i A');
                 $result['order_number'] = $order->number;
             }
+
+            // Send through PUBSUB confirmation to document owner
+            \PubSub::publish('PaymentUpdateRequest', [
+                'status' => $result['status'],
+                'document_id' => $order->based_id,
+                'document_object' => $order->based_object,
+                'payment_order_id' => $order->id
+            ], $order->based_service);
 
             // Return response
             return response()->jsonApi([

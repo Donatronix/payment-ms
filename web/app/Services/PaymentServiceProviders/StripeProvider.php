@@ -38,7 +38,7 @@ class StripeProvider implements PaymentServiceContract
     const STATUS_PAYMENT_INTENT_PARTIALLY_FUNDED = 'partially_funded';
 
     // Occurs when a PaymentIntent transitions to requires_action state
-    const STATUS_PAYMENT_INTENT_REQUIRES_ACTION = 'failed';
+    const STATUS_PAYMENT_INTENT_REQUIRES_ACTION = 'processing';
 
     // Occurs when a PaymentIntent has funds to be captured.
     // Check the amount_capturable property on the PaymentIntent to determine the amount that can be captured.
@@ -53,6 +53,7 @@ class StripeProvider implements PaymentServiceContract
         'processing' => self::STATUS_PAYMENT_INTENT_PROCESSING,
         'partially_funded' => self::STATUS_PAYMENT_INTENT_PARTIALLY_FUNDED,
         'requires_action' => self::STATUS_PAYMENT_INTENT_REQUIRES_ACTION,
+        'requires_payment_method' => self::STATUS_PAYMENT_INTENT_REQUIRES_ACTION,
         'amount_capturable_updated' => self::STATUS_PAYMENT_INTENT_AMOUNT_CAPTURABLE_UPDATED,
         'failed' => self::STATUS_PAYMENT_INTENT_PAYMENT_FAILED,
         'succeeded' => self::STATUS_PAYMENT_INTENT_SUCCEEDED,
@@ -195,8 +196,9 @@ class StripeProvider implements PaymentServiceContract
             // Return result
             return [
                 'status' => self::STATUS_PAYMENT_INTENT_PROCESSING,
-                'public_key' => $this->settings->public_key,
+                'payment_intent' => $stripeDocument->id,
                 'clientSecret' => $stripeDocument->client_secret,
+                'public_key' => $this->settings->public_key,
             ];
         } catch (Exception $e) {
             throw $e;
@@ -306,6 +308,13 @@ class StripeProvider implements PaymentServiceContract
                 $payload->meta['payment_intent']
             )->toArray();
             // "payment_intent_client_secret": "pi_3LTVJ6KkrmrXUD8m1LiQNqQD_secret_blXgoRlk1I49X6uLsH97uyva5"
+
+            // If missing payment method, then intent is continue processing
+            if($intent->status === 'requires_payment_method'){
+                return [
+                    'status' => self::$statuses[$intent->status],
+                ];
+            }
 
             // Get charge detail
             $charge = [];

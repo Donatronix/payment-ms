@@ -28,10 +28,6 @@ class PaymentOrder extends Model
      */
     const TYPE_CHARGE = 1;
     const TYPE_PAYOUT = 2;
-    const TYPE_ADJUSTMENT = 4;
-    const TYPE_RETURN_IN = 5;
-    const TYPE_RETURN_OUT = 6;
-    const TYPE_FEE = 7;
 
     /**
      * Payment Order Statuses
@@ -96,7 +92,7 @@ class PaymentOrder extends Model
         'user_id',
         'status',
         'based_id',
-        'based_type',
+        'based_object',
         'based_service',
         'based_metadata',
         'service_key',
@@ -120,7 +116,7 @@ class PaymentOrder extends Model
      */
     protected function getNumeratorPrefix(): string
     {
-        return 'PO';
+        return 'POR';
     }
 
     /**

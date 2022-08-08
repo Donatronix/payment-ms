@@ -4,6 +4,7 @@ namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -159,14 +160,21 @@ class NetworkSolanaProvider implements PaymentServiceContract
         try {
             // Get transaction info
             $transactionInfo = $this->service->getTransaction($payload->meta['trx_id']);
-            //dd($transactionInfo);
+           // dd($transactionInfo);
+
+            // If is not transaction info, then transaction is continue processing
+            if(!$transactionInfo){
+                return [
+                    'status' => self::STATUS_CHARGE_PROCESSING,
+                ];
+            }
 
             $status = strtolower(array_key_first($transactionInfo['meta']['status']));
 
             $result = [
                 'status' => self::$statuses[$status],
                 'transaction_id' => $payload->meta['trx_id'],
-                'block_time' => $transactionInfo['blockTime']
+                'block_time' => Carbon::parse($transactionInfo['blockTime'])->format('d M Y h:i A')
             ];
 
             if ($status == 'ok') {
@@ -175,8 +183,8 @@ class NetworkSolanaProvider implements PaymentServiceContract
                 $preBalance = $transactionInfo['meta']['preBalances'][1];
                 $result['amount'] = ($postBalance - $preBalance) / 1000000000;
 
-                // Get transaction wallet
-                $result['wallet'] = $transactionInfo['transaction']['message']['accountKeys'][0];
+                // Get sender wallet
+                $result['sender_wallet'] = $transactionInfo['transaction']['message']['accountKeys'][0];
 
                 // Add info
                 $result['network'] = ucfirst(Str::replace('network-', '', self::key()));;
@@ -185,6 +193,7 @@ class NetworkSolanaProvider implements PaymentServiceContract
                 $result['payer_email'] = '';
             }
 
+            // Return response
             return $result;
         } catch (Exception $e) {
             throw $e;

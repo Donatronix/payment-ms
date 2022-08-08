@@ -168,7 +168,7 @@ class PaymentOrderController extends Controller
                 'user_id' => Auth::user()->getAuthIdentifier(),
 
                 'based_id' => $inputData->document['id'] ?? config('settings.empty_uuid'),
-                'based_type' => $inputData->document['object'] ?? null,
+                'based_object' => $inputData->document['object'] ?? null,
                 'based_service' => $inputData->document['service'] ?? null,
                 'based_metadata' => $inputData->document['meta'] ?? null,
 

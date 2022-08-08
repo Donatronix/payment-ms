@@ -18,7 +18,7 @@ class CreatePaymentOrdersTable extends Migration
             $table->uuid('id')->primary();
 
             // PO detail
-            $table->string('number', 15);
+            $table->string('number', 20)->index();
             $table->tinyInteger('type');
             $table->float('amount', 20, 10);
             $table->char('currency', 3);
@@ -27,15 +27,15 @@ class CreatePaymentOrdersTable extends Migration
             $table->text('metadata')->nullable();
 
             // Based on document
-            $table->uuid('based_id')->default(config('settings.empty_uuid'));
-            $table->string('based_type', 30)->nullable();
-            $table->string('based_service', 36)->nullable();
+            $table->uuid('based_id')->default(config('settings.empty_uuid'))->index();
+            $table->string('based_object', 30)->nullable()->index();
+            $table->string('based_service', 36)->nullable()->index();
             $table->mediumText('based_metadata')->nullable();
 
             // Service provider data
-            $table->string('service_key', 30);
-            $table->string('service_document_id')->nullable();
-            $table->string('service_document_type')->nullable();
+            $table->string('service_key', 30)->index();
+            $table->string('service_document_id')->nullable()->index();
+            $table->string('service_document_type')->nullable()->index();
             $table->text('service_payload')->nullable();
 
             // Transaction check code
