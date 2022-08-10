@@ -140,6 +140,8 @@ class NetworkEthereumProvider implements PaymentServiceContract
      */
     public function checkTransaction(object $payload): mixed
     {
-        // TODO: Implement checkTransaction() method.
+        return [
+            'status' => self::STATUS_CHARGE_PROCESSING,
+        ];
     }
 }

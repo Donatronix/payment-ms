@@ -155,12 +155,14 @@ class TransactionController extends Controller
             }
 
             // Send through PUBSUB confirmation to document owner
-            \PubSub::publish('PaymentUpdateRequest', [
-                'status' => $result['status'],
-                'document_id' => $order->based_id,
-                'document_object' => $order->based_object,
-                'payment_order_id' => $order->id
-            ], $order->based_service);
+            if($order->based_id !== config('settings.empty_uuid') && $order->based_object && $order->based_service){
+                \PubSub::publish('PaymentUpdateRequest', [
+                    'status' => $result['status'],
+                    'document_id' => $order->based_id,
+                    'document_object' => $order->based_object,
+                    'payment_order_id' => $order->id
+                ], $order->based_service);
+            }
 
             // Return response
             return response()->jsonApi([

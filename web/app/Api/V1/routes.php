@@ -68,7 +68,7 @@ $router->group([
     /**
      * ADMIN PANEL ACCESS
      *
-     * Admin / super admin access level (E.g CEO company)
+     * Admin | Super admin access level (E.g CEO company)
      */
     $router->group([
         'prefix' => 'admin',

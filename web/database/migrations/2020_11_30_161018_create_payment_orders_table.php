@@ -27,10 +27,11 @@ class CreatePaymentOrdersTable extends Migration
             $table->text('metadata')->nullable();
 
             // Based on document
-            $table->uuid('based_id')->default(config('settings.empty_uuid'))->index();
-            $table->string('based_object', 30)->nullable()->index();
-            $table->string('based_service', 36)->nullable()->index();
+            $table->uuid('based_id')->default(config('settings.empty_uuid'));
+            $table->string('based_object', 30)->nullable();
+            $table->string('based_service', 36)->nullable();
             $table->mediumText('based_metadata')->nullable();
+            $table->index(['based_id', 'based_object', 'based_service']);
 
             // Service provider data
             $table->string('service_key', 30)->index();
