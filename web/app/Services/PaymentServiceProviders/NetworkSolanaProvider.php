@@ -160,7 +160,7 @@ class NetworkSolanaProvider implements PaymentServiceContract
         try {
             // Get transaction info
             $transactionInfo = $this->service->getTransaction($payload->meta['trx_id']);
-           // dd($transactionInfo);
+//            dd($transactionInfo);
 
             // If is not transaction info, then transaction is continue processing
             if(!$transactionInfo){

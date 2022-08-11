@@ -4,8 +4,14 @@ namespace App\Services\PaymentServiceProviders;
 
 use App\Contracts\PaymentServiceContract;
 use App\Models\PaymentOrder;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use RuntimeException;
+use Web3\Providers\HttpProvider;
+use Web3\RequestManagers\HttpRequestManager;
+use Web3\Web3;
 
 /**
  * Class NetworkEthereumProvider
@@ -65,7 +71,17 @@ class NetworkEthereumProvider implements PaymentServiceContract
     public function __construct(object $settings)
     {
         $this->settings = $settings;
-        $this->service = null;
+
+        try {
+            if ($this->settings->is_develop) {
+                $endpoint = null;
+            } else {
+                $endpoint = 'http://localhost:8545';
+            }
+            $this->service = new Web3(new HttpProvider(new HttpRequestManager($endpoint)));
+        } catch (Exception $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -137,11 +153,64 @@ class NetworkEthereumProvider implements PaymentServiceContract
     /**
      * @param object $payload
      * @return mixed
+     * @throws Exception
      */
     public function checkTransaction(object $payload): mixed
     {
-        return [
-            'status' => self::STATUS_CHARGE_PROCESSING,
-        ];
+        try {
+            $transactionInfo = false;
+
+            // Get transaction info
+            $this->service->batch(true);
+            $this->service->clientVersion(function ($err, $version) {
+                if ($err !== null) {
+                    throw new RuntimeException($err);
+                }
+            });
+
+            //add transaction hash
+            $this->service->hash($payload->meta['trx_id']);
+            $this->service->execute(function ($err, $data) use (&$transactionInfo) {
+                if ($err !== null) {
+                    throw new RuntimeException($err);
+                }
+
+                // do something
+                $transactionInfo = $data;
+            });
+
+            // If is not transaction info, then transaction is still processing
+            if (!$transactionInfo) {
+                return [
+                    'status' => self::STATUS_CHARGE_PROCESSING,
+                ];
+            }
+
+            $status = strtolower(array_key_first($transactionInfo['meta']['status']));
+            $result = [
+                'status' => self::$statuses[$status],
+                'transaction_id' => $payload->meta['trx_id'],
+                'block_time' => Carbon::parse($transactionInfo['blockTime'])->format('d M Y h:i A')
+            ];
+
+            if (strtolower($status) === 'ok') {
+                // Get transaction amount
+                $postBalance = $transactionInfo['meta']['postBalances'][1];
+                $preBalance = $transactionInfo['meta']['preBalances'][1];
+                $result['amount'] = ($postBalance - $preBalance) / 1000000000;
+
+                // Get sender wallet
+                $result = array_merge($result, ['sender_wallet' => $transactionInfo['transaction']['message']['accountKeys'][0]]);
+                // Add info
+                $result = array_merge($result, ['network' => ucfirst(Str::replace('network-', '', self::key()))]);
+                $result = array_merge($result, ['mode' => $this->settings->is_develop ? 'devnet' : 'mainnet']);
+                $result = array_merge($result, ['payer_name' => '']);
+                $result = array_merge($result, ['payer_email' => '']);
+            }
+
+            return $result;
+        } catch (Exception $e) {
+            throw new RuntimeException($e->getMessage());
+        }
     }
 }

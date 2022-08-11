@@ -59,9 +59,7 @@ $router->group([
         $router->group([
             'prefix' => 'transactions'
         ], function ($router) {
-            $router->get('/', 'TransactionController@index');
-            $router->post('/', 'TransactionController@store');
-            $router->get('/{id}', 'TransactionController@show');
+            $router->post('/', 'TransactionController');
         });
     });
 
@@ -100,17 +98,6 @@ $router->group([
             $router->get('{id}', 'PaymentServiceController@show');
             $router->put('/{id}', 'PaymentServiceController@update');
             $router->delete('/{id}', 'PaymentServiceController@destroy');
-        });
-
-        /**
-         * Transactions
-         */
-        $router->group([
-            'prefix' => 'transactions'
-        ], function ($router) {
-            $router->get('/', 'TransactionController@index');
-            $router->post('/', 'TransactionController@store');
-            $router->get('/{id}', 'TransactionController@show');
         });
     });
 
