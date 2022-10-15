@@ -2,6 +2,8 @@
 /.vscode
 /vendor
 .env
+.env.production
+.env.staging
 .phpunit.result.cache
 composer.lock
 server.php
